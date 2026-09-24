@@ -35,3 +35,5 @@ The [shared ML skills catalog](docs/skills.md) describes the canonical
 The [Snowflake integration guide](docs/snowflake-integration.md) covers the
 optional Python connector, live DEV context proof, CLI, Cortex Code, and
 read-only execution boundary.
+The [declarative ML contracts](docs/architecture/declarative-ml-contracts-v1.md)
+define offline model, dataset, experiment, and cross-system lineage identity.
