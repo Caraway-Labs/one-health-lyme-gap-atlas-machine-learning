@@ -40,15 +40,22 @@ class Future:
 class FakeML:
     def __init__(self, statuses: tuple[int, ...] = (200,)) -> None:
         self.calls: list[dict[str, Any]] = []
+        self.stream_calls: list[dict[str, Any]] = []
+        self.batch_calls: list[dict[str, Any]] = []
         self.statuses = statuses
 
-    def log_stream(self, **kwargs: Any) -> Future:
+    def _record(self, kwargs: dict[str, Any]) -> Future:
         self.calls.append(kwargs)
         index = min(len(self.calls) - 1, len(self.statuses) - 1)
         return Future(self.statuses[index])
 
-    def log_actual_batch(self, **kwargs: Any) -> Future:
-        return self.log_stream(**kwargs)
+    def log_stream(self, **kwargs: Any) -> Future:
+        self.stream_calls.append(kwargs)
+        return self._record(kwargs)
+
+    def log_batch_record(self, **kwargs: Any) -> Future:
+        self.batch_calls.append(kwargs)
+        return self._record(kwargs)
 
 
 def bundle() -> Any:
@@ -119,14 +126,61 @@ def test_lineage_mapping_mismatch_rejected() -> None:
         key_from_bundle(raw)
 
 
-def test_delayed_actual_zero_is_not_missing() -> None:
-    sink, fake = setup(model_type="numeric")
-    prediction = replace(row(sink), prediction=0, prediction_score=None)
-    actual = Actual(sink.key, prediction.prediction_id, prediction.timestamp, 0, datetime.now(UTC))
+@pytest.mark.parametrize("actual_value", [0, False], ids=["numeric-zero", "boolean-false"])
+def test_delayed_actual_falsy_is_not_missing(actual_value: int | bool) -> None:
+    sink, fake = setup(
+        model_type="numeric" if type(actual_value) is int else "binary_classification"
+    )
+    prediction = replace(row(sink), prediction=1, prediction_score=None)
+    actual = Actual(
+        sink.key, prediction.prediction_id, prediction.timestamp, actual_value, datetime.now(UTC)
+    )
     assert sink.log_actual(actual).sent == 1
     assert fake.calls[0]["prediction_id"] == prediction.prediction_id
-    assert fake.calls[0]["actual_label"] == 0
+    assert fake.calls[0]["actual_label"] is actual_value
     assert fake.calls[0]["prediction_label"] is None
+    assert len(fake.batch_calls) == 1
+    assert not fake.stream_calls
+
+
+@pytest.mark.parametrize("environment", [Environment.TRAINING, Environment.VALIDATION])
+@pytest.mark.parametrize("actual_value", [0, False], ids=["numeric-zero", "boolean-false"])
+def test_reference_and_validation_falsy_actuals(
+    environment: Environment, actual_value: int | bool
+) -> None:
+    sink, fake = setup(
+        model_type="numeric" if type(actual_value) is int else "binary_classification"
+    )
+    record = replace(
+        row(sink, environment), prediction=1, prediction_score=None, actual=actual_value
+    )
+    outcome = (
+        sink.log_reference([record])
+        if environment is Environment.TRAINING
+        else sink.log_validation([record])
+    )
+    assert outcome.sent == 1
+    assert len(fake.batch_calls) == 1
+    assert not fake.stream_calls
+    assert fake.batch_calls[0]["actual_label"] is actual_value
+    assert fake.batch_calls[0]["environment"] == environment.value
+    assert fake.batch_calls[0]["batch_id"] == record.batch_id
+    assert fake.batch_calls[0]["features"] == record.features
+    assert fake.batch_calls[0]["tags"] == record.tags
+
+
+def test_none_is_only_unavailable_actual() -> None:
+    sink, fake = setup(model_type="numeric")
+    production = replace(row(sink), prediction=1, prediction_score=None)
+    assert production.actual is None
+    assert sink.log_prediction(production).sent == 1
+    assert len(fake.stream_calls) == 1
+    assert fake.stream_calls[0]["actual_label"] is None
+    assert not fake.batch_calls
+    with pytest.raises(TelemetryError, match="ground truth"):
+        sink.log_reference([replace(row(sink, Environment.TRAINING), actual=None)])
+    with pytest.raises(TelemetryError):
+        Actual(sink.key, production.prediction_id, production.timestamp, None, datetime.now(UTC))  # type: ignore[arg-type]
 
 
 def test_invalid_timestamp_and_missing_prediction_id() -> None:

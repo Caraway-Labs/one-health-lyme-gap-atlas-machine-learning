@@ -37,7 +37,7 @@ class _Future(Protocol):
 class _MLClient(Protocol):
     def log_stream(self, **kwargs: Any) -> _Future: ...
 
-    def log_actual_batch(self, **kwargs: Any) -> _Future: ...
+    def log_batch_record(self, **kwargs: Any) -> _Future: ...
 
 
 class _Immediate:
@@ -58,33 +58,55 @@ class _SDKMLClient:
         kwargs["environment"] = getattr(types.Environments, kwargs["environment"].upper())
         return self.ml.log_stream(**kwargs)  # type: ignore[no-any-return]
 
-    def log_actual_batch(self, **kwargs: Any) -> _Future:
+    def log_batch_record(self, **kwargs: Any) -> _Future:
         # The v8.55 stream implementation checks `if actual_label`, dropping
-        # numeric 0 and False. An explicit one-row batch preserves them.
+        # numeric 0 and False. An explicit one-row schema preserves them in
+        # training, validation, and delayed production actuals alike.
         pandas = import_module("pandas")
         types = import_module("arize.ml.types")
-        frame = pandas.DataFrame(
-            [
-                {
-                    "prediction_id": kwargs["prediction_id"],
-                    "prediction_ts": kwargs["prediction_timestamp"],
-                    "actual_label": kwargs["actual_label"],
-                }
-            ]
-        )
-        schema = types.Schema(
-            prediction_id_column_name="prediction_id",
-            timestamp_column_name="prediction_ts",
-            actual_label_column_name="actual_label",
-        )
+        record: dict[str, Any] = {
+            "_atlas_prediction_id": kwargs["prediction_id"],
+            "_atlas_prediction_ts": kwargs["prediction_timestamp"],
+            "_atlas_actual_label": kwargs["actual_label"],
+        }
+        schema_kwargs: dict[str, Any] = {
+            "prediction_id_column_name": "_atlas_prediction_id",
+            "timestamp_column_name": "_atlas_prediction_ts",
+            "actual_label_column_name": "_atlas_actual_label",
+        }
+        prediction = kwargs["prediction_label"]
+        if prediction is not None:
+            if isinstance(prediction, tuple):
+                record["_atlas_prediction_label"], record["_atlas_prediction_score"] = prediction
+                schema_kwargs["prediction_score_column_name"] = "_atlas_prediction_score"
+            else:
+                record["_atlas_prediction_label"] = prediction
+            schema_kwargs["prediction_label_column_name"] = "_atlas_prediction_label"
+        actual = kwargs["actual_label"]
+        if isinstance(actual, tuple):
+            record["_atlas_actual_label"], record["_atlas_actual_score"] = actual
+            schema_kwargs["actual_score_column_name"] = "_atlas_actual_score"
+        features = kwargs["features"] or {}
+        tags = kwargs["tags"] or {}
+        if features.keys() & tags.keys():
+            raise TelemetryError("feature and tag names must be distinct")
+        record.update(features)
+        record.update(tags)
+        if features:
+            schema_kwargs["feature_column_names"] = list(features)
+        if tags:
+            schema_kwargs["tag_column_names"] = list(tags)
+        frame = pandas.DataFrame([record])
+        schema = types.Schema(**schema_kwargs)
         response = self.ml.log(
             space_id=kwargs["space_id"],
             model_name=kwargs["model_name"],
             model_type=getattr(types.ModelTypes, kwargs["model_type"].upper()),
             dataframe=frame,
             schema=schema,
-            environment=types.Environments.PRODUCTION,
+            environment=getattr(types.Environments, kwargs["environment"].upper()),
             model_version=kwargs["model_version"],
+            batch_id=kwargs["batch_id"] or "",
             timeout=30.0,
         )
         return _Immediate(response)
@@ -167,7 +189,7 @@ class ArizeSink:
         features: dict[str, Any] | None = None,
         tags: dict[str, Any] | None = None,
         batch_id: str | None = None,
-        actual_only: bool = False,
+        use_batch: bool = False,
     ) -> None:
         kwargs = {
             "space_id": self.key.project_ref,
@@ -186,7 +208,7 @@ class ArizeSink:
         }
         for attempt in range(self.max_retries + 1):
             try:
-                operation = self.client.log_actual_batch if actual_only else self.client.log_stream
+                operation = self.client.log_batch_record if use_batch else self.client.log_stream
                 response = operation(**kwargs).result(timeout=35.0)
             except Exception:
                 # SDK exception strings may include request details or secrets.
@@ -214,10 +236,10 @@ class ArizeSink:
         if row.environment is not required:
             raise TelemetryError("telemetry environment mismatch")
         validate_fields(row, self.policy)
+        if row.features.keys() & row.tags.keys():
+            raise TelemetryError("feature and tag names must be distinct")
         if row.environment in {Environment.TRAINING, Environment.VALIDATION} and row.actual is None:
             raise TelemetryError("training and validation require ground truth")
-        if row.actual is not None and not bool(row.actual):
-            raise TelemetryError("send zero or false actual through log_actual")
         prediction: Any = row.prediction
         actual: Any = row.actual
         if self.model_type == "score_categorical":
@@ -239,6 +261,7 @@ class ArizeSink:
             features=dict(row.features),
             tags=dict(row.tags),
             batch_id=row.batch_id,
+            use_batch=row.actual is not None and not bool(row.actual),
         )
 
     def _send_rows(
@@ -274,6 +297,6 @@ class ArizeSink:
             timestamp=int(actual.prediction_timestamp.timestamp()),
             environment=Environment.PRODUCTION,
             actual=value,
-            actual_only=True,
+            use_batch=True,
         )
         return TelemetryOutcome(1, "sent")

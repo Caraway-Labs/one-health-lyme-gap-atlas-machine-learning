@@ -21,8 +21,10 @@ features, tags, batch ID, timeout, and Future. The
 [official SDK repository](https://github.com/Arize-ai/client_python) documents
 traditional ML streaming and batch paths. The installed 8.55.0 API calls the
 DataFrame method `ml.log`, despite an older README example using `log_batch`.
-Atlas uses bounded streaming calls (at most 1000 rows per invocation) to avoid
-implicit DataFrame column ingestion. A later batch path requires an explicit
+Atlas uses bounded streaming calls (at most 1000 rows per invocation) for
+ordinary records. A one-row `ml.log` path handles falsy actual labels with
+explicit prediction, actual, feature, and tag columns. It never discovers
+DataFrame columns implicitly. Any broader batch workflow would need its own
 schema and privacy review.
 
 `key_from_bundle` revalidates the Story #41 contract before resolving identity.
@@ -41,11 +43,14 @@ prediction and optional actual, scalar features and tags, and an optional
 categorical probability. Training and validation require a ground-truth value;
 validation also requires a batch ID. `Actual` sends a separate production
 actual with the same model, version, space, prediction ID, and prediction
-timestamp. A zero or false actual is transmitted through an explicit one-row
-DataFrame schema; `None` means unavailable. The installed v8.55 stream path
-uses a truthiness check on actuals, so a zero/false immediate actual is rejected
-and must use `log_actual`. Arize joins delayed actuals by prediction ID and model/
-space. Its [documented joiner](https://arize.com/docs/ax/machine-learning/machine-learning/concepts-ml/how-to-send-delayed-actuals)
+timestamp. `None` alone means actual unavailable. The installed v8.55 stream
+path uses a truthiness check on actuals. For training, validation, or a delayed
+production actual with value `0` or `False`, Atlas uses the same explicit
+one-row DataFrame schema; the SDK's validation and Arrow encoding retain the
+falsy value. Validation retains its batch ID, and the delayed-actual row has
+no prediction or unapproved feature/tag columns. Production predictions with
+no actual continue through streaming. Arize joins delayed actuals by prediction
+ID and model/space. Its [documented joiner](https://arize.com/docs/ax/machine-learning/machine-learning/concepts-ml/how-to-send-delayed-actuals)
 runs daily with a default 14-day lookback; a later label may require an
 account-specific extension. An actual timestamp is retained for Atlas
 validation but `log_stream` has no separate actual-time field.
@@ -79,7 +84,7 @@ and 35-second Future wait, and by default performs **no additional retry**.
 Optional Atlas retries (maximum three) apply only after explicit HTTP 429 or
 500/502/503/504 responses, with stable prediction IDs and bounded backoff.
 Ambiguous exceptions are never retried because delivery may have occurred.
-The DataFrame actual path raises SDK errors for non-2xx responses; Atlas treats
+The DataFrame path raises SDK errors for non-2xx responses; Atlas treats
 these as visible failures without another automatic retry.
 Arize may perform transport-level retries internally; an HTTP acceptance is
 transport proof, not evidence that monitoring or actual joins have completed.
