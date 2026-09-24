@@ -1,6 +1,6 @@
 # 0002: Traditional ML observability boundary
 
-Status: Proposed
+Status: Accepted
 Date: 2026-09-24
 Decision owner: Atlas ML product and engineering leads
 
@@ -15,7 +15,7 @@ Atlas target, source row set, feature list, label maturity or monitoring rule.
 
 ## Decision
 
-Propose a single `observability` package in the ML repository. Core model
+Use a single `observability` package in the ML repository. Core model
 code depends on Atlas-owned telemetry values and an `ObservabilitySink`;
 Arize SDK types and credentials remain inside the adapter. Snowflake remains
 the governed data, execution, experiment and registry system of record.
@@ -57,9 +57,8 @@ telemetry. Successful transport alone is not evaluation or release evidence.
 
 ## Rollout, observability, and rollback
 
-Review this proposal and the Story #42 PR before merge. The integration stays
-optional and performs no automatic sending. After approval, enable per model
-only with separately reviewed telemetry field classification and a local
+The integration stays optional and performs no automatic sending. Enable per
+model only with separately reviewed telemetry field classification and a local
 Arize credential/space. To roll back, stop invoking the adapter; retain
 Snowflake canonical predictions and report telemetry as unavailable. No
 Snowflake or Arize object is created by merging this code.
