@@ -1,0 +1,34 @@
+{
+  "schema": "atlas-ml-monitoring-policy/v1",
+  "model_ref": {"id": "synthetic-demo-model", "version": "v1"},
+  "arize_mapping_ref": "fixture://arize-project-placeholder",
+  "policy_ref": "fixture://not-approved",
+  "policy_version": "v1",
+  "environments": ["production"],
+  "pre_label": [
+    {"id": "feature-drift", "category": "feature_drift", "enabled": true, "rationale": "Synthetic distribution diagnostic only", "threshold": "unresolved", "external_ref": null},
+    {"id": "prediction-drift", "category": "prediction_drift", "enabled": true, "rationale": "Synthetic output distribution diagnostic only", "threshold": "unresolved", "external_ref": null},
+    {"id": "missingness", "category": "missingness", "enabled": false, "rationale": "Needs field-specific approval", "threshold": "unresolved", "external_ref": null},
+    {"id": "schema-quality", "category": "schema_quality", "enabled": false, "rationale": "Needs input contract", "threshold": "unresolved", "external_ref": null},
+    {"id": "outlier-range", "category": "outlier_range", "enabled": false, "rationale": "Needs model-specific ranges", "threshold": "unresolved", "external_ref": null},
+    {"id": "freshness-coverage", "category": "freshness_coverage", "enabled": false, "rationale": "Needs source cadence", "threshold": "unresolved", "external_ref": null},
+    {"id": "inference-health", "category": "inference_health", "enabled": false, "rationale": "Needs inference runtime", "threshold": "unresolved", "external_ref": null},
+    {"id": "uncertainty-distribution", "category": "uncertainty_distribution", "enabled": false, "rationale": "Needs uncertainty semantics", "threshold": "unresolved", "external_ref": null}
+  ],
+  "post_label": [
+    {"id": "performance", "category": "predictive_performance", "enabled": false, "rationale": "Labels immature in this synthetic scenario", "threshold": "unresolved", "external_ref": null}
+  ],
+  "baseline_ref": "fixture://simple-baseline-v1",
+  "observation_window": {"start": "2026-01-01T00:00:00+00:00", "end": "2026-02-01T00:00:00+00:00"},
+  "reference_window": {"start": "2025-01-01T00:00:00+00:00", "end": "2025-02-01T00:00:00+00:00"},
+  "slices": [
+    {"id": "state", "dimension": "state_region", "value_ref": "fixture://state-a", "rationale": "Synthetic geography completeness check", "minimum_sample": 10, "minimum_label_coverage": 0.8, "review_ref": "fixture://slice-review", "interpretation": "descriptive_only"},
+    {"id": "rural", "dimension": "urban_rural", "value_ref": "fixture://rural", "rationale": "Synthetic completeness check", "minimum_sample": 10, "minimum_label_coverage": 0.8, "review_ref": "fixture://slice-review", "interpretation": "descriptive_only"}
+  ],
+  "evidence_requirements": {"minimum_sample": 10, "minimum_label_coverage": 0.8, "baseline_required": true},
+  "alert_semantics": {"investigation_required": true, "automatic_retraining": false, "automatic_promotion": false},
+  "owner": "synthetic-owner",
+  "review_state": "proposed",
+  "delayed_ground_truth": {"maturity_ref": "Synthetic fixture is immutable", "revision_ref": "No revisions in synthetic fixture", "eligibility_ref": "fixture://target-eligibility-unapproved", "late_label_action": "review_for_reevaluation", "missing_label_state": "unknown", "actual_update_action": "linked_by_prediction_id", "revised_label_action": "review_for_reevaluation", "history": "append_only", "evaluation_window": {"start": "2026-01-01T00:00:00+00:00", "end": "2026-02-01T00:00:00+00:00"}},
+  "retraining_review_ref": "fixture://human-review-only"
+}

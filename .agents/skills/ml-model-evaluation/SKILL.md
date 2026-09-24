@@ -14,3 +14,8 @@ Stories #30 and #41 own evaluation and lineage contracts. This entry does not
 approve a model or new target. Bind the frozen plan and protected holdout to
 the [canonical evaluation contract](../../../docs/architecture/declarative-ml-contracts-v1.md);
 stop on missing or incompatible identity.
+
+For delayed-label monitoring, use the [Story #43 policy](../../../docs/contracts/monitoring-policy-v1.md)
+to establish label eligibility and evidence sufficiency before interpreting
+metrics. Retain the frozen #30 evaluation plan and baseline; append revised
+label results as new evidence rather than replacing prior findings.
