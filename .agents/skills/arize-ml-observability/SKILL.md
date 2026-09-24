@@ -28,3 +28,9 @@ and the [integration guide](../../../docs/arize-integration.md).
 
 Stop when identity, credential scope, privacy, or labeling is ambiguous.
 Story #43 owns thresholds and monitoring policy; #44 owns CLI/MCP tooling.
+
+For Story #43 consumers, validate the Atlas-owned [monitoring policy](../../../docs/contracts/monitoring-policy-v1.md)
+against the full Story #41 bundle before interpreting Arize signals. Preserve
+telemetry failure and later recovery as separate evidence events. Pre-label
+distribution shifts initiate investigation; they do not demonstrate predictive
+degradation or trigger automatic retraining.
