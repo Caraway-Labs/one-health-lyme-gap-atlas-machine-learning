@@ -12,6 +12,7 @@ dependencies = []
 
 [project.optional-dependencies]
 dev = ["mypy>=1.14,<2", "pytest>=8.3,<9", "ruff>=0.9,<1"]
+snowflake = ["snowflake-connector-python>=3.12,<5"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/lyme_gap_atlas_ml"]

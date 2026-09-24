@@ -1,6 +1,6 @@
 # Atlas Agentic ML lifecycle v1
 
-This is an Atlas adaptation of [Aurélien Géron's ML project checklist](https://github.com/ageron/handson-ml/blob/master/ml-project-checklist.md), not a copy of its text. The order is useful, but Atlas adds public-health use limits, governed Snowflake data, point-in-time availability, geographic dependence, auditable holdout access, and human decisions. This document and `atlas-ml-lifecycle/v1` state are a workflow contract, not approval of any model or target.
+This is an Atlas adaptation of [Aurélien Géron's ML project checklist](https://github.com/ageron/handson-ml3/blob/main/ml-project-checklist.md), not a copy of its text. The order is useful, but Atlas adds public-health use limits, governed Snowflake data, point-in-time availability, geographic dependence, auditable holdout access, and human decisions. This document and `atlas-ml-lifecycle/v1` state are a workflow contract, not approval of any model or target.
 
 ## Gates and outputs
 

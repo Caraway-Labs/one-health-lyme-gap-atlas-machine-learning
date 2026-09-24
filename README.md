@@ -32,3 +32,6 @@ The [repository rules](AGENTS.md) and [structure guide](docs/repository-structur
 describe ownership, reproducibility, and intended package boundaries.
 The [shared ML skills catalog](docs/skills.md) describes the canonical
 `.agents/skills/` procedures and harness discovery boundaries.
+The [Snowflake integration guide](docs/snowflake-integration.md) covers the
+optional Python connector, live DEV context proof, CLI, Cortex Code, and
+read-only execution boundary.
