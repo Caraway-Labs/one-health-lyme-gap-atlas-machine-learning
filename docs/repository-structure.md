@@ -12,6 +12,6 @@ This guide describes where approved future work belongs. Directories are added w
 | `src/lyme_gap_atlas_ml/features/`, `models/`, `evaluation/`, `experiments/` | Testable feature, model, split/evaluation, and experiment logic. Keep transport out of these modules. |
 | `src/lyme_gap_atlas_ml/registry/`, `jobs/`, `observability/` | Future approved lifecycle, execution, and telemetry adapters. Arize calls belong behind the observability boundary. |
 | `tests/unit/`, `tests/integration/`, `tests/contract/` | Pure deterministic behavior; bounded external-system interactions; versioned interface and artifact contracts, respectively. |
-| `.agents/skills/` | Future shared task procedures for agent harnesses; Story #38 owns implementation. |
+| `.agents/skills/` | Canonical shared task procedures for agent harnesses; see [skills catalog](skills.md). |
 
-Model targets, training, Snowflake jobs/registry, Arize, lifecycle schemas, and shared skills require their own approved stories. Keep `uv`, Ruff, mypy, and pytest as the local gates shown in the README. A real integration test must identify its environment and permissions; an offline unit test must not open a Snowflake connection.
+Model targets, training, Snowflake jobs/registry, Arize, and lifecycle schemas require their own approved stories. Keep `uv`, Ruff, mypy, and pytest as the local gates shown in the README. A real integration test must identify its environment and permissions; an offline unit test must not open a Snowflake connection.

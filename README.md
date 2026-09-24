@@ -30,3 +30,5 @@ local documentation or unit-test work.
 
 The [repository rules](AGENTS.md) and [structure guide](docs/repository-structure.md)
 describe ownership, reproducibility, and intended package boundaries.
+The [shared ML skills catalog](docs/skills.md) describes the canonical
+`.agents/skills/` procedures and harness discovery boundaries.
