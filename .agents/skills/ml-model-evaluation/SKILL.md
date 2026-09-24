@@ -11,4 +11,6 @@ held-out evaluation, relevant slices, uncertainty/calibration, and missing
 evidence. Preserve negative and inconclusive findings. Stop if labels,
 target horizon, holdout integrity, or public-health meaning is unresolved.
 Stories #30 and #41 own evaluation and lineage contracts. This entry does not
-approve a model or new target.
+approve a model or new target. Bind the frozen plan and protected holdout to
+the [canonical evaluation contract](../../../docs/architecture/declarative-ml-contracts-v1.md);
+stop on missing or incompatible identity.

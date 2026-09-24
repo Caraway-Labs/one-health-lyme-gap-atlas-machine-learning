@@ -10,5 +10,6 @@ the [structure guide](../../../docs/repository-structure.md), and approved
 source contract. Identify owner, snapshot/query, geography, time range,
 target/label source, permitted use, and unknowns. Governed ingestion and
 canonical normalization belong to the data repository. Stop if source
-authorization, target meaning, or lineage is ambiguous. Story #41 owns the
-declarative contract; do not invent its schema here.
+authorization, target meaning, or lineage is ambiguous. Use the versioned
+[declarative contract](../../../docs/architecture/declarative-ml-contracts-v1.md)
+and validate the complete bundle before consuming the dataset reference.
