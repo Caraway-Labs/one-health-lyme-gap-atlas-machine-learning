@@ -17,8 +17,16 @@ uv run mypy src
 uv run pytest
 ```
 
-Snowflake access for agent-initiated work uses the installed `snow` CLI and
-the local `BVB26657_PAT` named `PROGRAMMATIC_ACCESS_TOKEN` connection. Validate
-`CURRENT_USER`, `CURRENT_ROLE`, `CURRENT_DATABASE`, and `CURRENT_WAREHOUSE`
-with a read-only query before any Snowflake action. PAT values stay local and
-are never committed.
+For agent-initiated Snowflake work, select a locally configured `snow` CLI
+connection through a task-specific environment variable, for example
+`SNOWFLAKE_CONNECTION_NAME`. Choose the least-privilege connection for the
+approved environment and operation; routine inspection uses a read-only DEV
+role. Verify `CURRENT_USER`, `CURRENT_ROLE`, `CURRENT_DATABASE`, and
+`CURRENT_WAREHOUSE` with a read-only query before any Snowflake action. The
+[data repository connection inventory](../one-health-lyme-gap-atlas-data/docs/operations/connection-inventory.md)
+defines the role mapping. Never commit or log the local connection name,
+credentials, PATs, API keys, or `.env` values. No connection is required for
+local documentation or unit-test work.
+
+The [repository rules](AGENTS.md) and [structure guide](docs/repository-structure.md)
+describe ownership, reproducibility, and intended package boundaries.
