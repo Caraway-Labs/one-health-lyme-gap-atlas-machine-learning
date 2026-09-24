@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/blob/main/docs/methodology/lifecycle-state-v1.schema.json",
+  "title": "Atlas ML lifecycle state v1",
+  "type": "object",
+  "required": ["schema", "project_id", "stages", "references", "holdout_history"],
+  "properties": {
+    "schema": {"const": "atlas-ml-lifecycle/v1"},
+    "project_id": {"type": "string", "minLength": 1},
+    "references": {"type": "object", "properties": {"dataset": {"$ref": "#/$defs/ref"}, "feature": {"$ref": "#/$defs/ref"}, "split": {"$ref": "#/$defs/ref"}, "experiment": {"$ref": "#/$defs/ref"}, "model": {"$ref": "#/$defs/ref"}}, "additionalProperties": false},
+    "stages": {"type": "object", "required": ["frame", "data", "explore", "prepare", "candidates", "validate", "communicate", "operate"], "properties": {"frame": {"$ref": "#/$defs/stage"}, "data": {"$ref": "#/$defs/stage"}, "explore": {"$ref": "#/$defs/stage"}, "prepare": {"$ref": "#/$defs/stage"}, "candidates": {"$ref": "#/$defs/stage"}, "validate": {"$ref": "#/$defs/stage"}, "communicate": {"$ref": "#/$defs/stage"}, "operate": {"$ref": "#/$defs/stage"}}, "additionalProperties": false},
+    "holdout_history": {"type": "array", "items": {"$ref": "#/$defs/holdout_event"}},
+    "assumptions": {"type": "array", "items": {"type": "string"}},
+    "limitations": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "ref": {"type": "object", "required": ["id", "version"], "properties": {"id": {"type": "string", "minLength": 1}, "version": {"type": "string", "minLength": 1}}, "additionalProperties": false},
+    "stage": {"type": "object", "required": ["status", "evidence"], "properties": {"status": {"enum": ["not_started", "in_progress", "blocked", "complete", "not_applicable"]}, "evidence": {"type": "object", "additionalProperties": {"type": "string", "minLength": 1}}, "reason": {"type": "string", "minLength": 1}, "blocker": {"type": "object", "required": ["dependency", "reason"], "properties": {"dependency": {"type": "string", "minLength": 1}, "reason": {"type": "string", "minLength": 1}}, "additionalProperties": false}, "review": {"type": "object", "properties": {"state": {"enum": ["pending", "approved", "rejected"]}, "decision_ref": {"type": "string", "minLength": 1}}, "additionalProperties": false}}, "additionalProperties": false},
+    "holdout_event": {"type": "object", "required": ["event_id", "timestamp", "actor", "purpose", "split_ref", "evaluation_plan_ref", "result_ref"], "properties": {"event_id": {"type": "string", "minLength": 1}, "timestamp": {"type": "string", "minLength": 1}, "actor": {"type": "string", "minLength": 1}, "purpose": {"enum": ["final_evaluation", "independent_audit"]}, "split_ref": {"type": "string", "minLength": 1}, "evaluation_plan_ref": {"type": "string", "minLength": 1}, "result_ref": {"type": "string", "minLength": 1}, "repeat_reason": {"type": "string", "minLength": 1}, "review_decision_ref": {"type": "string", "minLength": 1}}, "additionalProperties": false}
+  }
+}

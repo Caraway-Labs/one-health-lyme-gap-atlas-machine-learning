@@ -1,0 +1,18 @@
+{
+  "schema": "atlas-ml-lifecycle/v1",
+  "project_id": "replace-with-approved-project-id",
+  "references": {},
+  "stages": {
+    "frame": {"status": "not_started", "evidence": {}},
+    "data": {"status": "not_started", "evidence": {}},
+    "explore": {"status": "not_started", "evidence": {}},
+    "prepare": {"status": "not_started", "evidence": {}},
+    "candidates": {"status": "not_started", "evidence": {}},
+    "validate": {"status": "not_started", "evidence": {}},
+    "communicate": {"status": "not_started", "evidence": {}},
+    "operate": {"status": "not_started", "evidence": {}}
+  },
+  "holdout_history": [],
+  "assumptions": [],
+  "limitations": []
+}
