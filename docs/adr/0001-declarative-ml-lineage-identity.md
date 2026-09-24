@@ -1,6 +1,6 @@
 # 0001: Declarative ML lineage identity
 
-Status: Proposed
+Status: Accepted
 Date: 2026-09-24
 Decision owner: Atlas ML product and engineering leads
 

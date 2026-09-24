@@ -37,3 +37,5 @@ optional Python connector, live DEV context proof, CLI, Cortex Code, and
 read-only execution boundary.
 The [declarative ML contracts](docs/architecture/declarative-ml-contracts-v1.md)
 define offline model, dataset, experiment, and cross-system lineage identity.
+The [Arize integration guide](docs/arize-integration.md) describes optional,
+allowlisted traditional ML telemetry through the Atlas observability boundary.
