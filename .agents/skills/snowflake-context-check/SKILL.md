@@ -20,3 +20,7 @@ and [integration guide](../../../docs/snowflake-integration.md).
    or interactive authentication as a workaround.
 4. Record a sanitized pass/block result with the five context fields and
    scope. Context validation grants no write permission.
+
+Required inputs: owning issue, authorized operation/environment, local connection selector, and expected context fields.
+
+Expected evidence: sanitized context result, authorized scope, and PASS or BLOCKED with reason; no secret or local connection identifier.
