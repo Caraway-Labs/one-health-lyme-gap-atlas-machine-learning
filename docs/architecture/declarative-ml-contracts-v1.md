@@ -52,7 +52,7 @@ inference run and output contract to those inputs. The inference code SHA may
 differ from the model training SHA. Neither runner nor output
 persistence is implemented here.
 
-Story #39 `atlas-ml-lifecycle/v1` stays unchanged. Pass an existing lifecycle
+Story #39 uses `atlas-ml-lifecycle/v2` under [ADR 0003](../adr/0003-five-stage-lifecycle-v2.md); historical v1 artifacts stay unchanged. Pass a validated v2 lifecycle
 state as `lifecycle=` when validating a bundle. Any lifecycle references
 present must match the canonical model, dataset, feature, split, and experiment
 references. Holdout events must identify the same frozen evaluation plan.

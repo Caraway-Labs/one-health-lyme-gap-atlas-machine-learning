@@ -1,16 +1,13 @@
 {
-  "schema": "atlas-ml-lifecycle/v1",
+  "schema": "atlas-ml-lifecycle/v2",
   "project_id": "synthetic-example-only",
   "references": {"dataset": {"id": "fixture/dataset", "version": "v1"}},
   "stages": {
     "frame": {"status": "complete", "evidence": {"decision_contract": "fixture://reviewed-frame"}},
-    "data": {"status": "complete", "evidence": {"dataset_contract": "fixture://reviewed-dataset"}},
-    "explore": {"status": "blocked", "evidence": {}, "blocker": {"dependency": "fixture://profile-permission", "reason": "Synthetic profile evidence is unavailable"}},
-    "prepare": {"status": "not_started", "evidence": {}},
-    "candidates": {"status": "not_started", "evidence": {}},
-    "validate": {"status": "not_started", "evidence": {}},
-    "communicate": {"status": "not_started", "evidence": {}},
-    "operate": {"status": "not_started", "evidence": {}}
+    "data": {"status": "complete", "evidence": {"dataset_contract": "fixture://reviewed-dataset", "leakage_review": "fixture://point-in-time-and-spatial-review"}},
+    "baseline": {"status": "blocked", "evidence": {}, "blocker": {"dependency": "fixture://baseline-evidence", "reason": "Synthetic baseline evidence is unavailable"}},
+    "evaluate": {"status": "not_started", "evidence": {}},
+    "decide": {"status": "not_started", "evidence": {}}
   },
   "holdout_history": [],
   "assumptions": ["Synthetic example; references do not claim real Atlas evidence"],

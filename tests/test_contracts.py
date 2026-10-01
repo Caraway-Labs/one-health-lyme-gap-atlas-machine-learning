@@ -12,7 +12,7 @@ from lyme_gap_atlas_ml.lifecycle import validate_state
 ROOT = Path(__file__).parents[1]
 EXAMPLE = ROOT / "config/examples/synthetic-lineage-v1.json"
 SCHEMA = ROOT / "docs/architecture/declarative-ml-contracts-v1.schema.json"
-LIFECYCLE = ROOT / "docs/methodology/lifecycle-state-v1.template.json"
+LIFECYCLE = ROOT / "docs/methodology/lifecycle-state-v2.template.json"
 
 
 def example() -> dict:

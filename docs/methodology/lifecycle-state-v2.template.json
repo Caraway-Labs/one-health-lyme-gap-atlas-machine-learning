@@ -1,0 +1,15 @@
+{
+  "schema": "atlas-ml-lifecycle/v2",
+  "project_id": "replace-with-approved-project-id",
+  "references": {},
+  "stages": {
+    "frame": {"status": "not_started", "evidence": {}},
+    "data": {"status": "not_started", "evidence": {}},
+    "baseline": {"status": "not_started", "evidence": {}},
+    "evaluate": {"status": "not_started", "evidence": {}},
+    "decide": {"status": "not_started", "evidence": {}}
+  },
+  "holdout_history": [],
+  "assumptions": [],
+  "limitations": []
+}

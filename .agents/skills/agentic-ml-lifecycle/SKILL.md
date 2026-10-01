@@ -6,7 +6,7 @@ description: Validate Atlas ML lifecycle state, inspect gates, and resume bounde
 # Agentic ML lifecycle
 
 Use for lifecycle stage planning, execution or reporting. Read the owning issue,
-repository `AGENTS.md`, [Epic #36](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/issues/36), and the [v1 methodology](../../../docs/methodology/agentic-ml-lifecycle-v1.md).
+repository `AGENTS.md`, [Epic #36](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/issues/36), and the [v2 methodology](../../../docs/methodology/agentic-ml-lifecycle-v2.md).
 
 1. Load state with `lyme_gap_atlas_ml.lifecycle.load_state` or validate a parsed
    object with `validate_state`. Do not infer status from an invalid state.
@@ -23,8 +23,8 @@ repository `AGENTS.md`, [Epic #36](https://github.com/Caraway-Labs/one-health-ly
    evidence, ambiguous environment, or unapproved promotion, production write,
    retraining or public release. Report the unresolved gate and reviewer needed.
 
-The [schema](../../../docs/methodology/lifecycle-state-v1.schema.json) and
-[template](../../../docs/methodology/lifecycle-state-v1.template.json) describe
+The [schema](../../../docs/methodology/lifecycle-state-v2.schema.json) and
+[template](../../../docs/methodology/lifecycle-state-v2.template.json) describe
 the machine-readable surface. Existing stories #23–#35 own their detailed
 model-specific requirements; this skill cannot approve them.
 

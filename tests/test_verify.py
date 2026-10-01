@@ -64,10 +64,10 @@ def test_invalid_bundle_secret_fails_closed() -> None:
 def test_nested_schema_and_example_errors_have_paths(tmp_path: Path) -> None:
     root = Path(__file__).resolve().parents[1]
     schema = json.loads(
-        (root / "docs/methodology/lifecycle-state-v1.schema.json").read_text(encoding="utf-8")
+        (root / "docs/methodology/lifecycle-state-v2.schema.json").read_text(encoding="utf-8")
     )
     example = json.loads(
-        (root / "docs/methodology/lifecycle-state-v1.template.json").read_text(encoding="utf-8")
+        (root / "docs/methodology/lifecycle-state-v2.template.json").read_text(encoding="utf-8")
     )
     schema_path, example_path = tmp_path / "schema.json", tmp_path / "example.json"
     schema["properties"]["project_id"]["type"] = "bogus"
