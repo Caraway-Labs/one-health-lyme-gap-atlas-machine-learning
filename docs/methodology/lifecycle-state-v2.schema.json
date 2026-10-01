@@ -8,7 +8,7 @@
     "schema": {"const": "atlas-ml-lifecycle/v2"},
     "project_id": {"type": "string", "minLength": 1},
     "references": {"type": "object", "properties": {"dataset": {"$ref": "#/$defs/ref"}, "feature": {"$ref": "#/$defs/ref"}, "split": {"$ref": "#/$defs/ref"}, "experiment": {"$ref": "#/$defs/ref"}, "model": {"$ref": "#/$defs/ref"}}, "additionalProperties": false},
-    "stages": {"type": "object", "required": ["frame", "data", "baseline", "evaluate", "decide"], "properties": {"frame": {"$ref": "#/$defs/stage"}, "data": {"$ref": "#/$defs/stage"}, "baseline": {"$ref": "#/$defs/stage"}, "evaluate": {"$ref": "#/$defs/stage"}, "decide": {"$ref": "#/$defs/stage"}}, "additionalProperties": false},
+    "stages": {"type": "object", "required": ["frame", "data", "baseline", "evaluate", "decide"], "properties": {"frame": {"$ref": "#/$defs/stage"}, "data": {"$ref": "#/$defs/stage"}, "baseline": {"$ref": "#/$defs/stage"}, "evaluate": {"$ref": "#/$defs/stage"}, "decide": {"$ref": "#/$defs/stage", "properties": {"status": {"enum": ["not_started", "in_progress", "blocked", "complete"]}}}}, "additionalProperties": false},
     "holdout_history": {"type": "array", "items": {"$ref": "#/$defs/holdout_event"}},
     "assumptions": {"type": "array", "items": {"type": "string"}},
     "limitations": {"type": "array", "items": {"type": "string"}}

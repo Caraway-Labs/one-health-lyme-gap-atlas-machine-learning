@@ -241,3 +241,54 @@ def test_baseline_and_validation_design_are_required() -> None:
 
 def test_resume_reports_holdout_unused() -> None:
     assert resume(partial()).holdout_used is False
+
+
+def test_terminal_decide_cannot_omit_disposition_via_non_applicability() -> None:
+    state = partial()
+    state["references"].update(
+        {key: {"id": f"fixture/{key}", "version": "v1"} for key in ("split", "experiment")}
+    )
+    state["stages"]["baseline"] = {
+        "status": "complete",
+        "evidence": {
+            "baseline_comparison": "fixture://baseline",
+            "validation_design": "fixture://validation",
+        },
+    }
+    state["stages"]["evaluate"] = {
+        "status": "complete",
+        "evidence": {
+            "frozen_evaluation_plan": "fixture://plan",
+            "evaluation_result": "fixture://result",
+        },
+    }
+    state["stages"]["decide"] = {
+        "status": "not_applicable",
+        "reason": "Abandoned run",
+        "evidence": {"non_applicability": "fixture://reason"},
+        "review": {"state": "approved", "decision_ref": "fixture://review"},
+    }
+    with pytest.raises(LifecycleError, match="disposition cannot be waived"):
+        resume(state)
+    from jsonschema import Draft202012Validator
+
+    schema = json.loads((ROOT / "docs/methodology/lifecycle-state-v2.schema.json").read_text())
+    assert not Draft202012Validator(schema).is_valid(state)
+
+
+@pytest.mark.parametrize("disposition", ["PROMOTE", None, []])
+@pytest.mark.parametrize("status", ["not_started", "in_progress", "blocked", "complete"])
+def test_supplied_disposition_matches_schema_at_any_status(disposition, status) -> None:
+    state = template()
+    state["stages"]["frame"].update(
+        status=status,
+        disposition=disposition,
+        evidence={"decision_contract": "fixture://question"},
+        blocker={"dependency": "fixture://dependency", "reason": "Waiting"},
+    )
+    with pytest.raises(LifecycleError, match="invalid disposition"):
+        validate_state(state)
+    from jsonschema import Draft202012Validator
+
+    schema = json.loads((ROOT / "docs/methodology/lifecycle-state-v2.schema.json").read_text())
+    assert not Draft202012Validator(schema).is_valid(state)

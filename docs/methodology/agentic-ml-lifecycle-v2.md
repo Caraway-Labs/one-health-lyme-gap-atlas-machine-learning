@@ -35,8 +35,10 @@ from the append-only `holdout_history`; do not store a conflicting yes/no flag.
 The project/model identifier is `project_id`, with optional versioned model
 identity in `references`. A blocked stage records dependency and reason.
 Completion requires named evidence and relevant versioned references; a justified
-`not_applicable` Evaluate/Decide stage requires evidence and approved reviewer decision.
-Frame, Data and Baseline scientific prerequisites cannot be waived.
+`not_applicable` Evaluate stage requires evidence and approved reviewer decision.
+Frame, Data and Baseline scientific prerequisites cannot be waived. Decide
+cannot be not_applicable: use an explicit reviewed DEFER or BLOCKED disposition
+when ending a run without selection.
 No exception authorizes target work without Frame evidence or bypasses scientific gates.
 
 The [partial fixture](../../tests/fixtures/partial_lifecycle.json) resumes at

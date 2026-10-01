@@ -97,6 +97,13 @@ def validate_state(raw: Any) -> dict[str, Any]:
             raise LifecycleError(f"{name}: invalid review state")
         if review.get("state") in {"approved", "rejected"}:
             _text(review.get("decision_ref"), f"{name}.review.decision_ref")
+        if name == "decide" and status == "not_applicable":
+            raise LifecycleError("decide: explicit reviewed disposition cannot be waived")
+        if "disposition" in stage and (
+            not isinstance(stage["disposition"], str)
+            or stage["disposition"] not in {"SELECT", "REJECT", "DEFER", "BLOCKED"}
+        ):
+            raise LifecycleError(f"{name}: invalid disposition")
         if name in {"frame", "data", "baseline"} and status == "not_applicable":
             raise LifecycleError(f"{name}: scientific prerequisite cannot be waived")
         if status in {"complete", "not_applicable"}:
