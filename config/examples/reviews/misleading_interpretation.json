@@ -1,0 +1,10 @@
+{
+  "schema": "atlas-ml-scientific-review/v1",
+  "experiment_ref": "tests/fixtures/scientific_review_cases.json#cases/misleading_interpretation",
+  "reviewer": "synthetic-independent-reviewer-example",
+  "disposition": "FAIL",
+  "checks": {"problem_target": "PASS", "point_in_time": "PASS", "leakage": "PASS", "holdout": "PASS", "baseline": "PASS", "metrics": "PASS", "limitations": "PASS", "reproducibility": "BLOCKED", "interpretation": "FAIL"},
+  "evidence": ["tests/fixtures/scientific_review_cases.json#base", "config/examples/synthetic-lineage-v1.json", "tests/fixtures/scientific_review_cases.json#cases/misleading_interpretation"],
+  "findings": ["Synthetic fixture evidence supports neither diagnosis, individual risk nor causation.", "The existing lineage uses an illustrative git SHA. Fixture arithmetic is replayable, but a real experiment identity/evaluation is not established."],
+  "remediation": "Remove unsupported claims; retain only the scoped fixture comparison."
+}

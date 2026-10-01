@@ -9,5 +9,6 @@ Use to check a claimed result or release evidence. Read repository
 `AGENTS.md` and approved experiment contract. Check snapshot/query,
 features, split, configuration, code revision, dependencies, seeds, artifacts,
 and known nondeterminism. State what was independently reproduced versus
-inspected. Stop short of a pass claim when evidence is missing. Story #45 owns
-the full audit; Story #46 owns its CI harness.
+inspected. Stop short of a pass claim when evidence is missing. Use the focused reproducibility check and structured result in
+[ML scientific review](../ml-scientific-review/SKILL.md) (#45).
+Exhaustive audit automation is deferred; #46 owns the offline verification path.

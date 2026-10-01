@@ -64,6 +64,8 @@ def validate_repository(root: Path = ROOT) -> None:
             root / "docs/methodology/lifecycle-state-v2.template.json",
         )
     )
+    for path in sorted((root / "config/examples/reviews").glob("*.json")):
+        validate_schema_example(root / "docs/methodology/scientific-review-v1.schema.json", path)
     skills = root / ".agents/skills"
     for path in sorted(skills.glob("*/SKILL.md")):
         body = path.read_text(encoding="utf-8")

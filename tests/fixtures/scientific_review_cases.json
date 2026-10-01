@@ -1,0 +1,121 @@
+{
+  "fixture_only": true,
+  "scope": "Synthetic prediction comparison for reviewer practice only; no Atlas target/model is approved.",
+  "lineage": "config/examples/synthetic-lineage-v1.json",
+  "base": {
+    "question": "Compare two fixture prediction arrays for a synthetic binary label; equal false-positive/false-negative costs.",
+    "intended_use": "Offline reviewer practice only",
+    "cutoff": "2021-01-01",
+    "available_at": "2020-12-31",
+    "revision_policy": "Immutable synthetic fixture",
+    "cohort": [
+      "fixture-a",
+      "fixture-b",
+      "fixture-c",
+      "fixture-d"
+    ],
+    "generalization": "Later synthetic periods in the same fixture geography; no unseen-geography claim.",
+    "split": "Validation after cutoff; protected final holdout is not present or accessed.",
+    "preprocessing": "None; fixture predictions only, no learner fitting.",
+    "holdout_history": [],
+    "labels": [
+      0,
+      1,
+      1,
+      0
+    ],
+    "baseline": {
+      "predictions": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "accuracy": 0.5
+    },
+    "candidate": {
+      "predictions": [
+        0,
+        1,
+        0,
+        0
+      ],
+      "accuracy": 0.75
+    },
+    "metric": "Accuracy for the declared synthetic equal-cost comparison; no Atlas metric selection.",
+    "limitations": "Four synthetic validation rows provide no generalizable performance or clinical evidence. No confidence/calibration or health claim.",
+    "interpretation": "Fixture accuracy is 3/4 versus baseline 2/4; no diagnostic, individual-risk, causal or production claim.",
+    "reproduction": {
+      "run_id": "fixture-review-v1",
+      "command": "uv run pytest tests/test_scientific_review.py",
+      "git_sha": "1111111111111111111111111111111111111111",
+      "identity_limit": "Existing lineage SHA is an illustrative placeholder, not a resolved real git revision."
+    }
+  },
+  "cases": {
+    "leakage": {
+      "overrides": {
+        "available_at": "2021-01-02"
+      },
+      "check": "leakage",
+      "disposition": "FAIL",
+      "finding": "Feature availability is after the prediction cutoff; future information leaks into the comparison.",
+      "remediation": "Rebuild cutoff-eligible inputs and rerun baseline and evaluation."
+    },
+    "holdout_reuse": {
+      "overrides": {
+        "holdout_history": [
+          {
+            "purpose": "final_evaluation"
+          },
+          {
+            "purpose": "hyperparameter_tuning"
+          }
+        ]
+      },
+      "check": "holdout",
+      "disposition": "FAIL",
+      "finding": "Final holdout was used for hyperparameter tuning.",
+      "remediation": "Stop selection; record contamination and obtain a reviewed fresh evaluation plan."
+    },
+    "missing_baseline": {
+      "overrides": {
+        "baseline": null
+      },
+      "check": "baseline",
+      "disposition": "BLOCKED",
+      "finding": "No comparable baseline evidence was supplied.",
+      "remediation": "Provide a simple baseline evaluated under the same frozen split and metrics."
+    },
+    "irreproducible_identity": {
+      "overrides": {
+        "reproduction": {
+          "run_id": null,
+          "git_sha": null
+        }
+      },
+      "check": "reproducibility",
+      "disposition": "BLOCKED",
+      "finding": "Run and git identity are missing; the result cannot be replayed.",
+      "remediation": "Provide resolved git/config/data/run references and a replay command."
+    },
+    "misleading_interpretation": {
+      "overrides": {
+        "interpretation": "This model diagnoses Lyme disease in an individual and proves a causal exposure effect."
+      },
+      "check": "interpretation",
+      "disposition": "FAIL",
+      "finding": "Synthetic fixture evidence supports neither diagnosis, individual risk nor causation.",
+      "remediation": "Remove unsupported claims; retain only the scoped fixture comparison."
+    },
+    "undecided_target": {
+      "overrides": {
+        "question": null
+      },
+      "check": "problem_target",
+      "disposition": "NEEDS_DECISION",
+      "finding": "Question/target and intended decision are unresolved.",
+      "remediation": "Obtain the owning target/use decision before interpreting an experiment."
+    }
+  }
+}
