@@ -52,3 +52,6 @@ allowlisted traditional ML telemetry through the Atlas observability boundary.
 The [cross-signal disagreement draft](docs/contracts/cross-signal-disagreement-v1.md)
 defines a transparent baseline and evidence prerequisites without approving
 operational signal pairs, thresholds or clinical claims.
+The [ML opportunity map](docs/ml-opportunity-map-v1.md) records current
+GO / HEURISTIC / RETRIEVAL / DEFER product direction; county prediction remains
+EDA-gated and paused.
