@@ -8,6 +8,10 @@ monitoring policy. Stories #30 and #34 can consume the Atlas-owned
 slice, sufficiency, alert and delayed-label performance policy. Story #44 owns
 CLI/MCP and agent tooling.
 
+Story #44's [bounded agent-tooling spike](arize-agent-tooling-spike.md) records
+**DEFER**: the tested local evidence-inspection use case does not justify another
+tool or authentication surface. No optional CLI/MCP integration is required.
+
 ## SDK choice and identity
 
 The optional `arize` Python SDK v8 is the current traditional-ML path. The
