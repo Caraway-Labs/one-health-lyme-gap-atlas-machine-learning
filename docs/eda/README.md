@@ -6,6 +6,11 @@ and experiment conclusions. Name each record `<issue-number>-<short-topic>.md`
 [template.md](template.md). A concise negative, inconclusive, blocked or
 not-estimable finding is valuable evidence; do not manufacture a positive result.
 
+Before statistical execution, use the concise
+[analysis specification](../methodology/analysis-spec-v1.md) to state the question,
+estimand, method assumptions and stop conditions. Link it from the findings record;
+it is a planning input, not a second results store.
+
 Keep conclusions and reproduction references here, not Snowflake extracts,
 generated datasets, every exploratory chart, or notebook output dumps. Store
 transient outputs in ignored `outputs/` or `data/local/`. Common generated export
