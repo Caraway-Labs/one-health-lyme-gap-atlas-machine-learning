@@ -60,8 +60,8 @@ def validate_repository(root: Path = ROOT) -> None:
         validate_policy(load_json(path), bundle)
     validate_state(
         validate_schema_example(
-            root / "docs/methodology/lifecycle-state-v1.schema.json",
-            root / "docs/methodology/lifecycle-state-v1.template.json",
+            root / "docs/methodology/lifecycle-state-v2.schema.json",
+            root / "docs/methodology/lifecycle-state-v2.template.json",
         )
     )
     skills = root / ".agents/skills"

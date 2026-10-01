@@ -1,4 +1,4 @@
-"""Version 1 of the offline Atlas ML lifecycle gate contract."""
+"""Version 2 of the offline Atlas ML lifecycle gate contract."""
 
 from __future__ import annotations
 
@@ -7,18 +7,15 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-SCHEMA_ID = "atlas-ml-lifecycle/v1"
-STAGES = ("frame", "data", "explore", "prepare", "candidates", "validate", "communicate", "operate")
+SCHEMA_ID = "atlas-ml-lifecycle/v2"
+STAGES = ("frame", "data", "baseline", "evaluate", "decide")
 STATUSES = {"not_started", "in_progress", "blocked", "complete", "not_applicable"}
 REQUIRED_EVIDENCE = {
     "frame": ("decision_contract",),
-    "data": ("dataset_contract",),
-    "explore": ("profile",),
-    "prepare": ("feature_implementation",),
-    "candidates": ("baseline_comparison",),
-    "validate": ("frozen_evaluation_plan", "evaluation_result"),
-    "communicate": ("model_card", "review_decision"),
-    "operate": ("release_decision", "monitoring_plan"),
+    "data": ("dataset_contract", "leakage_review"),
+    "baseline": ("baseline_comparison", "validation_design"),
+    "evaluate": ("frozen_evaluation_plan", "evaluation_result"),
+    "decide": ("review_decision",),
 }
 REFERENCE_KEYS = {"dataset", "feature", "split", "experiment", "model"}
 HOLDOUT_PURPOSES = {"final_evaluation", "independent_audit"}
@@ -48,6 +45,7 @@ class ResumeDecision:
     next_stage: str | None
     allowed_action: str
     evidence: dict[str, dict[str, str]]
+    holdout_used: bool
 
 
 def validate_state(raw: Any) -> dict[str, Any]:
@@ -70,7 +68,7 @@ def validate_state(raw: Any) -> dict[str, Any]:
     _text(state.get("project_id"), "project_id")
     stages = _object(state.get("stages"), "stages")
     if set(stages) != set(STAGES):
-        raise LifecycleError("stages must contain every v1 stage exactly once")
+        raise LifecycleError("stages must contain every v2 stage exactly once")
     refs = _object(state.get("references", {}), "references")
     if set(refs) - REFERENCE_KEYS:
         raise LifecycleError("unknown reference kind")
@@ -84,7 +82,7 @@ def validate_state(raw: Any) -> dict[str, Any]:
     active = 0
     for name in STAGES:
         stage = _object(stages[name], name)
-        if set(stage) - {"status", "evidence", "reason", "blocker", "review"}:
+        if set(stage) - {"status", "evidence", "reason", "blocker", "review", "disposition"}:
             raise LifecycleError(f"{name}: unknown stage field")
         status = stage.get("status")
         if status not in STATUSES:
@@ -99,6 +97,15 @@ def validate_state(raw: Any) -> dict[str, Any]:
             raise LifecycleError(f"{name}: invalid review state")
         if review.get("state") in {"approved", "rejected"}:
             _text(review.get("decision_ref"), f"{name}.review.decision_ref")
+        if name == "decide" and status == "not_applicable":
+            raise LifecycleError("decide: explicit reviewed disposition cannot be waived")
+        if "disposition" in stage and (
+            not isinstance(stage["disposition"], str)
+            or stage["disposition"] not in {"SELECT", "REJECT", "DEFER", "BLOCKED"}
+        ):
+            raise LifecycleError(f"{name}: invalid disposition")
+        if name in {"frame", "data", "baseline"} and status == "not_applicable":
+            raise LifecycleError(f"{name}: scientific prerequisite cannot be waived")
         if status in {"complete", "not_applicable"}:
             if seen_open:
                 raise LifecycleError(f"{name}: previous stage is not terminal")
@@ -109,11 +116,7 @@ def validate_state(raw: Any) -> dict[str, Any]:
                 _text(stage.get("reason"), f"{name}.reason")
                 if review.get("state") != "approved":
                     raise LifecycleError(f"{name}: non-applicability needs approved review")
-            if (
-                name in {"communicate", "operate"}
-                and status == "complete"
-                and review.get("state") != "approved"
-            ):
+            if name == "decide" and status == "complete" and review.get("state") != "approved":
                 raise LifecycleError(f"{name}: human decision remains required")
         else:
             was_open = seen_open
@@ -130,11 +133,15 @@ def validate_state(raw: Any) -> dict[str, Any]:
                     raise LifecycleError(f"{name}: blocker needs dependency and reason")
                 _text(blocker.get("dependency"), f"{name}.blocker.dependency")
                 _text(blocker.get("reason"), f"{name}.blocker.reason")
+        if (
+            name == "decide"
+            and status == "complete"
+            and stage.get("disposition") not in {"SELECT", "REJECT", "DEFER", "BLOCKED"}
+        ):
+            raise LifecycleError("decide: explicit disposition required")
         required_refs = {
             "data": ("dataset",),
-            "prepare": ("feature",),
-            "candidates": ("split", "experiment"),
-            "validate": ("model",),
+            "baseline": ("split", "experiment"),
         }
         if status == "complete" and any(key not in refs for key in required_refs.get(name, ())):
             raise LifecycleError(f"{name}: missing versioned reference")
@@ -175,9 +182,9 @@ def validate_state(raw: Any) -> dict[str, Any]:
     if history and "split" not in refs:
         raise LifecycleError("holdout access requires versioned split reference")
     if history:
-        if any(stages[name]["status"] not in {"complete", "not_applicable"} for name in STAGES[:5]):
+        if any(stages[name]["status"] not in {"complete", "not_applicable"} for name in STAGES[:3]):
             raise LifecycleError("holdout access before prerequisite gates")
-        plan_ref = stages["validate"]["evidence"].get("frozen_evaluation_plan")
+        plan_ref = stages["evaluate"]["evidence"].get("frozen_evaluation_plan")
         if not plan_ref or any(event["evaluation_plan_ref"] != plan_ref for event in history):
             raise LifecycleError("holdout access without matching frozen evaluation plan")
     return state
@@ -202,9 +209,19 @@ def resume(state: dict[str, Any]) -> ResumeDecision:
         (s for s in STAGES if stages[s]["status"] not in {"complete", "not_applicable"}), None
     )
     if current is None:
-        return ResumeDecision(completed, None, None, None, "await_new_reviewed_scope", evidence)
+        return ResumeDecision(
+            completed,
+            None,
+            None,
+            None,
+            "await_new_reviewed_scope",
+            evidence,
+            bool(state["holdout_history"]),
+        )
     status = stages[current]["status"]
     action = "resolve_blocker" if status == "blocked" else "inspect_evidence_then_work"
     next_index = STAGES.index(current) + 1
     next_stage = STAGES[next_index] if next_index < len(STAGES) else None
-    return ResumeDecision(completed, current, status, next_stage, action, evidence)
+    return ResumeDecision(
+        completed, current, status, next_stage, action, evidence, bool(state["holdout_history"])
+    )
