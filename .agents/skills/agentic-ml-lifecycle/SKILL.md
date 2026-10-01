@@ -27,3 +27,7 @@ The [schema](../../../docs/methodology/lifecycle-state-v1.schema.json) and
 [template](../../../docs/methodology/lifecycle-state-v1.template.json) describe
 the machine-readable surface. Existing stories #23–#35 own their detailed
 model-specific requirements; this skill cannot approve them.
+
+Required inputs: owning issue, current state file, approved source/target decisions, and referenced stage evidence.
+
+Expected evidence: validated state reference, current stage, inspected evidence, blocker or next action, and required reviewer decision.

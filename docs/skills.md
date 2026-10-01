@@ -4,9 +4,17 @@
 skills surface. Read a matching entry point when its description fits the task.
 Repository and workspace `AGENTS.md`, the governance baseline, accepted ADRs,
 and approved contracts remain authoritative. A skill is a procedure, not new
-permission or scientific policy. Story #38 establishes this catalog.
+permission or scientific policy. Story #38 establishes the four essential entry points below.
 
-## Catalog
+## Essential starting set
+
+Start with `snowflake-context-check`, `agentic-ml-lifecycle`, `ml-experiment`, and
+`ml-scientific-review`. Open only the skill needed for the current task.
+The auxiliary entries below remain available for existing callers.
+Add no further skill unless an active story demonstrates repeated workflow value
+that `AGENTS.md` or an existing skill cannot handle cleanly.
+
+## Existing entries
 
 | Skill | Trigger |
 | --- | --- |
@@ -25,17 +33,10 @@ they have a current use.
 
 ## Maintenance
 
-- Use lowercase `kebab-case` names matching the directory and frontmatter.
-  Keep names stable. The Git revision versions a skill. Record breaking
-  workflow changes in the owning issue and review affected contracts or ADRs.
-- Extend an existing skill when trigger and authority stay the same. Create a
-  new skill for a distinct recurring workflow. Review scope, safety boundaries,
-  description, and links against the owning issue.
-- Before deprecation, document the successor and migration here and in the
-  skill. Search for callers and wrappers; update them in the same review.
-- Validate frontmatter, directory/name agreement, relative links, and actual
-  discovery in available harnesses. Run repository quality gates. Discovery
-  checks do not prove future lifecycle, Snowflake, or Arize integration.
+Keep one concise canonical body per skill; reference authoritative policy and
+existing scripts/docs. Keep lowercase `kebab-case` names aligned with directory
+and frontmatter. Run `uv run python scripts/verify.py` after changes; review
+adapter links when changing a name or location.
 
 ## Harnesses
 
