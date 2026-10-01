@@ -1,6 +1,6 @@
 # 0003: Five-stage lifecycle state v2
 
-Status: Proposed
+Status: Accepted
 Date: 2026-10-01
 Decision owner: Atlas ML product and engineering leads
 
@@ -15,7 +15,11 @@ silently changing v1 shape or meaning.
 Adopt `atlas-ml-lifecycle/v2` through the existing offline validator. Keep v1
 schema/template/methodology unchanged for historical evidence. The active
 validator rejects v1; do not automatically migrate or infer approvals.
-Human review of this ADR and the #39 PR is required before adoption on main.
+Independent review cleared PR #74 at `b880d558e7526cba1e26288176bd535632eff814`.
+The user approved adoption on 2026-10-01 after being asked specifically to adopt
+v2, preserve v1, and require reviewed migration: "thumbs up, green light, all approved."
+Approval was relayed from source thread `01a0f0a7-5578-71c8-8377-44ec39025015`,
+user message `Sentinel_6331176f6cf88191acf1048f1c7a127c`.
 This supersedes only ADR 0001's requirement that active lifecycle use stay v1;
 canonical lineage identities and matching reference checks remain unchanged.
 
