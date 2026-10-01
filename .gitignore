@@ -15,6 +15,12 @@ build/
 mlruns/
 outputs/
 data/local/
+# Transient exploratory exports; explicitly required curated fixtures need review.
+*.csv
+*.parquet
+*.arrow
+*.feather
+*.xlsx
 *.joblib
 *.pkl
 *.pt

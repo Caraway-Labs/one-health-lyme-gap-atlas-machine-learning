@@ -19,3 +19,27 @@ Use an environment/config-selected, least-privilege Snowflake CLI connection. Va
 Before declaring completion, review the diff against every issue criterion; run `uv run python scripts/verify.py` for mandatory offline contract, skill, lifecycle, hygiene, Ruff, mypy, and pytest checks, plus relevant focused checks. The underlying `uv` commands remain valid. Report files changed, architecture/methodology decisions, test evidence, Snowflake objects read or written (or none), assumptions, unresolved risks and dependencies. Distinguish local checks from live Snowflake or hosted evidence. Do not claim a lifecycle gate, scientific review, or deployment passed without its evidence.
 
 Keep task-specific procedures in versioned docs or future shared skills. See [repository structure](docs/repository-structure.md) for intended boundaries and test layers.
+
+## Durable EDA and analysis evidence
+
+For material EDA, statistical analysis, feature investigation, or ML experimentation,
+persist decision-oriented conclusions in `docs/eda/<issue-number>-<short-topic>.md`.
+Follow the [EDA guide and template](docs/eda/README.md): record the question,
+governed source/release/version, cohort/geography/time window, method/assumptions,
+findings and uncertainty, missingness/quality limits, disposition, and exact
+reproduction commands. Check in reusable SQL/code/config in the appropriate
+source location and reference it; do not depend on notebook-only state.
+
+Snowflake extracts, generated CSVs, temporary query results, notebook outputs,
+caches, and bulky exploratory plots are transient by default. Keep them in ignored
+`outputs/` or `data/local/`; do not commit them unless the story explicitly requires
+a small fixture or curated governed artifact. Never commit credentials, local
+machine paths, raw sensitive data, or uncontrolled warehouse exports. Clear notebook
+outputs before committing a reusable notebook. Keep durable findings concise.
+
+Analysis PR descriptions and final summaries must state the question, material
+conclusion and disposition, link the EDA artifact, give exact verification/replay
+commands, identify caveats/follow-ups, and state which transient outputs were not
+committed. For work without EDA/analysis, mark this artifact requirement N/A;
+normal verification still applies. This evidence supports the existing lifecycle,
+lineage and scientific review; it adds no parallel gate or release authority.
