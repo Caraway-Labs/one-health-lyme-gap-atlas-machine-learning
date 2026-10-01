@@ -1,0 +1,10 @@
+{
+  "schema": "atlas-ml-scientific-review/v1",
+  "experiment_ref": "tests/fixtures/scientific_review_cases.json#cases/irreproducible_identity",
+  "reviewer": "synthetic-independent-reviewer-example",
+  "disposition": "BLOCKED",
+  "checks": {"problem_target": "PASS", "point_in_time": "PASS", "leakage": "PASS", "holdout": "PASS", "baseline": "PASS", "metrics": "PASS", "limitations": "PASS", "reproducibility": "BLOCKED", "interpretation": "PASS"},
+  "evidence": ["tests/fixtures/scientific_review_cases.json#base", "config/examples/synthetic-lineage-v1.json", "tests/fixtures/scientific_review_cases.json#cases/irreproducible_identity"],
+  "findings": ["Run and git identity are missing; the result cannot be replayed.", "The existing lineage uses an illustrative git SHA. Fixture arithmetic is replayable, but a real experiment identity/evaluation is not established."],
+  "remediation": "Provide resolved git/config/data/run references and a replay command."
+}

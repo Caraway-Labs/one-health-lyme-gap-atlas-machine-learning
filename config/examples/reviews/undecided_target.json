@@ -1,0 +1,10 @@
+{
+  "schema": "atlas-ml-scientific-review/v1",
+  "experiment_ref": "tests/fixtures/scientific_review_cases.json#cases/undecided_target",
+  "reviewer": "synthetic-independent-reviewer-example",
+  "disposition": "NEEDS_DECISION",
+  "checks": {"problem_target": "NEEDS_DECISION", "point_in_time": "PASS", "leakage": "PASS", "holdout": "PASS", "baseline": "PASS", "metrics": "PASS", "limitations": "PASS", "reproducibility": "BLOCKED", "interpretation": "PASS"},
+  "evidence": ["tests/fixtures/scientific_review_cases.json#base", "config/examples/synthetic-lineage-v1.json", "tests/fixtures/scientific_review_cases.json#cases/undecided_target"],
+  "findings": ["Question/target and intended decision are unresolved.", "The existing lineage uses an illustrative git SHA. Fixture arithmetic is replayable, but a real experiment identity/evaluation is not established."],
+  "remediation": "Obtain the owning target/use decision before interpreting an experiment."
+}

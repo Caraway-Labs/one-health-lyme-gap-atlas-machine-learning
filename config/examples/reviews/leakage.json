@@ -1,0 +1,10 @@
+{
+  "schema": "atlas-ml-scientific-review/v1",
+  "experiment_ref": "tests/fixtures/scientific_review_cases.json#cases/leakage",
+  "reviewer": "synthetic-independent-reviewer-example",
+  "disposition": "FAIL",
+  "checks": {"problem_target": "PASS", "point_in_time": "FAIL", "leakage": "FAIL", "holdout": "PASS", "baseline": "PASS", "metrics": "PASS", "limitations": "PASS", "reproducibility": "BLOCKED", "interpretation": "PASS"},
+  "evidence": ["tests/fixtures/scientific_review_cases.json#base", "config/examples/synthetic-lineage-v1.json", "tests/fixtures/scientific_review_cases.json#cases/leakage"],
+  "findings": ["Feature availability is after the prediction cutoff; future information leaks into the comparison.", "The existing lineage uses an illustrative git SHA. Fixture arithmetic is replayable, but a real experiment identity/evaluation is not established."],
+  "remediation": "Rebuild cutoff-eligible inputs and rerun baseline and evaluation."
+}

@@ -1,0 +1,10 @@
+{
+  "schema": "atlas-ml-scientific-review/v1",
+  "experiment_ref": "tests/fixtures/scientific_review_cases.json#base",
+  "reviewer": "synthetic-independent-reviewer-example",
+  "disposition": "BLOCKED",
+  "checks": {"problem_target": "PASS", "point_in_time": "PASS", "leakage": "PASS", "holdout": "PASS", "baseline": "PASS", "metrics": "PASS", "limitations": "PASS", "reproducibility": "BLOCKED", "interpretation": "PASS"},
+  "evidence": ["tests/fixtures/scientific_review_cases.json#base", "config/examples/synthetic-lineage-v1.json"],
+  "findings": ["The existing lineage uses an illustrative git SHA. Fixture arithmetic is replayable, but a real experiment identity/evaluation is not established."],
+  "remediation": "For a real experiment, supply resolved git/config/data/run and evaluation artifacts; do not turn fixture evidence into model approval."
+}
