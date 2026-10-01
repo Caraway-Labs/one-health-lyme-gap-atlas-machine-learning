@@ -39,6 +39,10 @@ Missing, suppressed, unknown, stale, duplicate, incomparable or insufficient
 reference evidence yields **“Insufficient evidence to compare”**, with reason
 and source references. Residual/score/flag must be absent, never zero or true.
 Missingness itself may be summarized separately; it is not disagreement evidence.
+Transform-domain errors and nonfinite transformed values, differences, residuals
+or scores also yield insufficient evidence with absent residual/score/flag.
+Validate each arithmetic step before classification; NaN comparisons must never
+fall through to NO_FLAG (for example, a log transform applied to zero).
 Missing approved configuration stops execution with NEEDS_DECISION; it must not
 be silently replaced by library defaults or fitted from inspected candidate flags.
 
@@ -83,6 +87,7 @@ Contract cases for a later implementation (fictional arithmetic, not analysis):
 | --- | --- |
 | Missing A or B, incompatible period/unit, duplicate key, unknown state | Insufficient evidence; no score/flag |
 | Reference below approved minimum, spread zero/nonfinite | Insufficient evidence; no score/flag |
+| Transform outside its domain (for example log of zero), or any nonfinite transformed value/difference/residual/score | Insufficient evidence; absent residual/score/flag, never NO_FLAG |
 | Pair/transform/reference/threshold approval absent | Stop NEEDS_DECISION; no defaults |
 | Approved fixture reference differences `[-1, 0, 1]`, candidate `d=4`, test-only `tau=3` | Center 0, spread 1, residual 4, score 4; review flag |
 | Same fictional fixture, candidate `d=3` | Score equals threshold; no flag |
