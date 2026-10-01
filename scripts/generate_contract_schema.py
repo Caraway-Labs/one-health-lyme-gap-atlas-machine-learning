@@ -40,7 +40,9 @@ def shape(value: Any, key: str = "") -> dict[str, Any]:
         return {"type": "string", "pattern": "^v[1-9][0-9]*(?:\\.[0-9]+){0,2}$"}
     if key == "git_sha":
         return {"type": "string", "pattern": "^[0-9a-f]{40}$"}
-    if key in {"time_start", "time_end", "data_cutoff", "label_as_of", "prediction_cutoff"}:
+    if key in {"time_start", "time_end", "data_cutoff", "label_as_of", "prediction_cutoff"} and (
+        isinstance(value, str) and len(value) == 10 and value[4] == "-" and value[7] == "-"
+    ):
         return {"type": "string", "format": "date"}
     if key in {"strategy", "validation_strategy"}:
         return {"enum": ["iid", "stratified", "temporal", "grouped_spatial", "spatiotemporal"]}

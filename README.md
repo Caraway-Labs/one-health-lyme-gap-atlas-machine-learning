@@ -19,7 +19,9 @@ uv run pytest
 
 Run all mandatory offline checks with `uv run python scripts/verify.py` after
 `uv sync --extra dev`. It prints a JSON status line per check and returns
-nonzero on failure. CI runs this same credential-free path. Configuration,
+nonzero on failure. CI runs this same credential-free path. The mandatory path
+excludes live integration tests and clears their opt-in flags even if inherited
+from the shell. Configuration,
 skills, lifecycle, and contract changes are validated there alongside Ruff,
 mypy, and pytest. Live proofs require an approved DEV context and a separate
 `--integration snowflake` or `--integration arize` invocation with the matching

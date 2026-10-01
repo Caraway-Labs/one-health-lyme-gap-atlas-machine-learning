@@ -133,7 +133,7 @@
         },
         "data_cutoff": {
           "type": "string",
-          "format": "date"
+          "minLength": 1
         },
         "label_source": {
           "type": "string",

@@ -10,6 +10,9 @@ import subprocess
 import sys
 from pathlib import Path
 
+from jsonschema import Draft202012Validator, FormatChecker
+from jsonschema.exceptions import SchemaError
+
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
@@ -30,20 +33,37 @@ def load_json(path: Path) -> object:
     return json.loads(path.read_text(encoding="utf-8"), object_pairs_hook=unique)
 
 
+def validate_schema_example(schema_path: Path, example_path: Path) -> object:
+    schema = load_json(schema_path)
+    try:
+        Draft202012Validator.check_schema(schema)
+    except SchemaError as error:
+        location = "/".join(map(str, error.path)) or "root"
+        raise ValueError(f"{schema_path}: invalid schema at {location}: {error.message}") from error
+    example = load_json(example_path)
+    validator = Draft202012Validator(schema, format_checker=FormatChecker())
+    error = next(validator.iter_errors(example), None)
+    if error is not None:
+        location = "/".join(map(str, error.path)) or "root"
+        raise ValueError(f"{example_path}: invalid at {location}: {error.message}") from error
+    return example
+
+
 def validate_repository(root: Path = ROOT) -> None:
-    schema = load_json(root / "docs/architecture/declarative-ml-contracts-v1.schema.json")
-    if (
-        not isinstance(schema, dict)
-        or schema.get("$schema") != "https://json-schema.org/draft/2020-12/schema"
-    ):
-        raise ValueError("declarative contract schema: expected JSON Schema draft 2020-12")
-    lifecycle_schema = load_json(root / "docs/methodology/lifecycle-state-v1.schema.json")
-    if not isinstance(lifecycle_schema, dict) or not lifecycle_schema.get("properties"):
-        raise ValueError("lifecycle schema: missing properties")
-    bundle = validate_bundle(load_json(root / "config/examples/synthetic-lineage-v1.json"))
+    bundle = validate_bundle(
+        validate_schema_example(
+            root / "docs/architecture/declarative-ml-contracts-v1.schema.json",
+            root / "config/examples/synthetic-lineage-v1.json",
+        )
+    )
     for path in sorted((root / "config/examples/monitoring").glob("*.json")):
         validate_policy(load_json(path), bundle)
-    validate_state(load_json(root / "docs/methodology/lifecycle-state-v1.template.json"))
+    validate_state(
+        validate_schema_example(
+            root / "docs/methodology/lifecycle-state-v1.schema.json",
+            root / "docs/methodology/lifecycle-state-v1.template.json",
+        )
+    )
     skills = root / ".agents/skills"
     for path in sorted(skills.glob("*/SKILL.md")):
         body = path.read_text(encoding="utf-8")
@@ -73,9 +93,13 @@ def validate_repository(root: Path = ROOT) -> None:
             raise ValueError(f"tracked secret-like file: {name}")
 
 
-def run(label: str, args: list[str]) -> bool:
+def run(label: str, args: list[str], *, offline: bool = False) -> bool:
     print(json.dumps({"check": label, "status": "start"}), flush=True)
-    result = subprocess.run(args, cwd=ROOT, check=False)
+    environment = os.environ.copy()
+    if offline:
+        environment.pop("ATLAS_RUN_ARIZE_DEV_TEST", None)
+        environment.pop("ATLAS_RUN_SNOWFLAKE_DEV_TEST", None)
+    result = subprocess.run(args, cwd=ROOT, env=environment, check=False)
     print(
         json.dumps(
             {
@@ -130,9 +154,19 @@ def main() -> int:
         ("ruff", ["uv", "run", "ruff", "check", "."]),
         ("format", ["uv", "run", "ruff", "format", "--check", "."]),
         ("mypy", ["uv", "run", "mypy", "src"]),
-        ("pytest", ["uv", "run", "pytest", "-ra"]),
+        (
+            "pytest",
+            [
+                "uv",
+                "run",
+                "pytest",
+                "-ra",
+                "--ignore=tests/test_arize_dev_integration.py",
+                "--ignore=tests/test_snowflake_dev_integration.py",
+            ],
+        ),
     ]
-    results = [run(label, args) for label, args in checks]
+    results = [run(label, args, offline=True) for label, args in checks]
     return 0 if all(results) else 1
 
 
