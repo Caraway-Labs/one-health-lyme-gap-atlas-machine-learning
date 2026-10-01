@@ -49,3 +49,6 @@ The [declarative ML contracts](docs/architecture/declarative-ml-contracts-v1.md)
 define offline model, dataset, experiment, and cross-system lineage identity.
 The [Arize integration guide](docs/arize-integration.md) describes optional,
 allowlisted traditional ML telemetry through the Atlas observability boundary.
+The [cross-signal disagreement draft](docs/contracts/cross-signal-disagreement-v1.md)
+defines a transparent baseline and evidence prerequisites without approving
+operational signal pairs, thresholds or clinical claims.
