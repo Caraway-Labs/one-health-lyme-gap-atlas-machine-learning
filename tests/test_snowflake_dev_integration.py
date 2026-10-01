@@ -12,6 +12,7 @@ from lyme_gap_atlas_ml.snowflake import (
 from lyme_gap_atlas_ml.snowflake.connector import (
     ConnectorContextReader,
     open_local_connection,
+    read_dev_county_sample,
 )
 
 
@@ -24,7 +25,7 @@ def test_live_dev_opt_in_gate() -> None:
     assert not live_dev_enabled({"ATLAS_RUN_SNOWFLAKE_DEV_TEST": "0"})
 
 
-def test_dev_context_read_only() -> None:
+def test_dev_context_and_dataset_read_only() -> None:
     if not live_dev_enabled(dict(os.environ)):
         pytest.skip("Set ATLAS_RUN_SNOWFLAKE_DEV_TEST=1 for approved DEV context proof")
     name = connection_name_from_environment()
@@ -43,8 +44,15 @@ def test_dev_context_read_only() -> None:
         schema=os.environ["ATLAS_EXPECTED_SNOWFLAKE_DEV_SCHEMA"],
         warehouse=os.environ["ATLAS_EXPECTED_SNOWFLAKE_DEV_WAREHOUSE"],
     )
-    if not expected.role.upper().startswith("OH_LYME_DEV_"):
-        pytest.fail("Opt-in test requires an expected DEV role")
+    if (
+        expected.role.upper() != "OH_LYME_DEV_READ"
+        or expected.database.upper() != "ONE_HEALTH_LYME_GAP_ATLAS_DEV"
+    ):
+        pytest.fail("Opt-in dataset proof requires the approved DEV read role/database")
     with open_local_connection(name) as connection:
         actual = check_context(ConnectorContextReader(connection), expected)
-    print(f"DEV Snowflake context: {actual}")
+        print(f"DEV Snowflake context: {actual}")
+        rows = read_dev_county_sample(connection, expected)
+    assert rows, "Approved DEV view returned no representative sample"
+    assert len(rows) <= 10
+    print(f"Governed DEV sample rows: {len(rows)}; release: {rows[0][11]}")

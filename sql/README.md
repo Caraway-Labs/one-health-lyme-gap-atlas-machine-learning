@@ -13,5 +13,7 @@ untrusted strings. Review DEV versus PROD selection before execution. An SQL
 file is never itself authorization to write.
 
 The context query lives in Python as `snowflake.context.CONTEXT_SQL` because
-the CLI equivalent is a single read-only statement documented in
-`docs/snowflake-integration.md`; no dataset SQL is approved by Story #40.
+its CLI equivalent is one read-only statement in the integration guide.
+ML #40's `datasets/dev_county_sample.sql` is the fixed DEV dataset smoke query;
+Data #513 owns the underlying governed view and read grant. This proves access,
+not target approval or scientific suitability for model training.
