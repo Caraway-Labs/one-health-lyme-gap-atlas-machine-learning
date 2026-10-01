@@ -21,12 +21,14 @@ class ConnectorContextReader:
         return row
 
 
-def open_local_connection(connection_name: str) -> Any:
+def open_local_connection(connection_name: str, *, schema: str | None = None) -> Any:
     """Open an already configured local connection; callers must close it."""
     try:
         connector = import_module("snowflake.connector")
     except ImportError as error:
         raise RuntimeError("Install the optional snowflake dependency group") from error
+    if schema is not None:
+        return connector.connect(connection_name=connection_name, schema=schema)
     return connector.connect(connection_name=connection_name)
 
 

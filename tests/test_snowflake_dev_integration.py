@@ -49,7 +49,7 @@ def test_dev_context_and_dataset_read_only() -> None:
         or expected.database.upper() != "ONE_HEALTH_LYME_GAP_ATLAS_DEV"
     ):
         pytest.fail("Opt-in dataset proof requires the approved DEV read role/database")
-    with open_local_connection(name) as connection:
+    with open_local_connection(name, schema=expected.schema) as connection:
         actual = check_context(ConnectorContextReader(connection), expected)
         print(f"DEV Snowflake context: {actual}")
         rows = read_dev_county_sample(connection, expected)

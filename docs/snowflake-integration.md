@@ -77,7 +77,8 @@ experiments remain with the active model/data contracts.
 
 Normal `uv run pytest` uses fake sessions and skips the live test. A reviewer
 may opt into the context query and fixed DEV sample above using an approved local
-connection and expected context:
+connection and expected context. The smoke test passes the approved schema
+as a session-only connector option; it never edits local connection files:
 
 ```powershell
 $env:ATLAS_RUN_SNOWFLAKE_DEV_TEST = '1'
@@ -98,3 +99,18 @@ their opt-in flags. A skipped live test does not satisfy the live-proof criterio
 Cortex/CoCo, Snowflake ML Jobs, Experiments, Registry and Feature Store are
 explicitly deferred. No separate experiment identity or registry is created;
 #26/#41 remain their owners when a current model needs those surfaces.
+
+## Recorded DEV proof (2026-10-01)
+
+The opt-in Python proof passed: **2 tests passed**, fixed sample **3 rows**,
+release `governed-2026-09-17-unknown-coverage`. Context was user
+`MATTHEWCARAWAY`, role `OH_LYME_DEV_READ`, database
+`ONE_HEALTH_LYME_GAP_ATLAS_DEV`, schema `PRESENTATION`, warehouse
+`OH_LYME_DEV_INGEST_XS_WH`. The existing PAT connection had no default schema;
+the connector selected `PRESENTATION` for this session only.
+The CLI context check independently matched these five fields before the test.
+The only dataset object read was
+`ONE_HEALTH_LYME_GAP_ATLAS_DEV.PRESENTATION.CURRENT_COUNTY_OBSERVATIONS_V`.
+No object write, grant, credential creation, persistent configuration change,
+training, telemetry export, or deployment occurred. Raw sample values were not
+printed. This is live DEV access evidence, not scientific review or target approval.

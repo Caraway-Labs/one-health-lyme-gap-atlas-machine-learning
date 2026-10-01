@@ -84,3 +84,22 @@ def test_unsafe_expected_context_blocks_all_queries(role: str, database: str) ->
 def test_unexpected_row_overflow_fails() -> None:
     with pytest.raises(ContextError, match="row bound"):
         read_dev_county_sample(FakeConnection([(None,)] * 11), EXPECTED)
+
+
+def test_schema_selection_is_session_only(monkeypatch: pytest.MonkeyPatch) -> None:
+    from lyme_gap_atlas_ml.snowflake import connector
+
+    calls = []
+
+    class FakeConnector:
+        def connect(self, **kwargs: object) -> object:
+            calls.append(kwargs)
+            return object()
+
+    monkeypatch.setattr(connector, "import_module", lambda _name: FakeConnector())
+    connector.open_local_connection("fixture-selector")
+    connector.open_local_connection("fixture-selector", schema="PRESENTATION")
+    assert calls == [
+        {"connection_name": "fixture-selector"},
+        {"connection_name": "fixture-selector", "schema": "PRESENTATION"},
+    ]
