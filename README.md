@@ -17,6 +17,16 @@ uv run mypy src
 uv run pytest
 ```
 
+Run all mandatory offline checks with `uv run python scripts/verify.py` after
+`uv sync --extra dev`. It prints a JSON status line per check and returns
+nonzero on failure. CI runs this same credential-free path. The mandatory path
+excludes live integration tests and clears their opt-in flags even if inherited
+from the shell. Configuration,
+skills, lifecycle, and contract changes are validated there alongside Ruff,
+mypy, and pytest. Live proofs require an approved DEV context and a separate
+`--integration snowflake` or `--integration arize` invocation with the matching
+`ATLAS_RUN_*_DEV_TEST=1` flag and local settings in the integration guides.
+
 For agent-initiated Snowflake work, select a locally configured `snow` CLI
 connection through a task-specific environment variable, for example
 `SNOWFLAKE_CONNECTION_NAME`. Choose the least-privilege connection for the
