@@ -33,8 +33,8 @@ connection. `ConnectorContextReader` executes only the context query;
 validation are independently replaceable with fakes. Connection construction
 stays out of ML feature, experiment, and evaluation logic. Snowpark and
 `snowflake-ml-python` are deferred until executable Snowflake ML work requires
-them; this story does not implement ML datasets, jobs, experiments, registry,
-or Feature Store.
+them; this story adds only the bounded dataset read below, not jobs, experiments,
+registry, or Feature Store.
 
 ## Execution policy
 
@@ -47,10 +47,38 @@ role/grant administration, or mutation of data-repository governed ingestion
 and canonical schemas. Stop and escalate when a write or stronger access is
 needed. Repeatable SQL belongs under [sql/](../sql/README.md).
 
+## One governed DEV dataset path
+
+`read_dev_county_sample(connection, expected)` reuses the existing context
+check and connector. It requires `OH_LYME_DEV_READ` and
+`ONE_HEALTH_LYME_GAP_ATLAS_DEV`; mismatches block the dataset query.
+The fixed [sample SQL](../sql/datasets/dev_county_sample.sql) reads only
+`PRESENTATION.CURRENT_COUNTY_OBSERVATIONS_V`, county `01001`, in stable order,
+with `LIMIT 10`. It preserves values, missingness/status literals, period,
+release/schema, source/retrieval, method, and limitation fields without filling
+unknowns. This smoke helper runs from a repository checkout; no packaged runtime
+or new query framework is introduced.
+
+[Data #513](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-data/issues/513)
+and its [current-county contract](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-data/blob/main/docs/contracts/semantic-release/current-county-observations-v1.md)
+own the approved view and read grant. It exposes only human status and the
+2023 case/incidence floors from the current published release. It has one
+annual period, not a historical time series. Missing counts remain unknown,
+not zero; the view is not approval of a prediction target, label, experiment,
+or public-health interpretation. Do not read internal semantic/raw tables.
+
+Offline fake-session tests cover context-before-data, context mismatch,
+unsafe role/database rejection, row bounds, and unmodified source states.
+Run `uv run python scripts/verify.py`; no Snowflake dependency or access is
+needed. Dataset acquisition, lineage, splits, and scientifically justified
+experiments remain with the active model/data contracts.
+
 ## Optional live DEV proof
 
 Normal `uv run pytest` uses fake sessions and skips the live test. A reviewer
-may opt into only the read-only context query after approving a DEV connection:
+may opt into the context query and fixed DEV sample above using an approved local
+connection and expected context. The smoke test passes the approved schema
+as a session-only connector option; it never edits local connection files:
 
 ```powershell
 $env:ATLAS_RUN_SNOWFLAKE_DEV_TEST = '1'
@@ -58,24 +86,31 @@ $env:ATLAS_EXPECTED_SNOWFLAKE_DEV_ROLE = '<approved DEV role>'
 $env:ATLAS_EXPECTED_SNOWFLAKE_DEV_DATABASE = '<approved DEV database>'
 $env:ATLAS_EXPECTED_SNOWFLAKE_DEV_SCHEMA = '<approved DEV schema>'
 $env:ATLAS_EXPECTED_SNOWFLAKE_DEV_WAREHOUSE = '<approved DEV warehouse>'
-uv run --extra snowflake pytest -s tests/test_snowflake_dev_integration.py
+uv run python scripts/verify.py --integration snowflake
 ```
 
-The test reads no tables or views and mutates no objects. It prints only the
-five context fields. Omit opt-in to skip safely in CI.
+The test surfaces the five non-secret context fields before the dataset read;
+then reports only row count and governed release ID. It writes no object,
+exports no telemetry, and does not print row values or credentials. Missing
+configuration blocks live proof; never substitute a stronger connection or
+interactive authentication. Mandatory offline CI excludes live tests and clears
+their opt-in flags. A skipped live test does not satisfy the live-proof criterion.
 
-## Cortex Code and future ML work
+Cortex/CoCo, Snowflake ML Jobs, Experiments, Registry and Feature Store are
+explicitly deferred. No separate experiment identity or registry is created;
+#26/#41 remain their owners when a current model needs those surfaces.
 
-Local `cortex` is available; its help lists `exec`, `connections`, `skill`,
-`worktree`, and `--connection/-c`. `coco` was not found. Its authenticated
-Snowflake behavior and repository skill discovery were not exercised in #40.
-Use Cortex Code for approved Snowflake-native analysis/work under the same
-repository rules and lifecycle contract as Codex, Cursor, and OpenCode. A CLI
-presence check grants no Snowflake authorization.
+## Recorded DEV proof (2026-10-01)
 
-Future execution extends #26's **single** run/model identity: Git revision
-and resolved config → Atlas experiment/run identity → Snowflake execution,
-Experiment, or Job reference → Snowflake Model Registry reference. Snowflake
-ML Datasets and Feature Store references join the same run lineage only when
-approved and justified. #41 owns the broader declarative cross-system
-identity contract; #40 defines no second registry or promotion policy.
+The opt-in Python proof passed: **2 tests passed**, fixed sample **3 rows**,
+release `governed-2026-09-17-unknown-coverage`. Context was user
+`MATTHEWCARAWAY`, role `OH_LYME_DEV_READ`, database
+`ONE_HEALTH_LYME_GAP_ATLAS_DEV`, schema `PRESENTATION`, warehouse
+`OH_LYME_DEV_INGEST_XS_WH`. The existing PAT connection had no default schema;
+the connector selected `PRESENTATION` for this session only.
+The CLI context check independently matched these five fields before the test.
+The only dataset object read was
+`ONE_HEALTH_LYME_GAP_ATLAS_DEV.PRESENTATION.CURRENT_COUNTY_OBSERVATIONS_V`.
+No object write, grant, credential creation, persistent configuration change,
+training, telemetry export, or deployment occurred. Raw sample values were not
+printed. This is live DEV access evidence, not scientific review or target approval.
