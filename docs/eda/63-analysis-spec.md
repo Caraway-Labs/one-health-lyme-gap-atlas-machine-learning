@@ -61,3 +61,21 @@ no joint outcome statistics were inspected. Parent #59 and #60 apply.
   Persist reusable issue-local code/tests and findings in
   `docs/eda/63-svi-heterogeneity-by-rucc.md`; transient extracts remain ignored.
   Exact acquisition and replay commands and digests follow in that artifact.
+
+## Amendment 1 — source availability, before any joint outcome inspection
+
+The authorized DEV published pointer exposes `governed-2026-09-17-unknown-coverage`,
+not the initially planned September 18 release. The bounded September 18 query
+returned zero matching rows; this is release availability, not zero county N.
+Use the published September 17 release, bundle SHA-256
+`55192e53b0b046cfe5148c13ffe5c570f615ec233e2b5c1103247f00b1a51233`, independently
+matched to the data-owned September 17 parity report. Historical manifest at
+data commit `731cd6f5f8dcf6f26499619eac8a7c5099369906` pins SVI source version
+`86bed331-992b-4627-a992-ca4c5da7f392`, run
+`9c13471a-e763-4864-bb69-5264b4800e34`, and RUCC source version
+`84da74ac-e153-4fa1-9809-848c93eb12a7`, run
+`6fad7869-a188-47dd-972b-dee0464321b1`. Both retain the same publisher artifact
+SHA-256 as the initially planned release. Historical manifest generation time
+differs from the live release; the live release identity/digest, corroborated by
+its parity report, is the execution identity. No claim of September 18 results.
+Question, cohort, groups, exclusions and methods are unchanged.
