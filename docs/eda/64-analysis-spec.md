@@ -13,3 +13,16 @@
 - **Sensitivity:** Report per-contrast and window-union denominators and a both-years-observed subset; none repairs unbounded censoring. Compare case-definition comparability separately from total identification. No zero-fill, current-population rates, imputation, bound invention or era adjustment.
 - **Interpretation / stop:** NOT_ESTIMABLE_WITH_CURRENT_SOURCE is successful when mathematical/source evidence proves nonidentification. Inaccessible inputs are ACCESS_BLOCKED, never a fabricated cohort count or scientific proof. Describe exact source contracts needed: complete county totals or justified bounds, stable geography and category/year scope, revision identity and methodology comparability; historical availability additionally required for ML.
 - **Disposition:** PLANNED. Reproduction script/SQL and durable findings will be linked from `64-paired-county-change-feasibility.md`. No production writes, training or external messages. Decision-ready issue comment is held for independent review.
+
+## Amendment v1.1: publisher coverage fallback
+
+Before inspecting new pair results: DEV read access to CONFORMED was denied. Use
+one bounded public CDC qtbi-xd4i aggregate request for 2011–2019, grouped by
+year/FIPS/case_status with source-row counts only, no frequency statistics.
+Reuse ML #86 metadata/research references instead of repeating broad research.
+Retain response SHA-256 and ignored local snapshot for exact replay. Publisher
+current counts are not governed run-pinned counts; the inaccessible governed
+revision is an access blocker. Compare the both-case-category subset as a
+coverage sensitivity, never an exact-total or comparability repair. The
+estimand, exclusion rules, interval method and stop rule are unchanged. Earlier
+Data #110 coverage evidence has now been inspected; all analysis is exploratory.
