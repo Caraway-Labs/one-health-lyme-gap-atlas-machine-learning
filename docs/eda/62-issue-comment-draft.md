@@ -41,8 +41,8 @@ Do not turn Unknown/No records into absence or interpret SVI as causing vector
 establishment, surveillance quality or disease. No product score change.
 
 **Links:** [draft PR #88](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/pull/88),
-[artifact](62-svi-by-vector-evidence-state.md),
-[selection freeze](../methodology/62-prod-selection.md),
+[artifact](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/blob/baf3d5a65ee645c936501c1e03d5cc075de22d19/docs/eda/62-svi-by-vector-evidence-state.md),
+[selection freeze](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/blob/baf3d5a65ee645c936501c1e03d5cc075de22d19/docs/methodology/62-prod-selection.md),
 [source consumer contract](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-data/blob/main/docs/contracts/semantic-release/README.md).
 
 One explicitly authorized existing PROD consumer capture, 30-second statement
