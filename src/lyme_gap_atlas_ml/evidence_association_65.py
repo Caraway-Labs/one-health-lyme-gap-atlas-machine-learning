@@ -190,6 +190,23 @@ def _cluster_interval(clusters: Mapping[str, Sequence[Sequence[int]]]) -> dict[s
 
 def analyze_counties(rows: Sequence[Mapping[str, object]], release_id: str) -> dict[str, Any]:
     """Validate a governed projection, count exclusions and analyze once per county."""
+    return _analyze_counties(rows, release_id, aggregate=False)
+
+
+def analyze_aggregate_counties(
+    rows: Sequence[Mapping[str, object]],
+    release_id: str,
+) -> dict[str, Any]:
+    """Analyze explicit governed aggregate states; never manufacture species fields."""
+    return _analyze_counties(rows, release_id, aggregate=True)
+
+
+def _analyze_counties(
+    rows: Sequence[Mapping[str, object]],
+    release_id: str,
+    *,
+    aggregate: bool,
+) -> dict[str, Any]:
     if len(rows) != 3144:
         raise ValueError("published release must contain exactly 3144 county projection rows")
     seen: set[str] = set()
@@ -207,13 +224,20 @@ def analyze_counties(rows: Sequence[Mapping[str, object]], release_id: str) -> d
         scope = row.get("IN_CONTIGUOUS_TICK_SCOPE")
         if scope is not None and type(scope) is not bool:
             raise ValueError("scope must be explicit boolean or missing")
-        s, p, b = (
-            row.get(k) for k in ("SCAPULARIS_STATUS", "PACIFICUS_STATUS", "BURGDORFERI_STATUS")
-        )
-        v = vector_state(s, p)
+        b = row.get("BURGDORFERI_STATUS")
+        if aggregate:
+            value = row.get("VECTOR_STATUS")
+            if not _missing(value) and value not in VECTOR:
+                raise ValueError("unrecognized aggregate vector category")
+            v = None if _missing(value) else str(value)
+            states.update({f"vector_aggregate:{value}": 1})
+        else:
+            s, p = (row.get(k) for k in ("SCAPULARIS_STATUS", "PACIFICUS_STATUS"))
+            v = vector_state(s, p)
+            states.update({f"scapularis:{s}": 1, f"pacificus:{p}": 1})
         if not _missing(b) and b not in PATHOGEN:
             raise ValueError("unrecognized pathogen category")
-        states.update({f"scapularis:{s}": 1, f"pacificus:{p}": 1, f"pathogen:{b}": 1})
+        states.update({f"pathogen:{b}": 1})
         if scope is not True:
             exclusions["out_of_scope" if scope is False else "missing_scope"] += 1
             continue
@@ -250,6 +274,7 @@ def analyze_counties(rows: Sequence[Mapping[str, object]], release_id: str) -> d
     )
     return {
         "release_id": release_id,
+        "vector_representation": "governed_aggregate" if aggregate else "species_union",
         "projection_rows": len(rows),
         "unique_counties": len(seen),
         "source_observation_rows": None,

@@ -71,3 +71,17 @@ the accepted provenance and bounded aggregate findings. All files stay private
 and ignored; commit the material conclusion to the existing EDA artifact only
 after actual input is supplied. Keep the final comment, merge and #65 closure
 held for shared-capture completion and independent scientific review.
+
+## v3 retained public route completed
+
+The six-field route above remains a guarded optional input protocol. The supplied
+public bulk capture exposes governed aggregate `tick_status`, not species fields.
+The separately committed [v3 amendment](65-public-aggregate-amendment.md) registers
+its source/producer equivalence gates and one fixed detail check before outcomes.
+The public loader verifies the five retained responses and manifest, immutable
+release and canonical county universe, plus that detail response; it performs no
+network call or species reconstruction. This route passed and the actual PROD
+result is reported in the [EDA artifact](../eda/65-vector-pathogen-state-association.md),
+with its exact local replay command and digests. No additional bulk export is
+needed. Private source integrity and metadata admission are not thereby established.
+The issue comment, merge and closure remain held for independent review.
