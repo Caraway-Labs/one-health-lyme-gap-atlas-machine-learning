@@ -25,7 +25,7 @@ source lineage semantics before selecting taxon or examining outcomes.
 **Product implication:** No interpretation change; missing/unpublished evidence
 is never a biological negative. Keep issue open pending input access/review.
 
-**Links:** PR link will be inserted before final review;
+**Links:** [draft PR #88](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/pull/88);
 [artifact](62-svi-by-vector-evidence-state.md),
 [spec](../methodology/62-svi-vector-evidence-spec.md),
 [source contract](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-data/blob/main/docs/contracts/semantic-release/current-county-observations-v1.md).
