@@ -2,57 +2,56 @@
 
 ### EDA #62 result
 
-**Disposition:** NOT_ESTIMABLE for current DEV release
-`governed-2026-09-17-unknown-coverage`. Shared PROD bulk lacks species/raw-SVI
-cohort fields; a one-county detail probe confirms field availability only.
-PROD cohort/source-authority admission remains blocked, not scientifically
-NOT_ESTIMABLE; this is not a global source-absence conclusion.
+**Disposition:** MATERIAL_DIFFERENCE at the pooled descriptive point estimate;
+**no confidence-supported magnitude category** (interval spans SMALL–MATERIAL).
+This qualifier preserves the registered interpretation rule; it is not a
+confident material-difference or universal within-state claim.
 
-**Groups:** Planned source-defined ESTABLISHED / REPORTED for one compatible
-taxon. Neither IXODES_SCAPULARIS nor IXODES_PACIFICUS meets the positive-N screen.
+**Groups:** IXODES_SCAPULARIS, exact published source states Established versus
+Reported (canonical ESTABLISHED / REPORTED), September 18 governed release.
 
-**N:** ESTABLISHED / REPORTED = **0 / 0 for each taxon** in the current DEV
-atlas; 3,144 unique counties per taxon are exactly `Unknown` and excluded.
-Unknown is never a biological negative. Original source sampling-row N is unknown.
+**N:** **1,307 / 475** unique counties, all with valid overall SVI. Excluded:
+1,327 No records and 35 Unknown, never biological negatives. Native sampling-
+event/source-row N is not known from the published county projection.
 
-**Effect:** Not computed; no positive cohort, interval or real outcome statistics.
+**Effect:** Superiority **0.376949**, nominal 95% state-cluster interval
+**0.325894–0.436478** (neutral 0.5); rank-biserial **−0.246102**.
+Median SVI **0.4528 / 0.6258**, difference **−0.1730**; mean difference **−0.121032**.
+Broad shared range does not establish equivalent distributions.
 
-**Method:** Mann-Whitney planned, not executed on real outcomes. Spec registered
-at `a05e83ccce4e27f717a16dd24f2fe1105bb59dbd`; outcome-blind atlas-route amendment
-at `ccb4d0e586a19b18a9d7e2accaa0c23550525997`; directional-rank interpretation
-amended before outcomes at `df1fa7914647f35120deaac841128feb0b28c6cd`.
-Executable inference/effect/bootstrap code is tested on fictional inputs only.
-Near-0.5 superiority is not distribution equivalence; spread/overlap retained.
+**Method:** Preregistered Mann–Whitney U, tie-adjusted normal approximation and
+continuity correction; U=234,019.5. County-independence p≈1.81×10^-15 is ancillary
+and spatially unadjusted. Whole-state bootstrap: seed 62, 2,000 valid draws,
+39 states, 27 mixed states. Cross-state dependence remains a limitation.
+Taxon/input freeze committed at `114ccc0aa7f73427f9b5ead1808c0b2bd00d772b` before
+SVI outcomes; no choice was made from attractive statistics.
 
-**Sensitivity:** All Unknown counties span 51 state/DC codes. Positive-group
-concentration/within-state contrast are inapplicable at 0 / 0. Dominant-state
-exclusion, within-state descriptors and state-cluster uncertainty are implemented.
+**Sensitivity:** No state exceeds 25% of either group (max 6.89% / 9.26%).
+Among 17 registered >=10/group within-state comparisons, 7 point lower and
+10 higher; superiority range 0.3023–0.6156. Pooled association is not uniform
+within states. Point magnitude is material but interval includes small effects.
 
-**ML implication:** No evidence yet that SVI confounds/adds information relative
-to vector status. Verified shared DEV digest reproduces no positive contrast.
-PROD combined tick status/derived score cannot replace species evidence/raw SVI.
-A bounded approved immutable species/SVI cohort with matching source/release/
-vintage/metadata authority is needed before N screening and taxon selection.
-One detail record and clean visible values do not grant scientific admission.
+**ML implication:** SVI may provide contextual information associated with
+source vector state in this positive-only cohort; assess geography in later
+research. No causal confounding, independent feature value, prediction or ML
+feature-admission claim.
 
-**Product implication:** No interpretation change; Unknown is not absence.
-Keep issue open pending independent review and precise PROD cohort/provenance input.
+**Product implication:** Keep source states, vintage and geography visible.
+Do not turn Unknown/No records into absence or interpret SVI as causing vector
+establishment, surveillance quality or disease. No product score change.
 
-**Links:** [draft PR #88](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/pull/88);
+**Links:** [draft PR #88](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/pull/88),
 [artifact](62-svi-by-vector-evidence-state.md),
-[spec](../methodology/62-svi-vector-evidence-spec.md),
-[atlas source contract](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-data/blob/main/docs/contracts/semantic-release/README.md).
+[selection freeze](../methodology/62-prod-selection.md),
+[source consumer contract](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-data/blob/main/docs/contracts/semantic-release/README.md).
 
-Actual atlas aggregate screen `01c77e8a-040b-d63b-0064-2d070110986a`, served bundle
-`55192e53b0b046cfe5148c13ffe5c570f615ec233e2b5c1103247f00b1a51233`:
-SVI null/invalid-domain and malformed FIPS counts are zero for both taxa.
-The initial observation-view-only exclusion was too narrow; the accessible
-atlas route corrects that finding. No private-object retries, alternate
-restricted-source identity or atlas row exports. Historical DATA200 PROD
-receipts narrow provenance but do not prove current record/metadata authority.
-Shared DEV SHA be74f3affff2e7753f14e7b804d672fb83d21eabe8f1dc4abead873ea21e8e45;
-PROD summary SHA 5dbc0e4a66e1d702b5deafc3a430d62fe317984a6ee2e5c1759b74182f06e9ed.
-One public county-detail probe, 30 seconds / 1 MB, matched PROD September 18
-release/hash and exposes species/SVI fields; no national cohort N follows.
-No raw rowdata uploaded or broad detail crawl. Focused suites: 44 passed;
-final mandatory checks recorded in PR/artifact.
+One explicitly authorized existing PROD consumer capture, 30-second statement
+limit / <=3,145 county rows, stable pointer and exact canonical county coverage.
+Raw SHA a62e522c2da8482a20fd1ad055fe280acd15c60e49f63d6b2d331f9fef50395e;
+served bundle 038aa3f8c383a70699aff92c752f2bbcc6687a726d0c2f142c9f368841b42026.
+Cumulative 2025 tick evidence versus 2022 SVI context is not annual synchrony.
+Private native-lineage validation and ML admission are separate, not universal
+prerequisites for this governed published-projection descriptive EDA. No rowdata
+uploaded, raw/private source access, credential/grant changes, API fanout,
+production/object writes, ingestion, training or web changes. Final mandatory
+check evidence is recorded in the PR and artifact handoff.

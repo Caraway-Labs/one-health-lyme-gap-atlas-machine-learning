@@ -1,7 +1,8 @@
 """Issue-local offline statistics, not source authority or scientific admission.
 
 Call screen_taxa without outcomes, commit selection and matching input identity,
-then call analyze_selected only after independent source/provenance admission.
+then call analyze_selected after governed published-projection EDA admission.
+Private native lineage verification and ML feature admission are separate.
 No warehouse I/O, paid calls, model fitting or automatic source substitution.
 """
 

@@ -1,277 +1,218 @@
 # EDA #62: SVI by positive vector evidence state
 
-**DEV disposition: NOT_ESTIMABLE — no positive vector contrast in this release.**
-The existing `CURRENT_COUNTY_ATLAS_V` is accessible and retains SVI and tick
-fields. Its current DEV release has 3,144 `Unknown` counties for each taxon,
-with **ESTABLISHED / REPORTED = 0 / 0** for both. Unknown is not negative.
-The initial observation-view-only availability conclusion was too broad;
-the county-atlas screen below corrects it. The shared PROD bulk capture lacks
-species-specific states and raw SVI; the single public detail probe below
-confirms field availability, not cohort N or source-authority admission. This DEV result is
-not generalized to PROD or all source evidence. No taxon was selected and no
-real SVI distribution/test/effect/interval was computed.
+**Pooled point category: MATERIAL_DIFFERENCE; magnitude classification is uncertain.**
+In the governed published PROD cohort, IXODES_SCAPULARIS Established counties
+have lower overall SVI than Reported counties: median 0.4528 versus 0.6258.
+Probability of higher SVI in Established versus Reported is 0.3769 (tie-adjusted),
+with a nominal 95% state-cluster interval 0.3259–0.4365. The point rank effect
+meets the registered material threshold; the interval spans SMALL and MATERIAL,
+so **no confidence-supported magnitude category is assigned**. Within-state
+contrasts vary in direction. This is exploratory descriptive association, not
+causation, biological abundance/absence, surveillance-quality validation or ML
+feature admission.
 
-Issue: [ML #62](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/issues/62).
+Issue: [ML #62](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/issues/62),
+parent #59; [#60 analysis contract](../methodology/analysis-spec-v1.md).
 Question: Do counties with stronger source-reported vector establishment evidence
-differ in overall SVI from counties with weaker-but-positive evidence?
-The [registered specification](../methodology/62-svi-vector-evidence-spec.md)
-was committed at `a05e83ccce4e27f717a16dd24f2fe1105bb59dbd` before the live
-availability audit. Parent #59 and the #60 analysis-spec contract apply.
+differ in overall national SVI percentile from counties with weaker-but-positive
+evidence for one compatible taxon?
 
-## Evidence and scope
+## Registered question, scope and selection
 
-On 2026-10-04 UTC, the laptop CLI verified user `MATTHEWCARAWAY`, role
-`OH_LYME_DEV_READ`, database `ONE_HEALTH_LYME_GAP_ATLAS_DEV`, schema
-`PRESENTATION`, warehouse `OH_LYME_DEV_INGEST_XS_WH`. Secondary roles were NONE.
-The initial data object read was
-`ONE_HEALTH_LYME_GAP_ATLAS_DEV.PRESENTATION.CURRENT_COUNTY_OBSERVATIONS_V`.
-The audit set a session-only 60-second statement timeout and returned three
-aggregate rows under LIMIT 10. No database object was written; no internal
-SEMANTIC/RAW/STAGING/CONFORMED object or source artifact was scanned.
+The [specification](../methodology/62-svi-vector-evidence-spec.md) was committed
+before results at `a05e83ccce4e27f717a16dd24f2fe1105bb59dbd`. Source-positive
+states, candidate order, >=30/group eligibility, missingness, county weighting,
+Mann–Whitney/effect output, geographic checks and interpretation criteria were
+fixed before outcomes. The rank-neutral/unequal-spread interpretation amendment
+was committed at `df1fa7914647f35120deaac841128feb0b28c6cd`.
 
-| Published measure | Source | Observation rows | Unique county FIPS |
-| --- | --- | ---: | ---: |
-| case_count_floor_2023 | human | 3,144 | 3,144 |
-| human_status | human | 3,144 | 3,144 |
-| incidence_floor_2023 | human | 3,144 | 3,144 |
+Parent scientific review corrected an overstrict access gate. Descriptive EDA
+of the existing governed **published county projection** does not universally
+require private source-record hashes or REVIEWED #191/#193 envelopes. The
+explicit amendment at `42324b7ff1eb53bf3c660300121b7bf738ac43c6` admits this
+consumer EDA while retaining release/bundle, species mapping, source/vintage,
+canonical coverage, missingness, digest and interpretation requirements.
+Native lineage validation and ML admission remain separate, unclaimed work.
 
-Live release: `governed-2026-09-17-unknown-coverage`.
-Profile query ID: `01c77e7b-040b-dea2-0064-2d070110a36e`.
-These are **published county-measure observation counts**, not original source
-row counts, eligible vector-group N or SVI complete-case N. The same counties
-occur in three measures; 9,432 observations are not 9,432 independent counties.
-At this initial stage, raw tick/SVI source-row counts, positive-state counts, source missingness,
-geography exclusions, duplicate conflicts, and SVI outcome-state counts are all
-unknown because their inputs are not published through this route.
+The [selected input/cohort](../methodology/62-prod-selection.md) was committed
+at **`114ccc0aa7f73427f9b5ead1808c0b2bd00d772b` before any SVI result statistics**.
+The first preregistered taxon, IXODES_SCAPULARIS, has adequate positive N.
+IXODES_PACIFICUS has only 15 Reported counties and fails the N floor. Outcomes
+were not inspected to select either taxon or method.
 
-The current [Data V127 consumer contract](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-data/blob/main/docs/contracts/semantic-release/current-county-observations-v1.md)
-(Git blob `effe7315a908da1e44408a4e821e4b413ad0f40f`) closes its allowlist to
-these three human measures. It explicitly excludes cumulative tick status for
-lack of a governed start date and ACS context pending an explicit period
-contract. It grants no access to release internals or source artifacts. Thus
-absence here is **unpublished input**, never biological absence or missing SVI
-at the source. The audit does not inspect human outcome values either.
+| Actual consumer taxon field | Established | Reported | No records | Unknown |
+| --- | ---: | ---: | ---: | ---: |
+| scapularis_status | 1,307 | 475 | 1,327 | 35 |
+| pacificus_status | 97 | 15 | 2,997 | 35 |
 
-## Corrected existing-consumer-route screen
+Exact source-defined consumer labels `Established` and `Reported` correspond
+to canonical ESTABLISHED and REPORTED. They are two positive evidence states,
+not pathogen-test DETECTED/NOT_DETECTED or an absence contrast. Primary cohort:
+**1,782 unique counties**, 1,307 / 475. Excluded: 1,327 No records and 35 Unknown;
+neither is biological negative. Source-native sampling events/source-row N are
+not known from this consumer capture. Both taxon fields refer to the same 3,144
+counties and were not pooled as independent observations. Invalid/duplicate FIPS
+exclusions: zero. SVI missing/invalid/sentinel exclusions in the selected positive
+cohort: zero; complete-case N remains 1,307 / 475. Zero SVI would remain valid.
 
-Parent review identified the preexisting V072 route. The outcome-blind
-amendment was committed at `ccb4d0e586a19b18a9d7e2accaa0c23550525997` before
-executing [62-county-atlas-screen.sql](../../sql/validation/62-county-atlas-screen.sql).
-The same least-privilege DEV context was reverified, with secondary roles NONE.
-Only `CURRENT_RELEASE_V`, `CURRENT_SOURCE_METADATA_V` and
-`CURRENT_COUNTY_ATLAS_V` were read; each statement had a 60-second timeout.
-The screen returned one release row, two source rows, and two taxon/status
-aggregate rows, within LIMIT 2/3/12 respectively. No county rows were exported.
+## Governed input and provenance
 
-Observed DEV release `governed-2026-09-17-unknown-coverage`, schema `1.0.0`,
-method `semantic-1.0.0`, served bundle SHA-256
-`55192e53b0b046cfe5148c13ffe5c570f615ec233e2b5c1103247f00b1a51233`.
-This is the served release digest, not an independently recomputed artifact hash.
-Public source metadata reports CDC ArboNET tick status through 2025-12-31 and
-CDC/ATSDR SVI 2022 (2018–2022 ACS), with their interpretation notes.
+Existing [semantic-release consumer contract](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-data/blob/main/docs/contracts/semantic-release/README.md)
+and V072 expose CURRENT_COUNTY_ATLAS_V and CURRENT_RELEASE_V. The task explicitly
+authorized one bounded PROD consumer read under the existing runbook profile.
+Context verified before data: user MATTHEWCARAWAY, role OH_LYME_PROD_RUNTIME,
+database ONE_HEALTH_LYME_GAP_ATLAS_PROD, schema PRESENTATION,
+warehouse OH_LYME_PROD_INGEST_XS_WH; secondary roles NONE. No credential/config
+change, private-object retry, stronger-role fallback or national API crawl.
 
-| Taxon consumer field | Exact observed state | County rows / unique FIPS | State/DC codes | Invalid FIPS | SVI null / invalid domain | ESTABLISHED / REPORTED |
-| --- | --- | ---: | ---: | ---: | ---: | ---: |
-| scapularis_status | Unknown | 3,144 / 3,144 | 51 | 0 | 0 / 0 | 0 / 0 |
-| pacificus_status | Unknown | 3,144 / 3,144 | 51 | 0 | 0 / 0 | 0 / 0 |
+- Release: `governed-2026-09-18-unknown-coverage`, schema `1.0.0`, method `semantic-1.0.0`.
+- Served bundle SHA-256: `038aa3f8c383a70699aff92c752f2bbcc6687a726d0c2f142c9f368841b42026`.
+- Private raw capture SHA-256: `a62e522c2da8482a20fd1ad055fe280acd15c60e49f63d6b2d331f9fef50395e`.
+- Context capture SHA-256: `88c2c875bc79e6cea13c0fcc6dad5e7c5d722802066aff308762386eb78774af`.
+- Canonical sorted FIPS digest: `f2651ec6a9375476e3ff09efb4c2a699cd5690ffd3f0c982aeacad967c21c241`.
+- Capture query: `01c77eba-040b-dea2-0064-2d070110a5fa`.
+- Capture completed 2026-10-04T02:02:45Z (local file completion time,
+  not the original publisher retrieval time).
+- [Capture SQL](../../sql/datasets/eda62_prod_consumer_capture.sql), SHA-256 LF UTF-8:
+  `9edc9d737d9489d3c7f2f44ac2bc008eea413f962ebabc161ce1ae64f6eae9d2`.
 
-Screen query ID: `01c77e8a-040b-d63b-0064-2d070110986a`.
-These are consumer county-status units, not original tick sampling events,
-abundance, source-row counts or a negative group. The taxon rows refer to the
-same 3,144 counties and must not be pooled as independent units.
-Both candidate taxa fail the preregistered positive-state N screen. All 3,144
-counties per taxon are excluded as Unknown, not counted as REPORTED, NO_RECORDS
-or biological absence. Invalid/sentinel SVI exclusions at this consumer screen
-are zero. Full governed value-state/record authority is not exposed by this
-aggregate. The 51 geographic codes describe the Unknown cohort only; positive
-group concentration and within-state comparison are inapplicable with 0 / 0 N.
+All 3,144 ordered unique counties match the canonical shared county-set digest.
+Before/after pointer release/bundle match; every county row is pinned to that
+release/bundle. One county projection with <=3,145 rows, 30-second statement
+timeout; only the two published PROD views were read. Stored fields: release ID,
+bundle, FIPS/state, species states, overall SVI and burgdorferi_status for
+parent-coordinated #65 reuse. No rowdata is committed or uploaded.
 
-The [V072 contract](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-data/blob/main/docs/contracts/semantic-release/README.md)
-defines immutable release rows and the accepted DEV Tier D
-UNKNOWN_SOURCE_COVERAGE path, which contributes no tick source rows and
-renders tick statuses Unknown. This contextualizes the result; the actual
-current aggregate, not historical #276 counts, supplies the N evidence above.
+The matching [September 18 manifest](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-data/blob/main/docs/contracts/semantic-release/governed-2026-09-15-manifest.json)
+(blob `ef7e08c2919d38bdf6bdaa8ef79316b1bafd00f5`; filename is historical)
+provides the frozen source identities below. Existing
+[build](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-data/actions/runs/35328355391)
+and [publication](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-data/actions/runs/35362701191)
+receipts at build head `7b80373187b8aa665891e2f39e6bf7f8c6fb35a1`, as documented in
+[DATA200](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-data/issues/200#issuecomment-5965980365),
+bind historical manifest tuples to this served release/bundle. The served digest
+was not independently recomputed from native source artifacts. No fresh private
+record/hash/metadata-authority replay or source/ML acceptance is claimed.
 
-The merged [DATA199 audit](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-data/blob/main/docs/contracts/semantic-domain/story-199-svi-residual-audit-2026-10-03.md)
-(blob `592748e8274a67370e0d958ebe5bd9d323842a17`) confirms that the atlas route
-retains SVI. [DATA200 receipt evidence](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-data/issues/200#issuecomment-5965980365)
-binds historical build/publication receipts to PROD release September 18 and
-bundle `038aa3f8c383a70699aff92c752f2bbcc6687a726d0c2f142c9f368841b42026`,
-narrowing source-tuple-to-bundle provenance. Those contributed receipts are
-not a current per-observation record/hash/metadata authority packet and do not
-establish tick positive-state eligibility. No previously denied private object
-was retried; no alternate identity was used for restricted source access.
-
-The parent assigned one shared outcome-blind consumer capture to #63. This
-branch verified that input/digest/provenance instead of another row export.
-Value visibility, exact source/version/run/artifact/release membership,
-canonical county alignment and applicable reviewed metadata admission remain
-separate checks before any alternative real-outcome execution.
-
-## Verified shared inputs and bounded PROD detail check
-
-The [capture gate](../../scripts/eda62_capture_gate.py) verifies raw-file
-SHA-256 before parsing, stable before/after release identity, 3,144 unique FIPS,
-canonical county-set digest, and DEV county/metadata release membership.
-Only statuses, identity and field presence were screened; no SVI distributions
-or derived score statistics were computed. All row-bearing inputs remain
-private in ignored outputs; none is committed or uploaded.
-
-| Shared input | Raw-file SHA-256 | Issue-specific conclusion |
-| --- | --- | --- |
-| DEV consumer capture | be74f3affff2e7753f14e7b804d672fb83d21eabe8f1dc4abead873ea21e8e45 | September 17 release/bundle above; both taxa Unknown in all 3,144 counties; independently reproduces 0 / 0 positive-group N. |
-| PROD public scores summary | 5dbc0e4a66e1d702b5deafc3a430d62fe317984a6ee2e5c1759b74182f06e9ed | September 18 release/bundle above; no scapularis_status, pacificus_status or raw svi_percentile in its county projection. Species group N is unknown, not zero. |
-| PROD public capture manifest | 1691467c100965fb6d5beb413179d4769dc51451cfb9424c8cd1df97186d0315 | Five public responses; stable before/after release/hash; cache consistency is not a warehouse transaction or private authority proof. |
-
-Both county captures match canonical FIPS normalized SHA-256
-`f2651ec6a9375476e3ff09efb4c2a699cd5690ffd3f0c982aeacad967c21c241`.
-The PROD summary's combined `tick_status` is not species-specific evidence and
-its derived `score` components cannot replace raw overall SVI. No substitution,
-taxon selection or PROD scientific NOT_ESTIMABLE claim was made.
-
-The documented [API detail contract](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-api/blob/main/src/lyme_gap_atlas_api/models.py)
-and service expose species states and raw `svi_percentile` via
-`GET /v1/counties/{fips}`. A **single** anonymous fixed-county probe used
-`https://api.carawaylabs.com/v1/counties/01001?dataset_version=governed-2026-09-18-unknown-coverage`,
-30-second timeout and 1 MB response limit. Response length 5,117 bytes,
-SHA-256 `54b38cbd3de770f3a64b0eea6c24daf7bda5a5fd03cb5b46422605bd138942c6`.
-Its nested release/hash match the shared PROD identity. All three needed fields
-exist; their outcome values were not summarized or used for selection.
-One probe is not a representative cohort or proof of adequate species N.
-The response is retained only privately/ignored, without further county crawl.
-[Probe code](../../scripts/eda62_detail_probe.py) fixes the endpoint and bounds,
-restricts writes to this worktree's ignored outputs, and prints field/identity
-evidence without raw outcome values.
-
-Detail source metadata fields are `key`, `label`, `vintage`, `url`, `note`.
-They do not expose current source-version/run/artifact/record-hash anchors or
-reviewed metadata-state admission. The exact remaining input is a **bounded
-approved immutable cohort projection** with canonical county/state,
-taxon-specific source statuses and national overall SVI for enough counties
-to screen the registered contrast, tied to the same release/hash and applicable
-source/vintage/record/metadata authority. Existing historical receipts narrow
-that provenance requirement; they are not ignored or presented as nonexistent.
-The visible public detail fields establish a potential route, not permission
-for a broad acquisition or a replacement for the parent's coordinated packet.
-
-## Planned sources and method; not executed
-
-The governed [manifest](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-data/blob/main/docs/contracts/semantic-release/governed-2026-09-15-manifest.json)
-(Git blob `ef7e08c2919d38bdf6bdaa8ef79316b1bafd00f5`) identifies candidate
-CDC sources below. Despite its filename, this manifest declares release
-`governed-2026-09-18-unknown-coverage`, **different from the live release**.
-These identities are documentary candidate provenance, not a verified linkage
-to any analyzed live tick/SVI data. Freeze a matching release before resuming.
-
-| Source | Definition | Source-version ID | Ingestion-run ID | Artifact SHA-256 |
+| Governed source | Definition / time meaning | Source-version ID | Ingestion-run ID | Artifact SHA-256 |
 | --- | --- | --- | --- | --- |
-| CDC ArboNET cdc-ixodes-county-status-2025, through 2025-12-31 | 1 | b81c116f-d93d-4c6b-9d11-ac2477e0e242 | ec14cc85-85d6-4064-80f1-1354238b88d6 | e35a5066a7c77b2e79c50f315a18e042405ab7baa8a414a1a907792bb25d2adc |
-| CDC/ATSDR atsdr-svi-2022-county-layer, ACS 2018–2022 | 1 | b8b6bf61-c6a3-4538-b0df-1b88c61720b1 | 331f367d-9282-4936-9b49-a480db995016 | dc042342a2e5abc108af67b439ec04c86da8b61f9bdd1cf1b1e5ee0462dea7b2 |
+| CDC ArboNET cdc-ixodes-county-status-2025 | 1; cumulative through 2025-12-31 | b81c116f-d93d-4c6b-9d11-ac2477e0e242 | ec14cc85-85d6-4064-80f1-1354238b88d6 | e35a5066a7c77b2e79c50f315a18e042405ab7baa8a414a1a907792bb25d2adc |
+| CDC/ATSDR atsdr-svi-2022-county-layer | 1; national RPL_THEMES percentile; ACS 2018–2022 | b8b6bf61-c6a3-4538-b0df-1b88c61720b1 | 331f367d-9282-4936-9b49-a480db995016 | dc042342a2e5abc108af67b439ec04c86da8b61f9bdd1cf1b1e5ee0462dea7b2 |
 
-Candidate canonical contrast is ESTABLISHED versus REPORTED for one taxon;
-not DETECTED pathogen-test results, pooled taxa, UNKNOWN or NO_RECORDS.
-Exact source-to-canonical mappings and adequate unique-county N must be checked
-before taxon selection. Legacy alpha snapshot counts and fictional fixtures
-cannot supply governed eligible N. No substitution was made.
+SVI is national county rank on [0,1], not a percentage, population count,
+individual risk or raw disease burden. Cumulative 2025 tick evidence and 2022
+SVI context are not contemporaneous annual measurements. Existing source,
+normalization and native-versus-consumer lineage boundaries remain unchanged.
 
-The registered plan screens IXODES_SCAPULARIS then IXODES_PACIFICUS using only
-semantics/geography/positive-state N (>=30 each), then national overall SVI
-percentile, county-weighted. Planned Mann–Whitney concerns distributions,
-not medians alone; probability of superiority, central tendency and overlap
-accompany uncertainty. State shares, dominance exclusions and within-state
-checks address geographic concentration. There is no observed concentration
-result yet. Independent county inference is not justified by county N alone.
-The spec sets descriptive-only and NOT_ESTIMABLE limits when dependence-aware
-inference cannot be supported. No causal or individual-risk inference is allowed.
+## Method, effects and uncertainty
 
-Independent-review interpretation amendment was committed at
-`df1fa7914647f35120deaac841128feb0b28c6cd` before real outcomes. Near-0.5
-superiority supports little directional rank difference, not distribution
-equivalence. IQR/range/common-range overlap and empirical CDF distance must
-remain visible. The executable [offline pipeline](../../scripts/eda62_analysis.py)
-implements outcome-blind taxon screening, distinct complete-case exclusions,
-tie-adjusted/continuity-corrected Mann–Whitney, probability of superiority,
-rank-biserial effect, central/spread/overlap descriptors, whole-state bootstrap
-(seed 62, 2,000 draws), state shares, dominant-state exclusions and within-state
-descriptors. It does not supply source authority or scientific admission.
-The county-independence p-value is labelled ancillary and spatially unadjusted.
-Synthetic regression tests include {0.1,0.9} versus {0.4,0.6}, whose superiority
-is 0.5 despite different spreads. No such fixture replaces real cohort counts.
+Registered two-sided Mann–Whitney U, normal approximation with tie-corrected
+variance and continuity correction. The primary effect is P(SVI_Established >
+SVI_Reported) + 0.5 P(tie), county-weighted; equal distribution shapes are not
+assumed and U is not interpreted solely as a median test. Central/spread/overlap
+summaries remain separate descriptive quantities. One selected contrast; no
+method/taxon switching or outcome-based selection and no protected holdout use.
 
-## Decision and next step
+| Overall SVI percentile | Established (N=1,307) | Reported (N=475) |
+| --- | ---: | ---: |
+| Mean | 0.47061 | 0.59164 |
+| Median | 0.4528 | 0.6258 |
+| Q1 / Q3 | 0.2270 / 0.70745 | 0.3813 / 0.8177 |
+| IQR | 0.48045 | 0.4364 |
+| Range | 0.0010–0.9984 | 0.0025–1.0000 |
 
-Keep #62 open pending independent review and the precise alternative
-cohort-projection/source-authority input above.
-The current DEV release is NOT_ESTIMABLE for this positive-state contrast,
-without implying a zero effect or source-level biological absence. If an
-approved alternative cohort projection has positive groups, validate its immutable source,
-temporal/metadata and county authority and screen N before selecting a taxon.
-Commit selection and matching source/capture identity before SVI summaries.
-This work changes no shared contract/grant or source definition.
+- Superiority: **0.376949**, nominal 95% whole-state bootstrap interval
+  **[0.325894, 0.436478]**; neutral value 0.5.
+- Rank-biserial effect: **−0.246102** (monotone interval **[−0.348213, −0.127044]**).
+- Median difference Established minus Reported: **−0.1730**; mean difference
+  **−0.121032**. These central summaries have no separate uncertainty interval.
+- U_Established = **234,019.5**; nominal two-sided county-independence
+  p = **1.807×10^-15**. It is **ancillary and spatially unadjusted**, not
+  state-adjusted inferential evidence or proof of product/ML importance.
+- Empirical CDF maximum separation: **0.214954**; common-range fraction
+  **0.996897**. Broad shared range is not distribution equivalence or a density
+  overlap estimate. Unequal-spread rank-neutral regression case remains tested.
 
-ML implication: no evidence yet that SVI confounds or adds information relative
-to vector status. Product implication: no change to vector-evidence or SVI
-interpretation. No material/small/no-difference claim follows from zero positive
-group availability. DEV NOT_ESTIMABLE is a cohort result; the unresolved
-PROD cohort-projection/authority gap is a separate access/provenance dependency.
+State-cluster bootstrap uses the union of 39 contributing states, resampling
+whole states with replacement; 27 have both groups. Fixed seed 62, 2,000 draws,
+all 2,000 valid. These exceed registered >=10-state / >=5-mixed-state thresholds.
+Its percentile interval is exploratory: exchangeable state clusters are a
+working assumption and cross-state spatial correlation is not removed.
+It does not validate causal effects, survey selection or independent counties.
 
-## Reproduction and verification
+## Geographic check and interpretation
 
-From this repository, with an already selected least-privilege local connection:
+No state exceeds the registered 25% dominance trigger. Largest Established
+share: state FIPS 18 (Indiana), **6.89%**; largest Reported share: state FIPS 48
+(Texas), **9.26%**. No leave-dominant-state-out run was triggered.
+
+Registered within-state descriptors require >=10 counties in each group.
+**17 states** qualify: superiority is below 0.5 in **7** and above 0.5 in **10**,
+range **0.3023–0.6156**. For example, state FIPS 26 (Michigan) has 56 / 14
+counties and superiority 0.3023; FIPS 37 (North Carolina) has 63 / 14 and 0.6156.
+This is descriptive heterogeneity, not an adjusted common effect or a new
+family of significance tests. The pooled lower-SVI pattern is not uniform
+within states; geographic composition must remain visible in later research.
+
+Point |superiority−0.5| = **0.123051** meets the prespecified material cutoff
+0.10. The interval implies rank magnitudes **0.063522–0.174106**, spanning the
+SMALL and MATERIAL categories. The registered
+`category_supported_by_interval_and_sensitivity` flag is **false**. Report the
+point category as descriptive only; do not call the magnitude confidently
+material or infer equivalent distributions from a near-neutral rank statistic.
+
+## Decision and boundaries
+
+There is a useful pooled descriptive association in this published positive-
+evidence cohort, with uncertain magnitude and substantial within-state
+heterogeneity. No confident categorical magnitude decision is supported.
+SVI merits contextual, geography-aware investigation relative to vector status;
+this does not establish confounding causally, feature independence, incremental
+predictive value or promotion to ML. Product: retain source states and geography
+and avoid implying that lower SVI causes stronger establishment evidence,
+surveillance quality, Lyme disease or individual/local exposure risk.
+Do not generalize this positive-only cohort to unreported/Unknown counties.
+
+The earlier DEV release September 17 was genuinely NOT_ESTIMABLE (all Unknown).
+The earlier PROD summary omitted species/raw SVI; a one-county public detail
+probe established field availability only. Neither justified source-level
+absence or the private-authority prerequisite for published-projection EDA.
+Those scoped checks/digests and correction history remain in Git and the spec;
+they are superseded as the primary input by the authorized frozen PROD capture.
+
+No further source acquisition, training, score change, web change or deployment
+is proposed. Keep the draft PR and single comment ready for independent current-
+head review; no issue posting, merge or closure before that review.
+
+## Reproduction and retained evidence
+
+Reuse the private immutable local capture; do not repeat a warehouse export or
+upload rows. Context and capture must match the digests above. To screen and
+replay the already committed selection from this repository:
 
 ```powershell
-snow sql -c $env:SNOWFLAKE_CONNECTION_NAME --schema PRESENTATION --secondary-roles NONE -q 'SELECT CURRENT_USER(), CURRENT_ROLE(), CURRENT_DATABASE(), CURRENT_SCHEMA(), CURRENT_WAREHOUSE()' --format JSON
-# Compare all five fields to the authorized DEV context before continuing.
-New-Item -ItemType Directory -Force outputs | Out-Null
-snow sql -c $env:SNOWFLAKE_CONNECTION_NAME --schema PRESENTATION --secondary-roles NONE -f sql/validation/62-vector-svi-availability.sql --format JSON | Tee-Object -FilePath outputs/62-availability-cli.txt
-$audit62Raw = Get-Content outputs/62-availability-cli.txt -Raw | ConvertFrom-Json
-$audit62Raw[1] | ConvertTo-Json | Set-Content outputs/62-profile.json -Encoding utf8
-uv run python scripts/eda62_availability.py outputs/62-profile.json
-# Existing completed aggregate screen; do not repeat warehouse reads when using shared capture.
-# Its CLI output is ignored outputs/62-county-atlas-screen-cli.txt.
-$screen62Raw = Get-Content outputs/62-county-atlas-screen-cli.txt -Raw | ConvertFrom-Json
-$screen62Raw[3] | ConvertTo-Json | Set-Content outputs/62-atlas-screen.json -Encoding utf8
-uv run python scripts/eda62_availability.py outputs/62-atlas-screen.json --atlas-screen
-# Paths select the parent's existing private read-only captures; no recapture.
-uv run python scripts/eda62_capture_gate.py --dev $env:EDA62_SHARED_DEV --prod $env:EDA62_SHARED_PROD --prod-manifest $env:EDA62_SHARED_PROD_MANIFEST
-# Optional approved repeat of one public schema probe, never a cohort crawl:
-# uv run python scripts/eda62_detail_probe.py --output outputs/62-prod-01001-detail.json
-uv run pytest tests/test_eda62_analysis.py tests/test_eda62_availability.py tests/test_eda62_capture_gate.py -q
+uv run python scripts/eda62_prod_projection.py --capture $env:EDA62_PROD_CAPTURE --context $env:EDA62_PROD_CONTEXT --mode screen
+uv run python scripts/eda62_prod_projection.py --capture $env:EDA62_PROD_CAPTURE --context $env:EDA62_PROD_CONTEXT --mode analyze --selection-commit 114ccc0aa7f73427f9b5ead1808c0b2bd00d772b
+uv run pytest tests/test_eda62_analysis.py tests/test_eda62_availability.py tests/test_eda62_capture_gate.py tests/test_eda62_prod_projection.py -q
 uv run python scripts/verify.py
 ```
 
-SQL SHA-256 (LF UTF-8):
-`da8f2baad19a8f0643b8687e106d93312580e39c22500b26dd1992e1d6cef887`.
-Observed transient profile-byte SHA-256:
-`3ee71bb02a1b2492dc580973532c7ebdd9916261ca9254fd42969b0b1236e337`.
-JSON whitespace may change the latter; the table above retains substantive
-evidence. The current pointer can advance, so a fresh audit must report its own
-release and cannot silently reproduce historical identity from the pointer.
+[Projection replay](../../scripts/eda62_prod_projection.py) enforces capture
+byte digest, context, canonical FIPS, ordered unique counties, row and pointer
+release/bundle consistency, recognized species states and a committed selection
+record before outcome execution. [Core statistics](../../scripts/eda62_analysis.py)
+are pure offline code. The optional capture SQL is for explicitly authorized
+replay only, with context first and all stdout redirected to ignored private
+outputs. No connection selector/credential is committed. Analysis-result JSON
+SHA-256: `9db81fb1f10b9c77bac61a2d927b1517f5c444ca18dd3d693983c809d86bdf6c`.
+One local replay produced the identical result-byte digest; no warehouse reread.
+The four focused issue suites passed **50 tests** on explicit synthetic
+safety/math fixtures, separate from actual source cohort/result evidence.
 
-County-atlas screen SQL SHA-256 (LF UTF-8):
-`0b401630102e45e9250e0cdacda10c369e41191a329afd00d181059ba29d6220`.
-Observed screen-profile bytes SHA-256:
-`abff779d6db3bbf15112d370f3a10d66c89a0c5091fa465d98d87dbb7cb46ad0`.
-Screen SQL is for approved replay only; the existing aggregate plus the parent's
-shared capture should be reused without repeated warehouse scans.
-
-Mandatory checks passed: contracts/skills/lifecycle/hygiene, Ruff, format,
-mypy, **198 pytest tests passed** after merging latest main
-`a32a1208680c5e27acbb6657d16236ce34956124`, one
-optional Arize SDK skip. Updated focused suites pass **44 tests** covering
-view-scoped exclusions, Unknown-versus-positive N safety, publication-versus-eligibility,
-single-taxon availability, ambiguous/truncated input, mixed releases,
-duplicates, invalid counts, tie/math calculations, bootstrap reproducibility,
-insufficient independent states, no outcome-driven taxon switching, zero/sentinel
-semantics, geographic dominance and the rank-neutral unequal-spread case.
-New gate tests cover digest substitution, canonical set versus mere shape/count,
-duplicate identities, combined-versus-species semantics, changed release identity,
-single-request bounds, ignored/private output and no raw-outcome stdout.
-Test profiles are explicitly fictional and
-were never used as analysis evidence. No predictive model/experiment/holdout
-was created. Live context/profile evidence is separate from offline test proof.
-
-Transient CLI output/profile JSON, caches and virtual environment are ignored
-and intentionally not committed. No raw data export, credentials, production
-write, paid model call, training, web change, posting, merge or closure occurred.
-The [single issue comment draft](62-issue-comment-draft.md) awaits owner review.
+Verification is recorded in the PR/final exact-head handoff. Tests distinguish
+fictional fixtures from actual consumer counts and cover math/ties, geographic
+uncertainty, no outcome-driven selection, zero/sentinel handling, duplicates,
+input digests, commit/context gates and bounded/private acquisition. Current
+native source-validation/ML-admission proof is not claimed. Raw captures,
+context/profile/result JSON, caches and virtual environment remain ignored and
+uncommitted; only aggregate conclusions and reusable code/SQL are retained.
