@@ -42,10 +42,15 @@ Uses [analysis-spec-v1](analysis-spec-v1.md), parent #59 and #60.
   remove cross-state spatial correlation or ecological confounding.
 - Interpretation criteria: prespecified practical distribution effect is
   |P(A>B)+0.5P(A=B)-0.5| >=0.10 for MATERIAL_DIFFERENCE, 0.05–<0.10 for
-  SMALL_DIFFERENCE, <0.05 for NO_MEANINGFUL_DIFFERENCE, conditional on defensible
+  SMALL_DIFFERENCE, <0.05 for NO_MEANINGFUL_DIFFERENCE **in directional rank
+  superiority only**, conditional on defensible
   uncertainty and geographic robustness. These are EDA decision thresholds,
   not clinical/biological cutoffs. Wide uncertainty crossing categories or
   unstable geographic effects forbids a confident categorical conclusion.
+  Superiority near 0.5 does not establish equivalent distributions or equal
+  spreads; always retain group IQR, ranges, common-range overlap and empirical
+  CDF separation. For example {0.1,0.9} versus {0.4,0.6} has superiority 0.5
+  despite different spread. Median/mean/IQR descriptors are separate estimands.
 - Stop: absent compatible positive states/adequate N or invalid grouping means
   scientifically NOT_ESTIMABLE. Inaccessible inputs mean ACCESS_BLOCKED and N
   unknown, not zero and not proof of scientific non-estimability. No stronger
@@ -70,3 +75,21 @@ Value visibility is separate from matching immutable release/source/vintage
 authority. Do not retry denied private objects or change identities to obtain
 restricted source data. Existing public API/approved receipts may be inspected
 for provenance without using alternative raw-source access.
+
+## Offline implementation amendment — before any outcome results
+
+Independent review requested executable inference/effect/sensitivity code.
+Use a tie-corrected normal-approximation Mann–Whitney U with continuity
+correction (>=30 complete counties each); its county-independence p-value is
+explicitly ancillary, not state-adjusted inference. State-cluster bootstrap
+uses the union of states, resampling whole states with replacement, fixed seed
+62 and 2,000 draws; discard draws missing either group and report draw counts.
+Require >=10 represented states, >=5 mixed states and >=90% valid draws for a
+cluster interval. Do not treat nominal cluster confidence as removing
+cross-state correlation. Return no confident effect category when its interval
+crosses category boundaries or a dominant-state exclusion changes the point
+category (or leaves fewer than 30 counties in either group).
+Within-state >=10/group contrasts and IQR/range/CDF overlap stay descriptive.
+The near-0.5 counterexample above must remain a regression test. This amendment
+changes interpretation precision, not taxon/state selection or the estimand;
+no SVI outcome statistics have been inspected.
