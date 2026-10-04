@@ -19,6 +19,53 @@
 
 ## Execution evidence
 
+### Input-admission amendment v2 (before association result inspection)
+
+The requesting reviewer explicitly authorized this bounded retrospective route
+after independent scientific review. DATA110 permits retrospective published
+floor EDA using Confirmed + Probable numeric-FIPS frequencies; DATA113 separates
+that estimand from strict historical as-of/predictive eligibility. The governed
+profile `config/sources/cdc_x5j9_wybp.yml` at data commit
+`a62f2e32c748d0b23033c19287e7594feb5857a9` identifies the same public CDC
+`x5j9-wybp` resource, definition v2, COUNTY_OF_RESIDENCE geography,
+surveillance_year time, and deterministic `:id ASC` order.
+
+The question, 2022 year, Confirmed + Probable case scope, SVI ACS 2018–2022
+population denominator, Spearman, single population-tail sensitivity and
+interpretation thresholds remain unchanged. This amendment changes input
+admission only: use a fresh digest-pinned snapshot of that same governed public
+resource, explicitly distinct from historical warehouse artifacts. No invented
+ingestion run/source-record hash, private reviewed-envelope claim or historical
+first-publication claim. The descriptive research adapter must not bypass or
+mislabel the separate warehouse-replay adapter's gates.
+
+Reuse the parent's shared outcome-blind DEV consumer capture, SHA-256
+`be74f3affff2e7753f14e7b804d672fb83d21eabe8f1dc4abead873ea21e8e45`,
+for independently projected canonical FIPS, population and national SVI
+percentile, with exact release metadata. Consumer rows are projection units;
+native SVI source row counts/record identity are unknown and must remain so.
+There is no additional SVI/PROD query, source ingestion, warehouse write,
+training or Library upload.
+
+Only the missing 2022 numerator is acquired. Freeze request caps at five HTTP
+requests maximum (metadata before, 2022 row count, one native-row read,
+metadata after, optionally one metadata inspection only); zero automatic
+retries, 30-second request timeout, 180-second total runtime, 250,000 admitted
+rows (250,001 sentinel cap), 64 MiB per response and 128 MiB cumulative.
+The one row query is `year='2022'`, ordered `:id ASC`, preserving native ID,
+row modification fields, case category and frequency. Keep actual response
+bytes, URLs/queries, headers, timestamps, metadata/revision evidence and digests
+locally in ignored outputs. Validate expected resource/name/schema/year/FIPS/
+case-category semantics, before/after revision equality, expected row count,
+unique native IDs, valid frequencies, complete mapping and source-unallocated
+exclusions **before aggregation or any association statistics**. Abort on cap,
+revision/schema/category/mapping/denominator/completeness failures.
+
+Acquisition/normalization checks and counts are input diagnostics, not cohort
+association results. Unknown historical first publication and private lineage
+remain limitations, not universal blockers to this explicitly retrospective
+estimand. Amendment commit must precede publisher row acquisition and analysis.
+
 **Execution status: ACCESS_BLOCKED for required 2022 outcome/authority inputs.
 Scientific disposition: pending. Feature implication: UNKNOWN.**
 Existing consumer access to SVI/population is verified below. No real association
