@@ -236,3 +236,68 @@ source acceptance or ML feature admission from visible values, a hash shape,
 publication status or historical manifest alone. These are separate governance
 gaps, not failure to access the SVI/RUCC distributions estimated above. No denied
 private-table query was retried to resolve them.
+
+## Shared public PROD capture requested after the DEV handoff
+
+The parent's later update identified a sibling's completed DEV tick capture and
+requested the existing **documented anonymous public PROD API only**. The DEV
+extension above had already completed; it was not repeated. Following the API
+repository `docs/public-api-guide.md` and existing atlas route/schema, five GETs
+captured before/after atlas metadata, one release-pinned county summary, public
+sources and measures. Each request had a 30-second bound; metadata responses were
+capped at 1 MB each and county summaries at 5 MB. No PROD Snowflake connection,
+private table or per-county fan-out was used.
+
+Served release **`governed-2026-09-18-unknown-coverage`**, bundle
+**`038aa3f8c383a70699aff92c752f2bbcc6687a726d0c2f142c9f368841b42026`**,
+schema `1.0.0`, methodology `semantic-1.0.0`, identical before and after. The
+summary has **3,144 rows / unique canonical FIPS**; public sources **5** and
+measures **14**, all release versions matching, no remaining metadata page.
+These are structural checks, not outcome statistics. API caching and separate
+requests prevent a warehouse-transaction claim; the release parameter and
+before/after served identity checks bound response consistency.
+
+The bulk summary exposes `tick_status`, `burgdorferi_status`,
+`in_contiguous_tick_scope`, FIPS/state, human status and evidence completeness.
+It lacks raw scapularis/pacificus statuses, population, SVI/RUCC and human floors.
+Computed score components are not source measures and must not be inverted or
+substituted. Sibling estimands must retain their own eligibility/authority gates;
+this capture does not silently supply missing required fields. It does not alter
+the DEV ML #63 estimand or results. The historical PROD September 18 source/bundle
+receipt described in DATA #200 applies to this release identity; current private
+record/hash and REVIEWED-metadata admission remain distinct unavailable proof.
+
+Read-only retained evidence under `outputs/`:
+
+| File | SHA-256 |
+| --- | --- |
+| `prod-api-metadata-before.json` | `648cbaa80b7595bec80283d62916c5f2492f9b26c9d6fc996f519abdc5fe42ff` |
+| `prod-api-scores.json` | `5dbc0e4a66e1d702b5deafc3a430d62fe317984a6ee2e5c1759b74182f06e9ed` |
+| `prod-api-sources.json` | `a7c1940826ee3fb5271959725db8d493034e5ed2cea67dbc556985c6c9ce7867` |
+| `prod-api-measures.json` | `37032afc750e0053f944405621c89b3462d19e83ef91c11f6a67e708d0f86776` |
+| `prod-api-metadata-after.json` | `648cbaa80b7595bec80283d62916c5f2492f9b26c9d6fc996f519abdc5fe42ff` |
+| `eda-shared-20261004-prod-public-manifest.json` | `1691467c100965fb6d5beb413179d4769dc51451cfb9424c8cd1df97186d0315` |
+
+The [public manifest validator](../../scripts/eda63_public_manifest.py) records
+exact URLs, byte/time bounds, response digests, fields and limitations and fails
+closed on release change, truncated/incomplete metadata or county identity drift.
+Prefer retained-file replay, not repeated API capture by sibling tasks:
+
+```powershell
+uv run python scripts/eda63_public_manifest.py --directory outputs
+```
+
+Exact capture requests, run serially only if reacquisition is needed:
+
+```powershell
+curl.exe --fail --silent --show-error --max-time 30 --max-filesize 1000000 https://api.carawaylabs.com/v1/atlas/metadata --output outputs/prod-api-metadata-before.json
+curl.exe --fail --silent --show-error --max-time 30 --max-filesize 5000000 'https://api.carawaylabs.com/v1/atlas/scores?dataset_version=governed-2026-09-18-unknown-coverage' --output outputs/prod-api-scores.json
+curl.exe --fail --silent --show-error --max-time 30 --max-filesize 1000000 'https://api.carawaylabs.com/v1/sources?page_size=100' --output outputs/prod-api-sources.json
+curl.exe --fail --silent --show-error --max-time 30 --max-filesize 1000000 'https://api.carawaylabs.com/v1/measures?page_size=100' --output outputs/prod-api-measures.json
+curl.exe --fail --silent --show-error --max-time 30 --max-filesize 1000000 https://api.carawaylabs.com/v1/atlas/metadata --output outputs/prod-api-metadata-after.json
+```
+
+A moved release may return 404 or fail identity checks. No timestamp or null in a
+public envelope proves upstream publication/retrieval absence or private authority.
+All response files remain ignored/uncommitted. Manifest generation timestamps
+reflect local validation time, not upstream retrieval or publication.
