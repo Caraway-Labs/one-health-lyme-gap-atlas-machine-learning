@@ -3,8 +3,10 @@
 ### EDA #62 result
 
 **Disposition:** NOT_ESTIMABLE for current DEV release
-`governed-2026-09-17-unknown-coverage`. Alternative shared capture/provenance
-review remains pending; this is not a global source-absence conclusion.
+`governed-2026-09-17-unknown-coverage`. Shared PROD bulk lacks species/raw-SVI
+cohort fields; a one-county detail probe confirms field availability only.
+PROD cohort/source-authority admission remains blocked, not scientifically
+NOT_ESTIMABLE; this is not a global source-absence conclusion.
 
 **Groups:** Planned source-defined ESTABLISHED / REPORTED for one compatible
 taxon. Neither IXODES_SCAPULARIS nor IXODES_PACIFICUS meets the positive-N screen.
@@ -27,12 +29,14 @@ concentration/within-state contrast are inapplicable at 0 / 0. Dominant-state
 exclusion, within-state descriptors and state-cluster uncertainty are implemented.
 
 **ML implication:** No evidence yet that SVI confounds/adds information relative
-to vector status. Reuse the parent's single approved capture, verify its
-source/release/vintage/metadata authority, screen N and commit taxon selection
-before outcomes. Clean visible values alone do not grant scientific admission.
+to vector status. Verified shared DEV digest reproduces no positive contrast.
+PROD combined tick status/derived score cannot replace species evidence/raw SVI.
+A bounded approved immutable species/SVI cohort with matching source/release/
+vintage/metadata authority is needed before N screening and taxon selection.
+One detail record and clean visible values do not grant scientific admission.
 
 **Product implication:** No interpretation change; Unknown is not absence.
-Keep issue open pending independent review and alternative input/provenance.
+Keep issue open pending independent review and precise PROD cohort/provenance input.
 
 **Links:** [draft PR #88](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/pull/88);
 [artifact](62-svi-by-vector-evidence-state.md),
@@ -46,4 +50,9 @@ The initial observation-view-only exclusion was too narrow; the accessible
 atlas route corrects that finding. No private-object retries, alternate
 restricted-source identity or atlas row exports. Historical DATA200 PROD
 receipts narrow provenance but do not prove current record/metadata authority.
-Focused offline suites: 37 passed; final mandatory checks recorded in PR/artifact.
+Shared DEV SHA be74f3affff2e7753f14e7b804d672fb83d21eabe8f1dc4abead873ea21e8e45;
+PROD summary SHA 5dbc0e4a66e1d702b5deafc3a430d62fe317984a6ee2e5c1759b74182f06e9ed.
+One public county-detail probe, 30 seconds / 1 MB, matched PROD September 18
+release/hash and exposes species/SVI fields; no national cohort N follows.
+No raw rowdata uploaded or broad detail crawl. Focused suites: 44 passed;
+final mandatory checks recorded in PR/artifact.

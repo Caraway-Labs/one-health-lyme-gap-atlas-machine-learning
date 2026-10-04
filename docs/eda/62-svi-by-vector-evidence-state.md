@@ -5,8 +5,9 @@ The existing `CURRENT_COUNTY_ATLAS_V` is accessible and retains SVI and tick
 fields. Its current DEV release has 3,144 `Unknown` counties for each taxon,
 with **ESTABLISHED / REPORTED = 0 / 0** for both. Unknown is not negative.
 The initial observation-view-only availability conclusion was too broad;
-the county-atlas screen below corrects it. An alternative shared consumer
-capture and its source-authority gate remain pending, so this DEV result is
+the county-atlas screen below corrects it. The shared PROD bulk capture lacks
+species-specific states and raw SVI; the single public detail probe below
+confirms field availability, not cohort N or source-authority admission. This DEV result is
 not generalized to PROD or all source evidence. No taxon was selected and no
 real SVI distribution/test/effect/interval was computed.
 
@@ -102,10 +103,56 @@ establish tick positive-state eligibility. No previously denied private object
 was retried; no alternate identity was used for restricted source access.
 
 The parent assigned one shared outcome-blind consumer capture to #63. This
-branch waits for that input/digest/provenance instead of another row export.
+branch verified that input/digest/provenance instead of another row export.
 Value visibility, exact source/version/run/artifact/release membership,
 canonical county alignment and applicable reviewed metadata admission remain
 separate checks before any alternative real-outcome execution.
+
+## Verified shared inputs and bounded PROD detail check
+
+The [capture gate](../../scripts/eda62_capture_gate.py) verifies raw-file
+SHA-256 before parsing, stable before/after release identity, 3,144 unique FIPS,
+canonical county-set digest, and DEV county/metadata release membership.
+Only statuses, identity and field presence were screened; no SVI distributions
+or derived score statistics were computed. All row-bearing inputs remain
+private in ignored outputs; none is committed or uploaded.
+
+| Shared input | Raw-file SHA-256 | Issue-specific conclusion |
+| --- | --- | --- |
+| DEV consumer capture | be74f3affff2e7753f14e7b804d672fb83d21eabe8f1dc4abead873ea21e8e45 | September 17 release/bundle above; both taxa Unknown in all 3,144 counties; independently reproduces 0 / 0 positive-group N. |
+| PROD public scores summary | 5dbc0e4a66e1d702b5deafc3a430d62fe317984a6ee2e5c1759b74182f06e9ed | September 18 release/bundle above; no scapularis_status, pacificus_status or raw svi_percentile in its county projection. Species group N is unknown, not zero. |
+| PROD public capture manifest | 1691467c100965fb6d5beb413179d4769dc51451cfb9424c8cd1df97186d0315 | Five public responses; stable before/after release/hash; cache consistency is not a warehouse transaction or private authority proof. |
+
+Both county captures match canonical FIPS normalized SHA-256
+`f2651ec6a9375476e3ff09efb4c2a699cd5690ffd3f0c982aeacad967c21c241`.
+The PROD summary's combined `tick_status` is not species-specific evidence and
+its derived `score` components cannot replace raw overall SVI. No substitution,
+taxon selection or PROD scientific NOT_ESTIMABLE claim was made.
+
+The documented [API detail contract](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-api/blob/main/src/lyme_gap_atlas_api/models.py)
+and service expose species states and raw `svi_percentile` via
+`GET /v1/counties/{fips}`. A **single** anonymous fixed-county probe used
+`https://api.carawaylabs.com/v1/counties/01001?dataset_version=governed-2026-09-18-unknown-coverage`,
+30-second timeout and 1 MB response limit. Response length 5,117 bytes,
+SHA-256 `54b38cbd3de770f3a64b0eea6c24daf7bda5a5fd03cb5b46422605bd138942c6`.
+Its nested release/hash match the shared PROD identity. All three needed fields
+exist; their outcome values were not summarized or used for selection.
+One probe is not a representative cohort or proof of adequate species N.
+The response is retained only privately/ignored, without further county crawl.
+[Probe code](../../scripts/eda62_detail_probe.py) fixes the endpoint and bounds,
+restricts writes to this worktree's ignored outputs, and prints field/identity
+evidence without raw outcome values.
+
+Detail source metadata fields are `key`, `label`, `vintage`, `url`, `note`.
+They do not expose current source-version/run/artifact/record-hash anchors or
+reviewed metadata-state admission. The exact remaining input is a **bounded
+approved immutable cohort projection** with canonical county/state,
+taxon-specific source statuses and national overall SVI for enough counties
+to screen the registered contrast, tied to the same release/hash and applicable
+source/vintage/record/metadata authority. Existing historical receipts narrow
+that provenance requirement; they are not ignored or presented as nonexistent.
+The visible public detail fields establish a potential route, not permission
+for a broad acquisition or a replacement for the parent's coordinated packet.
 
 ## Planned sources and method; not executed
 
@@ -153,10 +200,11 @@ is 0.5 despite different spreads. No such fixture replaces real cohort counts.
 
 ## Decision and next step
 
-Keep #62 open pending independent review and the parent's single shared capture.
+Keep #62 open pending independent review and the precise alternative
+cohort-projection/source-authority input above.
 The current DEV release is NOT_ESTIMABLE for this positive-state contrast,
-without implying a zero effect or source-level biological absence. If the shared
-approved alternative release has positive groups, validate its immutable source,
+without implying a zero effect or source-level biological absence. If an
+approved alternative cohort projection has positive groups, validate its immutable source,
 temporal/metadata and county authority and screen N before selecting a taxon.
 Commit selection and matching source/capture identity before SVI summaries.
 This work changes no shared contract/grant or source definition.
@@ -165,7 +213,7 @@ ML implication: no evidence yet that SVI confounds or adds information relative
 to vector status. Product implication: no change to vector-evidence or SVI
 interpretation. No material/small/no-difference claim follows from zero positive
 group availability. DEV NOT_ESTIMABLE is a cohort result; the unresolved
-alternative capture/authority is a separate access/provenance dependency.
+PROD cohort-projection/authority gap is a separate access/provenance dependency.
 
 ## Reproduction and verification
 
@@ -184,7 +232,9 @@ uv run python scripts/eda62_availability.py outputs/62-profile.json
 $screen62Raw = Get-Content outputs/62-county-atlas-screen-cli.txt -Raw | ConvertFrom-Json
 $screen62Raw[3] | ConvertTo-Json | Set-Content outputs/62-atlas-screen.json -Encoding utf8
 uv run python scripts/eda62_availability.py outputs/62-atlas-screen.json --atlas-screen
-uv run pytest tests/test_eda62_analysis.py tests/test_eda62_availability.py -q
+# Paths select the parent's existing private read-only captures; no recapture.
+uv run python scripts/eda62_capture_gate.py --dev $env:EDA62_SHARED_DEV --prod $env:EDA62_SHARED_PROD --prod-manifest $env:EDA62_SHARED_PROD_MANIFEST
+uv run pytest tests/test_eda62_analysis.py tests/test_eda62_availability.py tests/test_eda62_capture_gate.py -q
 uv run python scripts/verify.py
 ```
 
@@ -204,13 +254,16 @@ Screen SQL is for approved replay only; the existing aggregate plus the parent's
 shared capture should be reused without repeated warehouse scans.
 
 Mandatory checks passed: contracts/skills/lifecycle/hygiene, Ruff, format,
-mypy, **174 pytest tests passed** after the offline inference addition, one
-optional Arize SDK skip. Updated focused suites pass **37 tests** covering
+mypy, **181 pytest tests passed** after the shared-input gate addition, one
+optional Arize SDK skip. Updated focused suites pass **44 tests** covering
 view-scoped exclusions, Unknown-versus-positive N safety, publication-versus-eligibility,
 single-taxon availability, ambiguous/truncated input, mixed releases,
 duplicates, invalid counts, tie/math calculations, bootstrap reproducibility,
 insufficient independent states, no outcome-driven taxon switching, zero/sentinel
 semantics, geographic dominance and the rank-neutral unequal-spread case.
+New gate tests cover digest substitution, canonical set versus mere shape/count,
+duplicate identities, combined-versus-species semantics, changed release identity,
+single-request bounds, ignored/private output and no raw-outcome stdout.
 Test profiles are explicitly fictional and
 were never used as analysis evidence. No predictive model/experiment/holdout
 was created. Live context/profile evidence is separate from offline test proof.
