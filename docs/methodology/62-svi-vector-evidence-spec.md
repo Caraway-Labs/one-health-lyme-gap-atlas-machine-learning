@@ -112,3 +112,33 @@ Remain stopped pending a bounded approved species/SVI cohort projection with
 matching source/release/vintage and metadata authority. No broad detail crawl,
 private-object retry, new grants, alternate restricted-source identity or
 change to question, taxon order, states, method or thresholds.
+
+## Published-projection descriptive EDA amendment — before outcomes
+
+Parent scientific review corrected an overstrict gate: private source-record
+hashes and REVIEWED #191/#193 metadata envelopes are not universal prerequisites
+for descriptive EDA of the already-governed published county projection.
+Use the existing semantic-release consumer boundary plus immutable release/bundle,
+published source/vintage semantics, canonical county coverage, explicit status
+and missingness handling, capture digest and interpretation limits. Native
+source-lineage verification and ML feature admission remain separate, unclaimed
+activities; unavailable private proof is a caveat, not a stop for this scoped EDA.
+This explicitly supersedes the private-authority prerequisite above without
+relaxing species mapping or replacing raw SVI with scores.
+
+Authorized acquisition: one existing PROD `CURRENT_COUNTY_ATLAS_V` consumer
+capture under the existing runbook-authorized runtime-read identity, not another
+identity retry against private objects. Verify all session context fields first.
+Read only release/bundle before and after and <=3,145 ordered county rows with
+release ID, FIPS/state, scapularis_status, pacificus_status, svi_percentile, and
+burgdorferi_status for the coordinated #65 evidence gate. Pin September 18
+release and bundle `038aa3f8c383a70699aff92c752f2bbcc6687a726d0c2f142c9f368841b42026`;
+30-second statement timeout. No object/PROD writes, credential/config changes,
+raw/private source read, national API fanout or upload.
+Freeze capture/digests, screen species status and eligible county N without
+SVI distribution statistics, then commit selected taxon/input identity before
+outcomes. Preserve original question, positive states, >=30 N, county weighting,
+cumulative tick through 2025-12-31 versus 2022 SVI/ACS 2018–2022 context,
+method, sensitivities, thresholds and noncausal interpretation. The result is
+exploratory descriptive association in this published county release, not
+native-data scientific validation or ML feature admission.
