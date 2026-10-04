@@ -6,7 +6,11 @@
 
 **Best candidate:** Maryland official county-year outcomes, conditional on reproducing the reviewer receipt. Pennsylvania is the locally reproduced fallback. No surveillance-priority label is admitted.
 
-**Why:** Published outcomes and coarse vector-status transitions exist. Historical predictor availability, a defensible later holdout and the choice of a surveillance-priority proxy remain unproved. Late outcome publication alone does not rule out retrospective evaluation: predictors must be frozen at their decision date, while outcomes can mature later.
+**Why:**
+
+- Published county outcomes and coarse vector-status transitions provide concrete qualification leads.
+- Historical predictor availability, a defensible later holdout and an approved surveillance-priority proxy remain unproved.
+- Late outcome publication alone does not rule out retrospective evaluation: predictors must be frozen at their decision date, while outcomes can mature later.
 
 **Feasibility evidence:**
 
