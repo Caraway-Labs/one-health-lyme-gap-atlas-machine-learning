@@ -1,0 +1,28 @@
+# ML #64 paired county change: registered specification v1
+
+- **Owning issue:** [ML #64](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/issues/64); follows [analysis-spec v1](../methodology/analysis-spec-v1.md).
+- **Question / decision:** Can governed CDC public-use observations identify within-county consecutive-report-year change? Decide whether human lag/change features are scientifically admissible; no biological, causal, exposure-risk or forecasting claims.
+- **Estimand:** Difference in county-of-residence annual reported Confirmed + Probable totals, later minus earlier year, in each eligible consecutive-year contrast. Published demographic frequency sums are lower bounds, not the estimand.
+- **Unit / cohort / time:** Source observations are demographic/case-status rows. Collapse only to distinct numeric five-digit county/report-year keys for coverage. Primary windows: 2011–2016 (five contrasts) and 2017–2019 (two contrasts), analyzed separately. Candidate slots use the union of counties observed within each window times its contrast count; distinguish neither-year, one-year and both-year availability. This is a source-observed cohort, not national county coverage or independent sample N. No cross-era pairs.
+- **Source / variables:** Current governed CDC qtbi-xd4i conformed publication, source/revision/run and artifact identities; frequency, source_value_status, county_fips, report_year, case_status; Data #110/#113/#430 evidence. Pin actual input identity and digests before replay. Reuse immutable evidence if accessible; otherwise bounded DEV read through existing authorized CLI routes. Do not acquire broader sources or duplicate ML #86 research.
+- **Exclusions:** Missing county identity, malformed/unmapped geography, missing either year, unsupported case status/year basis, unknown source identity/revision, unknown or incompatible #430 comparability, suppression/floor bounds without finite upper support, or unidentified direction/magnitude. Report mutually exclusive attrition and overlapping semantic reasons separately. Unknown is never zero/negative.
+- **Status / prior inspection:** Exploratory scientific feasibility. Issue and historical Data evidence have been inspected; no new cohort counts or frequency statistics have been examined. No protected holdout, model or hypothesis family exists here.
+- **Method:** Deterministic coverage and interval-identification audit. For totals T0 in [L0,U0], T1 in [L1,U1], change lies in [L1-U0,U1-L0]. Unknown upper bounds are unbounded, hence two floor observations permit either sign and arbitrary magnitude. STOP before paired t-test/Wilcoxon if no valid cohort. A surviving finite-bound cohort still requires separately justified inference; do not silently substitute a test of floors.
+- **Dependence:** Counties recur across contrasts and may be spatially dependent. Coverage is descriptive; no independent county-pair sampling assumption. A valid inferential cohort would require a recorded amendment specifying one contrast and appropriate uncertainty before test execution.
+- **Outputs:** Source row counts, unique county/year and county N, candidate/excluded/both-observed/valid pair counts per era/contrast, value-state and missingness counts, source/run/digest identity, comparability states, identifiability proof. No effect estimate, p-value or interval unless supported.
+- **Sensitivity:** Report per-contrast and window-union denominators and a both-years-observed subset; none repairs unbounded censoring. Compare case-definition comparability separately from total identification. No zero-fill, current-population rates, imputation, bound invention or era adjustment.
+- **Interpretation / stop:** NOT_ESTIMABLE_WITH_CURRENT_SOURCE is successful when mathematical/source evidence proves nonidentification. Inaccessible inputs are ACCESS_BLOCKED, never a fabricated cohort count or scientific proof. Describe exact source contracts needed: complete county totals or justified bounds, stable geography and category/year scope, revision identity and methodology comparability; historical availability additionally required for ML.
+- **Disposition:** PLANNED. Reproduction script/SQL and durable findings will be linked from `64-paired-county-change-feasibility.md`. No production writes, training or external messages. Decision-ready issue comment is held for independent review.
+
+## Amendment v1.1: publisher coverage fallback
+
+Before inspecting new pair results: DEV read access to CONFORMED was denied. Use
+one bounded public CDC qtbi-xd4i aggregate request for 2011–2019, grouped by
+year/FIPS/case_status with source-row counts only, no frequency statistics.
+Reuse ML #86 metadata/research references instead of repeating broad research.
+Retain response SHA-256 and ignored local snapshot for exact replay. Publisher
+current counts are not governed run-pinned counts; the inaccessible governed
+revision is an access blocker. Compare the both-case-category subset as a
+coverage sensitivity, never an exact-total or comparability repair. The
+estimand, exclusion rules, interval method and stop rule are unchanged. Earlier
+Data #110 coverage evidence has now been inspected; all analysis is exploratory.
