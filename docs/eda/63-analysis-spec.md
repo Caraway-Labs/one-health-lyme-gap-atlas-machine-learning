@@ -76,6 +76,14 @@ data commit `731cd6f5f8dcf6f26499619eac8a7c5099369906` pins SVI source version
 `84da74ac-e153-4fa1-9809-848c93eb12a7`, run
 `6fad7869-a188-47dd-972b-dee0464321b1`. Both retain the same publisher artifact
 SHA-256 as the initially planned release. Historical manifest generation time
-differs from the live release; the live release identity/digest, corroborated by
-its parity report, is the execution identity. No claim of September 18 results.
+`2026-09-17T19:00:00Z` and live `2026-09-17T12:00:00-07:00` denote the same
+instant. The live release identity/digest, corroborated by its parity report,
+is the execution identity. No claim of September 18 results.
 Question, cohort, groups, exclusions and methods are unchanged.
+
+## Independent-review clarification — 2026-10-04
+
+The original amendment incorrectly described the two timezone representations
+above as a generation-time difference. Independent review identified their
+equivalence; corrected here without changing source identity, statistical
+specification or results. Earlier commits preserve the correction audit trail.

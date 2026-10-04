@@ -113,8 +113,11 @@ replays use the one retained usable snapshot; no repeated warehouse scans.
   `731cd6f5f8dcf6f26499619eac8a7c5099369906`:
   `docs/contracts/semantic-release/governed-2026-09-15-manifest.json`.
   Current manifest names September 18 and must not be substituted. Historical
-  manifest timestamp differs from live timestamp; the live release/digest and
-  matching parity report anchor execution identity.
+  manifest `2026-09-17T19:00:00Z` and live `2026-09-17T12:00:00-07:00` represent
+  the same instant; the live release/digest and matching parity report anchor
+  execution identity. Independent review corrected the earlier mistaken claim
+  of differing times; statistics and source identity are unchanged, and prior
+  commits preserve that clarification's audit trail.
 - SVI resource `cdc_atsdr_svi_2022_county`, definition v1,
   dataset `atsdr-svi-2022-county-layer`, source version
   `86bed331-992b-4627-a992-ca4c5da7f392`, run
