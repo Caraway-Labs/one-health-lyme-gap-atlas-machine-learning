@@ -176,3 +176,13 @@ revision drift is explicitly separate. Final verification and exact PR head
 are recorded in the draft PR. Independent scientific/code review is pending;
 the [single issue-comment draft](64-result-comment-draft.md) must not be posted
 until that review, and the issue is not closed or merged here.
+
+Validation: mandatory `uv run --no-sync python scripts/verify.py` passed
+contracts/skill/lifecycle/hygiene validation, Ruff, format, mypy and **151 tests**;
+one optional Arize SDK test skipped. Focused #64 tests: **14 passed**. Exact
+snapshot replay independently reproduced the same coverage. Latest-main
+reconciliation against `c063b8aa4cf26b55cfc1b32cf0a660f955948195` and whitespace
+checks passed. [Draft PR #90](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/pull/90)
+contains the implementation and exact-head handoff for review. These are local
+verification results, not completed independent scientific review or live
+governed-source verification.

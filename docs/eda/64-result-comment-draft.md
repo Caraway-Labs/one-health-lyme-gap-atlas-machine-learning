@@ -40,8 +40,8 @@ separate construct; no causal, biological-emergence or incidence interpretation
 is authorized. Future-source leads remain with active ML #86 / DATA #110/#111;
 no new ingestion or training was performed.
 
-**Links:** [PR](PR_URL_PENDING),
-[artifact](../eda/64-paired-county-change-feasibility.md),
+**Links:** [draft PR #90](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/pull/90),
+[artifact](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/blob/codex/ml-64-paired-change/docs/eda/64-paired-county-change-feasibility.md),
 [DATA #110](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-data/issues/110),
 [DATA #113](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-data/issues/113),
 [DATA #430](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-data/issues/430),
