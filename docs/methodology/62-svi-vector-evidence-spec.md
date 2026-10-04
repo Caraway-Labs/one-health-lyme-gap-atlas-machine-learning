@@ -55,3 +55,18 @@ Uses [analysis-spec-v1](analysis-spec-v1.md), parent #59 and #60.
 - Reproduction: issue-local availability SQL/code and durable
   `docs/eda/62-svi-by-vector-evidence-state.md`; results and any amendment will
   distinguish planned from executed work. Transient exports remain ignored.
+
+## Outcome-blind route amendment — 2026-10-04
+
+Parent review identified the preexisting approved V072 consumer route
+`PRESENTATION.CURRENT_COUNTY_ATLAS_V`, with `CURRENT_RELEASE_V` and
+`CURRENT_SOURCE_METADATA_V`. The first observation-view audit was too narrow
+to establish global input unavailability. Audit these existing consumer views
+using `sql/validation/62-county-atlas-screen.sql` before any SVI summaries.
+Keep the same question, taxon order, positive states, N thresholds and method.
+Source status, unique county/state counts, FIPS integrity and SVI missing/domain
+eligibility are outcome-blind screening; no distribution statistics are read.
+Value visibility is separate from matching immutable release/source/vintage
+authority. Do not retry denied private objects or change identities to obtain
+restricted source data. Existing public API/approved receipts may be inspected
+for provenance without using alternative raw-source access.
