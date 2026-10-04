@@ -223,7 +223,8 @@ failed before source reads.
 DEV schema or reviewed immutable snapshot resolves the named prerequisites.
 Do not substitute another denominator or year, or infer signal from fixtures.
 
-**Links:** Draft PR supplied in the review handoff; durable artifact
-`docs/eda/61-svi-vs-published-lyme-floor.md`; exact candidate releases, source
-versions, runs and digests appear above. All remain subject to live source
-validation. No merge, closure or issue comment is authorized before review.
+**Links:** [Draft PR #89](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/pull/89),
+[EDA artifact](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/blob/codex/ml-61-svi-floor/docs/eda/61-svi-vs-published-lyme-floor.md),
+[candidate source release manifest](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-data/blob/eb984723080c9ff3a3484a6d30f9adb0197bd847/docs/contracts/semantic-release/governed-2026-09-15-manifest.json).
+Exact source versions, runs and digests appear above and remain subject to live
+source validation. No merge, closure or issue comment before requesting review.
