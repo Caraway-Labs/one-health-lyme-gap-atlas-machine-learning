@@ -1,5 +1,134 @@
 # EDA #61: SVI and published county-linked Lyme floor
 
+## Current research result (input amendment v2)
+
+**Execution: STOP — MAPPING_BLOCKED. Proposed disposition: NOT_ESTIMABLE under
+the registered strict mapping gate, pending independent scientific review.**
+This is now a demonstrated geography/denominator incompatibility, not an
+inaccessible-private-metadata claim. No coefficient, interval, sensitivity,
+primary eligible N, or spatial association result was computed.
+
+The fresh snapshot of the same governed CDC resource passed resource/schema/
+year/case-status/frequency/identity/capture-completeness validation. It contains
+32 numeric-FIPS source rows for eight Connecticut identifiers `09001`, `09003`,
+`09005`, `09007`, `09009`, `09011`, `09013`, `09015`, four rows per identifier.
+None matches the shared SVI consumer frame's nine Connecticut identifiers
+`09110`–`09190`. There is no supported exact population denominator/join for
+those eight published geographies in the supplied frame. No cross-boundary
+allocation, population substitution or reinterpretation was made. The input
+admission amendment explicitly stops on mapping failure, so aggregation and
+association execution stopped. A separately reviewed restriction to mapped
+county candidates may be estimable; this packet does not claim otherwise or
+silently turn that restriction into a completed analysis.
+
+### Actual input accounting, not fixture evidence
+
+| Observation unit / state | Actual count |
+| --- | ---: |
+| CDC 2022 native aggregated rows / unique native `:id` | 2,376 / 2,376 |
+| Confirmed / Probable source rows | 375 / 2,001 |
+| Numeric five-digit FIPS source rows / distinct source geographies | 2,203 / 585 |
+| Matched numeric-FIPS source rows / unique matched county candidates | 2,171 / 577 |
+| Unmatched numeric-FIPS source rows / source geographies | 32 / 8 |
+| Suppressed-FIPS / Unknown-FIPS rows | 140 / 33 |
+| Unallocated published frequency attached to Suppressed / Unknown | 1,146 / 718 |
+| SVI consumer projection rows / unique canonical FIPS | 3,144 / 3,144 |
+| Native SVI source observation/record counts | unknown, never set to 3,144 |
+| Primary analysis county N | unavailable; mapping gate stopped admission |
+
+All CDC frequencies are finite nonnegative integers. Unallocated frequencies
+are excluded source diagnostics, never county allocations. The 577 count is
+an input-level exact-FIPS match count, not a completed primary-cohort estimate.
+The prior consumer audit established zero missing/nonpositive population and
+missing/invalid SVI values. No-record canonical counties remain unknown rather
+than zero; zero observed published frequencies remain distinct.
+
+### Fresh publisher identity, revision and acquisition limits
+
+Input-admission amendment commit:
+`b95766b746d0f5715b6a75157df69a1d30c0bc86` preceded publisher row acquisition.
+This is a **retrospective research snapshot of the governed source**, not a
+new ingestion or a claimed historical warehouse artifact/run. Governed profile:
+[cdc_x5j9_wybp.yml at a62f2e3](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-data/blob/a62f2e32c748d0b23033c19287e7594feb5857a9/config/sources/cdc_x5j9_wybp.yml),
+resource `cdc_lyme_x5j9_wybp`, definition 2, CDC `x5j9-wybp`.
+DATA110/113 distinguish permitted retrospective published-floor evidence from
+strict historical as-of forecasting. No first-publication claim follows.
+
+The successful row query at `https://data.cdc.gov/resource/x5j9-wybp.json`:
+
+```text
+$where=year='2022'
+$select=:id,:created_at,:updated_at,year,state,fips,case_status,sex,age_cat_yrs,frequency
+$order=:id ASC
+$limit=250001
+```
+
+Native Socrata IDs are opaque tokens: `:id ASC` is the native server-side order,
+not a lexical ordering of their displayed string encodings. Native identities
+are retained unchanged and proved unique. The separate count query
+`$where=year='2022'&$select=count(*) AS row_count` returned 2,376, equal to the
+single successful row response length. Metadata before/after resource ID,
+name, description, column types and revision timestamps agree; raw metadata
+digests are identical. Schema retains seven publisher columns, Confirmed and
+Probable categories, county-of-residence geography and surveillance-year era.
+
+| Local retained bytes | SHA-256 |
+| --- | --- |
+| `outputs/eda61-publisher/rows-2022.json` | `1207f5a211b0ed5e4d39042c7611f2f68d049df2ff1906b263d295996b4c30ec` |
+| `metadata-before.json` and `metadata-after.json` | `4187398ebe91f07ac055e6586263fa50e6396f0892b43c80bce5f4b19f60cc6f` |
+| `count-2022.json` | `97eff7104e1e3948dd6b774f99d539160d14d495b990c7022e0634b2d5998d78` |
+| Parent shared DEV consumer capture | `be74f3affff2e7753f14e7b804d672fb83d21eabe8f1dc4abead873ea21e8e45` |
+
+Acquisition ran 2026-10-04 UTC, first successful metadata response
+02:43:35.870416, successful rows 02:45:33.096573 and final metadata
+02:45:34.233354. First-to-last successful response interval: 118.363 seconds.
+There were **five requests total**, one successful ordered native-row read,
+584,720 successful-response bytes, 30-second request timeouts, and zero
+automatic retries. The initial wildcard SELECT was rejected HTTP 400 before
+any rows were delivered; an explicit syntax correction reused retained
+metadata/count and stayed within the request cap. Its error response body was
+not retained; its attempted exact URL/status are recorded honestly in the
+local receipt. The four successful response bodies, headers, URLs, timestamps
+and digests are retained. The acquisition proof's 2.672-second elapsed field
+describes the correction stage, not the full 118.363-second acquisition span.
+
+Publisher `rowsUpdatedAt=1755628515` (2025-08-19T18:35:15Z) and
+`viewLastModified=1790121303` (2026-09-22T23:55:03Z) are revision evidence,
+not first publication times or proof of historical forecast availability.
+The shared consumer capture is pinned to DEV release
+`governed-2026-09-17-unknown-coverage`, bundle
+`55192e53b0b046cfe5148c13ffe5c570f615ec233e2b5c1103247f00b1a51233`.
+No new SVI/PROD query or private source/grant retry occurred in this execution.
+
+### Distinct research replay and interpretation
+
+`src/lyme_gap_atlas_ml/eda61_research.py` validates this admitted retrospective
+route without fabricating native SVI IDs or marking inaccessible private
+warehouse gates PASS. Consumer projection and native-source counts are distinct.
+`scripts/eda61_research.py` checks retained-byte digests and writes a reproducible
+mapping-failure report with no statistics. It exits 2 for this real snapshot.
+The existing strict warehouse replay (`scripts/eda61.py`) remains separate.
+
+```powershell
+uv run python scripts/eda61_research.py --consumer outputs/eda-shared-20261004-dev-consumer.json --consumer-sha256 be74f3affff2e7753f14e7b804d672fb83d21eabe8f1dc4abead873ea21e8e45 --publisher-dir outputs/eda61-publisher --publisher-sha256 1207f5a211b0ed5e4d39042c7611f2f68d049df2ff1906b263d295996b4c30ec --metadata-sha256 4187398ebe91f07ac055e6586263fa50e6396f0892b43c80bce5f4b19f60cc6f --count-sha256 97eff7104e1e3948dd6b774f99d539160d14d495b990c7022e0634b2d5998d78 --output outputs/eda61-validation.json --validate-only
+uv run python scripts/verify.py
+```
+
+The consumer filename in this portable command refers to a byte-identical local
+copy/reference of the parent's shared capture; the source remains in its own
+worktree and was not changed. `scripts/eda61_acquire.py` is a bounded fresh
+acquisition entry point; offline replay of the retained digests is preferred.
+An existing capture directory prevents silent re-acquisition.
+
+Feature implication: **UNKNOWN**. Product implication: retain SVI as context;
+this packet supports no association-based feature decision. The next review
+must resolve the eight-to-nine Connecticut geography incompatibility or approve
+a specifically labeled matched-county cohort before any coefficient is computed.
+Neither step authorizes incidence, causal, individual-risk, underreporting or
+exposure-location claims. Spatial dependence/sensitivity remain unexecuted.
+Raw responses, normalized row data, receipts and generated reports remain local
+and ignored; no Library upload, warehouse ingestion/write or training occurred.
+
 ## Registered specification v1 (before result inspection)
 
 - Issue: https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/issues/61; follows #59 and `docs/methodology/analysis-spec-v1.md` (#60).
@@ -17,7 +146,11 @@
 - Feature implication: association alone cannot authorize training or inclusion; TEST_IN_MODEL may be proposed for stable signal, UNKNOWN otherwise. Population/reporting artifacts and spatial structure remain caveats.
 - Stop: no alternative denominator, source-year substitution, synthetic cohort counts, production writes, ingestion, model calls/training, or changes to shared contracts.
 
-## Execution evidence
+## Input admission and earlier execution history
+
+The v2 amendment below admits the retrospective research route. The following
+v1 access/warehouse-review notes are historical and are superseded as universal
+research blockers; the current mapping-stop result above controls interpretation.
 
 ### Input-admission amendment v2 (before association result inspection)
 
@@ -66,7 +199,7 @@ association results. Unknown historical first publication and private lineage
 remain limitations, not universal blockers to this explicitly retrospective
 estimand. Amendment commit must precede publisher row acquisition and analysis.
 
-**Execution status: ACCESS_BLOCKED for required 2022 outcome/authority inputs.
+**Earlier v1 execution status: ACCESS_BLOCKED for required 2022 outcome/authority inputs.
 Scientific disposition: pending. Feature implication: UNKNOWN.**
 Existing consumer access to SVI/population is verified below. No real association
 statistics, eligible analysis cohort N, sensitivity result, or spatial diagnostics
@@ -239,7 +372,7 @@ The parent assigned one outcome-blind, release-pinned consumer capture to #63;
 this issue will reuse that handoff if applicable and will not perform a second
 capture. That input alone cannot substitute the 2023 floor for the 2022 numerator.
 
-## Reproduction and review
+## Earlier strict warehouse-replay contract and review history
 
 Pure analysis: `src/lyme_gap_atlas_ml/eda61.py`; offline snapshot entry point:
 `scripts/eda61.py`; synthetic safeguard tests: `tests/test_eda61.py`.
@@ -332,46 +465,49 @@ safeguards, not scientific input acceptance or a real cohort result.
 ## Single held issue-comment draft
 
 **Not posted.** Hold for the requesting reviewer's independent scientific/code
-review. This is a decision-ready blocker report, not the final four-disposition
-result comment required to complete #61. Replace the pending disposition only
-after valid evidence permits SIGNAL / WEAK_SIGNAL / NO_SIGNAL / NOT_ESTIMABLE.
-Do not map an access failure to NOT_ESTIMABLE merely to fit the issue template.
+review. The proposed disposition below is specific to the proven mapping failure
+under the frozen stop rule, not private-metadata inaccessibility or evidence of
+zero association. A matched-county restriction may warrant a reviewed amendment.
 
 ### EDA #61 result
 
-**Disposition:** pending — ACCESS_BLOCKED (scientific result unavailable).
+**Disposition:** NOT_ESTIMABLE under the registered strict mapping gate
+(proposed; independent review pending).
 
-**Headline:** SVI/population are visible in the existing authorized consumer
-view, but #61's required 2022 Lyme numerator and exact authority are not yet
-available in a validated reproducible input.
+**Headline:** The complete fresh 2022 CDC snapshot contains eight Connecticut
+geographies incompatible with the supplied SVI county frame, so the registered
+mapping gate stops the analysis before association statistics.
 
 **Evidence:**
 
-- N counties: eligible 2022 N unavailable; current consumer audit is 3,144 unique
-  FIPS, not analysis N.
+- N counties: primary N not admitted; 585 numeric source geographies, 577 exact
+  matched county candidates, 8 unmatched source geographies; 3,144 consumer FIPS.
 - Spearman/Pearson: not computed; Spearman preregistered.
 - Uncertainty: unavailable; no naive county-independent p-value.
-- Missing/excluded: consumer SVI/population checks pass; 2022 outcome missingness,
-  joins and exclusions remain unavailable. Source-row/county accounting implemented.
+- Missing/excluded: 2,376 source rows; 140 Suppressed-FIPS and 33 Unknown-FIPS
+  rows unallocated; 32 numeric-FIPS rows from eight Connecticut counties fail
+  mapping. Native SVI source row counts remain unknown, not 3,144.
 - Sensitivity result: not executed; outer 1% population tails preregistered.
 
 **Interpretation:**
 
-- Access failure does not demonstrate no association or scientific NOT_ESTIMABLE.
-- SVI population is an ACS 2018–2022 period estimate; 2022 case scope and exact
-  outcome/SVI source-record and release compatibility remain unvalidated.
+- The same governed resource's complete fresh snapshot preserves Confirmed plus
+  Probable scope; it is retrospective evidence, not historical warehouse lineage.
+- SVI population is an ACS 2018–2022 estimate. The eight source Connecticut FIPS
+  do not join its nine current Connecticut FIPS; no crosswalk/allocation or
+  alternative denominator was invented. A mapped-county cohort may be estimable.
 - No result supports causal, incidence, individual-risk, underreporting or
   exposure-location claims; real spatial dependence has not been assessed.
 
 **Feature implication:** UNKNOWN.
 
-**Product implication:** Hold SVI feature decisions until an existing-authority
-packet or reviewed immutable 2022 snapshot resolves the named prerequisites.
-Consumer access is verified; do not substitute another denominator/year, or
-infer signal from fixtures. Reuse the parent's single capture where applicable.
+**Product implication:** Hold SVI association-based feature decisions. Resolve
+the geography incompatibility or review an explicitly restricted matched-county
+cohort before statistics. Neither path authorizes scientific risk/causal claims,
+another source year/denominator, training or production changes.
 
 **Links:** [Draft PR #89](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/pull/89),
 [EDA artifact](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/blob/codex/ml-61-svi-floor/docs/eda/61-svi-vs-published-lyme-floor.md),
-[candidate source release manifest](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-data/blob/eb984723080c9ff3a3484a6d30f9adb0197bd847/docs/contracts/semantic-release/governed-2026-09-15-manifest.json).
-Exact source versions, runs and digests appear above and remain subject to the
-named authority gates. No merge, closure or issue comment before reviewer approval.
+[governed CDC source profile](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-data/blob/a62f2e32c748d0b23033c19287e7594feb5857a9/config/sources/cdc_x5j9_wybp.yml).
+Exact fresh publisher/capture digests, queries and consumer release identity are
+recorded above. No merge, closure or issue comment before reviewer approval.

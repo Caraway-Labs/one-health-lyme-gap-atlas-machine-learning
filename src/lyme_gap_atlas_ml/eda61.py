@@ -9,6 +9,7 @@ from collections import Counter, defaultdict
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from statistics import mean
+from typing import Literal
 
 FIPS = re.compile(r"[0-9]{5}\Z")
 
@@ -39,12 +40,16 @@ def cohort(
     svi: Sequence[Mapping[str, object]],
     human: Sequence[Mapping[str, object]],
     canonical_fips: Sequence[str],
+    *,
+    svi_observation_unit: Literal["native_source", "consumer_projection"] = "native_source",
 ) -> tuple[list[County], dict[str, object]]:
     """Consume pinned rows after authority/scope checks; never impute missing outcomes."""
     canonical = set(canonical_fips)
     if len(canonical) != len(canonical_fips) or any(not FIPS.fullmatch(f) for f in canonical):
         raise ValueError("invalid or duplicate canonical county frame")
     identity: dict[str, Mapping[str, object]] = {}
+    if svi_observation_unit not in {"native_source", "consumer_projection"}:
+        raise ValueError("unrecognized SVI observation unit")
     svi_record_ids: set[str] = set()
     for row in svi:
         fips = str(row.get("county_fips", ""))
@@ -52,10 +57,11 @@ def cohort(
             raise ValueError("invalid or duplicate SVI FIPS")
         if fips not in canonical:
             raise ValueError("SVI FIPS absent from canonical mapping")
-        record_id = str(row.get("source_record_id") or "")
-        if not record_id or record_id in svi_record_ids:
-            raise ValueError("missing or duplicate immutable SVI source-record identity")
-        svi_record_ids.add(record_id)
+        if svi_observation_unit == "native_source":
+            record_id = str(row.get("source_record_id") or "")
+            if not record_id or record_id in svi_record_ids:
+                raise ValueError("missing or duplicate immutable SVI source-record identity")
+            svi_record_ids.add(record_id)
         identity[fips] = row
     totals: defaultdict[str, float] = defaultdict(float)
     rows = Counter[str]()
@@ -98,7 +104,11 @@ def cohort(
         if fips not in totals:
             reasons.append("no_county_linked_record")
         if svi_source is None:
-            reasons.append("missing_svi_source_row")
+            reasons.append(
+                "missing_svi_source_row"
+                if svi_observation_unit == "native_source"
+                else "missing_svi_projection_row"
+            )
         else:
             if population is None or population <= 0:
                 reasons.append("invalid_population")
@@ -115,8 +125,14 @@ def cohort(
             complete.append(county)
     return complete, {
         "source_observation_rows": len(human),
-        "svi_source_rows": len(svi),
-        "svi_unique_source_counties": len(identity),
+        "svi_observation_unit": svi_observation_unit,
+        "svi_source_rows": len(svi) if svi_observation_unit == "native_source" else None,
+        "svi_unique_source_counties": len(identity)
+        if svi_observation_unit == "native_source"
+        else None,
+        "svi_consumer_projection_rows": len(svi)
+        if svi_observation_unit == "consumer_projection"
+        else None,
         "canonical_unique_counties": len(canonical),
         "county_linked_outcome_counties": len(totals),
         "primary_unique_counties": len(complete),
