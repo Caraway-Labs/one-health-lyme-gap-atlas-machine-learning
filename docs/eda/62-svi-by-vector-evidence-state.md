@@ -234,6 +234,8 @@ $screen62Raw[3] | ConvertTo-Json | Set-Content outputs/62-atlas-screen.json -Enc
 uv run python scripts/eda62_availability.py outputs/62-atlas-screen.json --atlas-screen
 # Paths select the parent's existing private read-only captures; no recapture.
 uv run python scripts/eda62_capture_gate.py --dev $env:EDA62_SHARED_DEV --prod $env:EDA62_SHARED_PROD --prod-manifest $env:EDA62_SHARED_PROD_MANIFEST
+# Optional approved repeat of one public schema probe, never a cohort crawl:
+# uv run python scripts/eda62_detail_probe.py --output outputs/62-prod-01001-detail.json
 uv run pytest tests/test_eda62_analysis.py tests/test_eda62_availability.py tests/test_eda62_capture_gate.py -q
 uv run python scripts/verify.py
 ```
@@ -254,7 +256,8 @@ Screen SQL is for approved replay only; the existing aggregate plus the parent's
 shared capture should be reused without repeated warehouse scans.
 
 Mandatory checks passed: contracts/skills/lifecycle/hygiene, Ruff, format,
-mypy, **181 pytest tests passed** after the shared-input gate addition, one
+mypy, **198 pytest tests passed** after merging latest main
+`a32a1208680c5e27acbb6657d16236ce34956124`, one
 optional Arize SDK skip. Updated focused suites pass **44 tests** covering
 view-scoped exclusions, Unknown-versus-positive N safety, publication-versus-eligibility,
 single-taxon availability, ambiguous/truncated input, mixed releases,
