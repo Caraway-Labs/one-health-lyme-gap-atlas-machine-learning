@@ -129,6 +129,15 @@ exposure-location claims. Spatial dependence/sensitivity remain unexecuted.
 Raw responses, normalized row data, receipts and generated reports remain local
 and ignored; no Library upload, warehouse ingestion/write or training occurred.
 
+Final revised local gates passed after merging latest main
+`7174168194f48d3f8a88f0289e0a9f27cecb15e9` into this isolated branch:
+`uv sync --extra dev`; `uv run python scripts/verify.py` — contract/skill/hygiene,
+Ruff, formatting, strict mypy and pytest passed, **265 tests passed, 1 optional
+Arize SDK skip**. This includes 56 synthetic #61 cases, with 17 distinct research
+adapter cases. The real offline input replay reproduced `MAPPING_BLOCKED`,
+exit 2, without association statistics. Original preregistration and amendment
+commits were preserved by merging rather than rewriting their history.
+
 ## Registered specification v1 (before result inspection)
 
 - Issue: https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/issues/61; follows #59 and `docs/methodology/analysis-spec-v1.md` (#60).
