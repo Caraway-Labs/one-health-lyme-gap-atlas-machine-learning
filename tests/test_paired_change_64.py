@@ -66,6 +66,13 @@ def test_publisher_coverage_separates_observation_rows_categories_and_missing_pa
     assert primary["unique_counties"] == 2
     assert primary["published_county_years"] == 8
     assert primary["source_observation_rows"] == 46
+    assert primary["unallocated_source_observation_rows"] == 7
+    assert primary["numeric_fips_source_observation_rows"] == 39
+    assert replication["unallocated_source_observation_rows"] == 0
+    assert replication["numeric_fips_source_observation_rows"] == 18
+    assert result["source_observation_rows"] == 64
+    assert result["unallocated_source_observation_rows"] == 7
+    assert result["numeric_fips_source_observation_rows"] == 57
     assert primary["contrasts"][0]["earlier_only"] == 1
     assert primary["contrasts"][3]["neither_year"] == 1
     assert primary["contrasts"][0]["both_categories_in_both_years"] == 1

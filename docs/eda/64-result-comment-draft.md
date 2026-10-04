@@ -16,7 +16,7 @@ These are publisher-current aggregate counts, not a certified governed-run panel
 **Primary exclusion reasons:** 1,489 slots lack one or both years; all 2,919
 observed pairs have unidentified total-change direction/magnitude. Both-category
 coverage sensitivity retains 2,603 pairs, still zero valid. Suppressed/Unknown
-county identities account for 1,942 source observation rows and cannot be
+county identities account for 1,882 source observation rows and cannot be
 allocated. Missing geography/category/year is never zero. Governed historical
 run/revision visibility, historical boundary certification and reviewed #430
 jurisdiction applicability remain separate, overlapping unresolved limitations.

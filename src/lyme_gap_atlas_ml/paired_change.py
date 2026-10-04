@@ -123,6 +123,8 @@ def summarize_publisher_coverage(rows: Sequence[Mapping[str, str]]) -> dict[str,
         if any(not counties for counties in observed.values()):
             raise ValueError("An entire expected source year is absent")
         county_union = set().union(*observed.values())
+        window_source_rows = sum(source_rows[y] for y in observed)
+        window_unallocated_rows = sum(n for (y, _), n in unallocated.items() if y in observed)
         contrasts = []
         for year in range(start, end):
             a, b = observed[year], observed[year + 1]
@@ -144,7 +146,10 @@ def summarize_publisher_coverage(rows: Sequence[Mapping[str, str]]) -> dict[str,
             {
                 "era": era,
                 "unique_counties": len(county_union),
-                "source_observation_rows": sum(source_rows[y] for y in observed),
+                "source_observation_rows": window_source_rows,
+                "unallocated_source_observation_rows": window_unallocated_rows,
+                "numeric_fips_source_observation_rows": window_source_rows
+                - window_unallocated_rows,
                 "published_county_years": sum(map(len, observed.values())),
                 "all_years_observed_counties": len(set.intersection(*observed.values())),
                 "year_coverage": [
@@ -163,6 +168,10 @@ def summarize_publisher_coverage(rows: Sequence[Mapping[str, str]]) -> dict[str,
             }
         )
     return {
+        "source_observation_rows": sum(source_rows.values()),
+        "unallocated_source_observation_rows": sum(unallocated.values()),
+        "numeric_fips_source_observation_rows": sum(source_rows.values())
+        - sum(unallocated.values()),
         "unique_counties_across_windows": len({fips for _, fips in categories}),
         "windows": windows,
         "statistical_tests_executed": False,

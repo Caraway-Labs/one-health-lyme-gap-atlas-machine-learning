@@ -50,13 +50,17 @@ Pairs also repeat counties and are not independent sample units.
 
 | Window | Source observation rows | Unallocated county-identity rows | Published county-years | Unique county N | Counties in every year | Candidate pair slots | Both-year observed pairs | Missing either year | Valid total-change pairs |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| 2011–2016 | 17,597 | 1,286 | 2,765 | 626 | 327 | 3,130 | 2,020 | 1,110 | 0 |
+| 2011–2016 | 17,597 | 1,226 | 2,765 | 626 | 327 | 3,130 | 2,020 | 1,110 | 0 |
 | 2017–2019 | 9,954 | 656 | 1,573 | 639 | 424 | 1,278 | 899 | 379 | 0 |
-| Pair/row totals | 27,551 | 1,942 | 4,338 | see union above | N/A | 4,408 | 2,919 | 1,489 | 0 |
+| Pair/row totals | 27,551 | 1,882 | 4,338 | see union above | N/A | 4,408 | 2,919 | 1,489 | 0 |
 
 Source rows include the unallocated rows; county-year counts exclude them.
-The 1,942 unallocated rows are observations, not missing counties, pairs or cases.
-The 25,609 rows with syntactically numeric FIPS collapse to 4,338 county-years.
+The 1,882 unallocated rows are observations, not missing counties, pairs or cases.
+The 25,669 rows with syntactically numeric FIPS collapse to 4,338 county-years.
+The replay now derives unallocated and numeric-FIPS source-observation totals
+for each window and overall. Independent review found and corrected a manual
+addition error in these row totals; pair coverage and nonidentification were
+unaffected. Tests cover observation-row reconciliation separately from county keys.
 No unknown or missing year was filled with zero.
 
 | Contrast | Candidates | Neither year | Earlier only | Later only | Both years | Both categories in both years | Observed pairs missing either category |
