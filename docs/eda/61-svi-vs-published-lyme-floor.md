@@ -1,0 +1,22 @@
+# EDA #61: SVI and published county-linked Lyme floor
+
+## Registered specification v1 (before result inspection)
+
+- Issue: https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/issues/61; follows #59 and `docs/methodology/analysis-spec-v1.md` (#60).
+- Question/decision: Within the governed 2022 county cohort, is overall SVI percentile associated with the published county-linked Lyme surveillance floor per 100,000? This informs whether SVI merits later feature investigation.
+- Estimand: unweighted county-level Spearman rank correlation between `RPL_THEMES` and `published_county_linked_case_floor_per_100k`, among eligible complete counties. No causal, incidence, individual-risk, underreporting, or exposure-location interpretation.
+- Unit/cohort/time: one canonical US county FIPS, surveillance report year 2022, joined to governed SVI vintage 2022. Source Lyme rows are aggregated observation records, not counties or individual cases. SVI population is an ACS 2018–2022 estimate, not measured annual 2022 population. Validate compatibility before division; label it explicitly.
+- Sources: reuse exact governed release membership, source version, ingestion run, artifact ID/digest and canonical mapping. The existing data-repository semantic builder uses confirmed plus probable for 2023; proposed scope here is confirmed plus probable in 2022, contingent on validation against the governed source definitions. Do not use its derived 2023 output.
+- Outcome: sum only numeric five-digit canonical county-FIPS published frequencies for the validated confirmed/probable scope in 2022. Never allocate suppressed/unknown/noncounty geography. No county-linked record is unknown, never zero. An explicitly observed numeric zero remains zero.
+- Eligibility/exclusions: exclude absent outcome, missing/invalid SVI percentile (including negative sentinel), missing/nonpositive/nonfinite population, unmatched canonical FIPS; fail on duplicate SVI FIPS or duplicate immutable source-record identity. Preserve and separately count source observation rows, unique counties, noncounty rows, missingness and excluded county reasons. Reject negative/nonfinite/nonnumeric eligible frequencies rather than silently omitting them. Reject unresolved scope, source authority, denominator semantics or mapping.
+- Status: exploratory; no result statistics inspected at registration. One association question, no hypothesis family or multiple-method search.
+- Method: Spearman with average ranks for ties, because the estimand is monotonic association and the surveillance floor may be skewed. Report N, coefficient, quantiles, zero/tie counts and coverage; no naive county-independent p-value.
+- One sensitivity, frozen: exclude counties in the outer 1% population tails (below the empirical 1st or above 99th percentile, linear interpolation) of the primary complete cohort; repeat Spearman. No outcome-based exclusions or alternate sensitivities.
+- Dependence: assess state-level clustering with state summaries and between/within-state rank variance. County independence is not assumed. If feasible, resample entire states with replacement (2,000 draws, deterministic seed 61) for a descriptive cluster-bootstrap interval; explain that state boundaries do not remove cross-border spatial dependence. Without defensible grouping/coverage, report coefficient descriptively and interval unavailable. Do not claim spatial adjustment or significance.
+- Interpretation criteria, frozen: absolute rho below 0.1 = NO_SIGNAL; 0.1 to below 0.3 = WEAK_SIGNAL; at least 0.3 = SIGNAL only if sensitivity retains sign and absolute rho at least 0.3; otherwise WEAK_SIGNAL with instability. These are issue-local descriptive decision thresholds, not scientific universal cutoffs. NOT_ESTIMABLE requires a demonstrated scientific identification failure. Inaccessible inputs produce an access-blocked execution status, with N/statistics unavailable, not NOT_ESTIMABLE.
+- Feature implication: association alone cannot authorize training or inclusion; TEST_IN_MODEL may be proposed for stable signal, UNKNOWN otherwise. Population/reporting artifacts and spatial structure remain caveats.
+- Stop: no alternative denominator, source-year substitution, synthetic cohort counts, production writes, ingestion, model calls/training, or changes to shared contracts.
+
+## Execution evidence
+
+Pending governed input validation. Registration commit must precede statistical execution.
