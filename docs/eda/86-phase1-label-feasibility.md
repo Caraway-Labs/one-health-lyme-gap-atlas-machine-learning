@@ -363,5 +363,10 @@ cutoff availability for inputs; and source-supported exclusions/abstention.
 No numerical production sufficiency threshold is invented.
 
 Validation: isolated ML branch from `c063b8aa4cf26b55cfc1b32cf0a660f955948195`;
-repository verification results and final head are recorded in the draft PR.
+`uv run --no-sync python scripts/verify.py` passes contract validation, Ruff
+lint/format and mypy; pytest **140 passed, 1 skipped** (optional Arize SDK
+not installed). Latest-main reconciliation and `git diff --check` pass.
+Final head is recorded in [draft PR #87](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/pull/87).
+The [single result-comment draft](86-result-comment-draft.md) is review-only;
+no issue comment has been published and no issue is closed.
 Other worktrees, including concurrent #61–65 sessions, were not modified.
