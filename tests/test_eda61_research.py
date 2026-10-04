@@ -7,7 +7,14 @@ from urllib.parse import urlencode
 
 import pytest
 
-from lyme_gap_atlas_ml.eda61_research import FIELDS, RESOURCE, MappingBlocked, admit
+from lyme_gap_atlas_ml.eda61_research import (
+    CT_LEGACY,
+    CT_PLANNING,
+    FIELDS,
+    RESOURCE,
+    MappingBlocked,
+    admit,
+)
 
 
 def packet():
@@ -95,7 +102,7 @@ def packet():
     return consumer, metadata, rows, query
 
 
-def run(consumer, metadata, rows, query, *, count=None, after=None):
+def run(consumer, metadata, rows, query, *, count=None, after=None, v3=False):
     c, p, m = (json.dumps(x).encode() for x in (consumer, rows, metadata))
     return admit(
         c,
@@ -106,6 +113,7 @@ def run(consumer, metadata, rows, query, *, count=None, after=None):
         json.dumps(after or metadata).encode(),
         json.dumps([{"row_count": str(len(rows) if count is None else count)}]).encode(),
         query,
+        geography_amendment_v3=v3,
     )
 
 
@@ -194,3 +202,61 @@ def test_consumer_frame_and_denominator_checks_stop(change) -> None:
 def test_digest_mismatch_blocks_before_parsing() -> None:
     with pytest.raises(ValueError, match="consumer capture digest"):
         admit(b"bad", "a" * 64, b"bad", "b" * 64, b"bad", b"bad", b"bad", "bad")
+
+
+def v3_packet():
+    consumer, metadata, rows, query = packet()
+    for index, fips in enumerate(sorted(CT_PLANNING), start=1):
+        consumer[4][-index]["FIPS"] = fips
+        consumer[4][-index]["STATE"] = "CT"
+    for fips in sorted(CT_LEGACY):
+        for stratum in range(4):
+            row = copy.deepcopy(rows[0])
+            row[":id"] = f"synthetic-ct-{fips}-{stratum}"
+            row["fips"] = fips
+            row["state"] = "CT"
+            row["frequency"] = "5"
+            rows.append(row)
+    return consumer, metadata, rows, query
+
+
+def test_v3_exact_ct_exclusion_preserves_full_capture_and_analysis_accounting() -> None:
+    counties, evidence = run(*v3_packet(), v3=True)
+    assert [c.fips for c in counties] == ["01001"]
+    assert evidence["capture_accounting"] == {
+        "full_native_publisher_rows": 34,
+        "full_unique_native_ids": 34,
+        "matched_numeric_source_rows": 1,
+        "ct_incompatible_source_rows": 32,
+        "unallocated_source_rows": 1,
+        "full_consumer_projection_units": 3144,
+        "ct_incompatible_consumer_units": 9,
+        "non_ct_analysis_frame_units": 3135,
+        "native_svi_source_rows": None,
+    }
+    assert evidence["accounting"]["source_observation_rows"] == 2
+    assert evidence["accounting"]["canonical_unique_counties"] == 3135
+    assert evidence["accounting"]["primary_unique_counties"] == 1
+    assert evidence["excluded_ct_legacy_source_fips"] == sorted(CT_LEGACY)
+    assert evidence["excluded_ct_consumer_fips"] == sorted(CT_PLANNING)
+
+
+def test_v3_rejects_every_other_unmatched_fips_and_unexpected_ct_set() -> None:
+    consumer, metadata, rows, query = v3_packet()
+    rows[0]["fips"] = "99999"
+    with pytest.raises(MappingBlocked):
+        run(consumer, metadata, rows, query, v3=True)
+    rows[-1]["fips"] = "09999"
+    with pytest.raises(ValueError, match="pinned Connecticut"):
+        run(consumer, metadata, rows, query, v3=True)
+
+
+def test_v3_full_capture_validation_precedes_any_ct_exclusion() -> None:
+    consumer, metadata, rows, query = v3_packet()
+    rows[-1]["frequency"] = "invalid"
+    with pytest.raises(ValueError, match="frequency"):
+        run(consumer, metadata, rows, query, v3=True)
+    rows[-1]["frequency"] = "5"
+    rows[-1][":id"] = rows[-2][":id"]
+    with pytest.raises(ValueError, match="duplicate"):
+        run(consumer, metadata, rows, query, v3=True)

@@ -21,6 +21,10 @@ FIELDS = {
     "age_cat_yrs": "text",
     "frequency": "number",
 }
+CT_LEGACY = frozenset({"09001", "09003", "09005", "09007", "09009", "09011", "09013", "09015"})
+CT_PLANNING = frozenset(
+    {"09110", "09120", "09130", "09140", "09150", "09160", "09170", "09180", "09190"}
+)
 
 
 class MappingBlocked(ValueError):
@@ -47,6 +51,8 @@ def admit(
     after_raw: bytes,
     count_raw: bytes,
     publisher_query_url: str,
+    *,
+    geography_amendment_v3: bool = False,
 ) -> tuple[list[County], dict[str, Any]]:
     """Input diagnostics run before aggregation; no unavailable private gate is marked PASS."""
     if hashlib.sha256(consumer_raw).hexdigest() != expected_consumer_sha:
@@ -171,8 +177,24 @@ def admit(
         raise ValueError("duplicate canonical consumer FIPS")
     canonical_set = set(canonical)
     numeric = [row for row in human if FIPS.fullmatch(str(row["county_fips"]))]
+    ct_source_rows = []
+    full_consumer_count = len(canonical)
+    if geography_amendment_v3:
+        source_ct = {
+            str(row["county_fips"]) for row in numeric if str(row["county_fips"]).startswith("09")
+        }
+        consumer_ct = {fips for fips in canonical if fips.startswith("09")}
+        if source_ct != CT_LEGACY or consumer_ct != CT_PLANNING:
+            raise ValueError("v3 pinned Connecticut geography sets changed")
+        ct_source_rows = [row for row in human if row["county_fips"] in CT_LEGACY]
+        human = [row for row in human if row["county_fips"] not in CT_LEGACY]
+        canonical = [fips for fips in canonical if fips not in CT_PLANNING]
+        svi = [row for row in svi if row["county_fips"] not in CT_PLANNING]
+        canonical_set = set(canonical)
     unmatched = Counter(
-        str(row["county_fips"]) for row in numeric if row["county_fips"] not in canonical_set
+        str(row["county_fips"])
+        for row in human
+        if FIPS.fullmatch(str(row["county_fips"])) and row["county_fips"] not in canonical_set
     )
     if unmatched:
         raise MappingBlocked(
@@ -205,8 +227,26 @@ def admit(
         )
     # All source validation precedes this first aggregation. No native SVI IDs are fabricated.
     counties, accounting = cohort(svi, human, canonical, svi_observation_unit="consumer_projection")
+    matched_numeric = [row for row in human if row["county_fips"] in canonical_set]
+    capture_accounting = {
+        "full_native_publisher_rows": len(rows),
+        "full_unique_native_ids": len(ids),
+        "matched_numeric_source_rows": len(matched_numeric),
+        "ct_incompatible_source_rows": len(ct_source_rows),
+        "unallocated_source_rows": sum(unallocated.values()),
+        "full_consumer_projection_units": full_consumer_count,
+        "ct_incompatible_consumer_units": full_consumer_count - len(canonical),
+        "non_ct_analysis_frame_units": len(canonical),
+        "native_svi_source_rows": None,
+    }
+    if len(rows) != len(matched_numeric) + len(ct_source_rows) + sum(unallocated.values()):
+        raise ValueError("native source partition does not reconcile")
     return counties, {
         "accounting": accounting,
+        "capture_accounting": capture_accounting,
+        "geography_amendment_v3": geography_amendment_v3,
+        "excluded_ct_legacy_source_fips": sorted(CT_LEGACY) if geography_amendment_v3 else [],
+        "excluded_ct_consumer_fips": sorted(CT_PLANNING) if geography_amendment_v3 else [],
         "case_category_source_rows": dict(categories),
         "unallocated_source_rows": dict(unallocated),
         "unallocated_published_frequency": dict(unallocated_frequency),
@@ -217,7 +257,11 @@ def admit(
         "publisher_revision": {k: before.get(k) for k in ("rowsUpdatedAt", "viewLastModified")},
         "native_svi_source_rows": None,
         "historical_first_publication": None,
-        "input_admission": "retrospective-publisher-plus-governed-consumer-v2",
+        "input_admission": (
+            "retrospective-publisher-plus-governed-consumer-v3-non-ct"
+            if geography_amendment_v3
+            else "retrospective-publisher-plus-governed-consumer-v2"
+        ),
         "publisher_query_url": publisher_query_url,
         "private_record_hashes_or_reviewed_envelopes_proven": False,
     }

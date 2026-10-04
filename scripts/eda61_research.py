@@ -20,6 +20,7 @@ def main() -> None:
     parser.add_argument("--count-sha256", required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--validate-only", action="store_true")
+    parser.add_argument("--geography-amendment-v3", action="store_true")
     options = parser.parse_args()
     root = options.publisher_dir
     receipts = json.loads((root / "receipt.json").read_text(encoding="utf-8"))
@@ -48,6 +49,7 @@ def main() -> None:
             inputs[2],
             inputs[3],
             successful["rows-2022.json"]["url"],
+            geography_amendment_v3=options.geography_amendment_v3,
         )
     except MappingBlocked as error:
         options.output.parent.mkdir(parents=True, exist_ok=True)
