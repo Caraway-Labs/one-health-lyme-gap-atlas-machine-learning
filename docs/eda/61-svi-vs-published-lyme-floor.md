@@ -1,5 +1,79 @@
 # EDA #61: SVI and published county-linked Lyme floor
 
+## Current result: geography-amended v3
+
+**Disposition: WEAK_SIGNAL; independent scientific/code review pending.**
+Among 577 eligible non-Connecticut counties, overall SVI national percentile
+has unweighted Spearman rho **-0.223125** with the published 2022 Confirmed +
+Probable county-linked Lyme lower-bound floor per 100,000. The sole registered
+outer 1% population-tail sensitivity retains 565 counties, rho **-0.201810**.
+These are retrospective descriptive associations, never incidence or causal effects.
+
+The geography amendment was committed as
+`591ff5dd5679287d7600060b8058b234869070d5` before association execution;
+registered v1 was committed as `fb2ec3165c0caa6db341b7a38dcc3e47589eb211`.
+Offline execution used code `6249ddcdd866590098b186bfd79656d6a3708851` and
+the retained digest-pinned inputs below. Full input validation passed before
+excluding the exact eight CDC Connecticut counties and nine SVI planning regions.
+No new source reads were needed for v3.
+
+| Observation unit / outcome state | Actual count |
+| --- | ---: |
+| Full CDC native rows / unique native IDs | 2,376 / 2,376 |
+| Confirmed / Probable native rows | 375 / 2,001 |
+| Numeric source rows / distinct source geographies | 2,203 / 585 |
+| Geographic exclusions: CDC rows / legacy Connecticut counties | 32 / 8 |
+| Geographic exclusions: consumer planning regions | 9 |
+| Non-Connecticut analysis-source rows | 2,344 |
+| Matched numeric source rows / primary unique counties | 2,171 / 577 |
+| Unallocated Suppressed / Unknown rows | 140 / 33 |
+| Unallocated published frequency: Suppressed / Unknown | 1,146 / 718 |
+| Full consumer projection rows / compatible canonical counties | 3,144 / 3,135 |
+| Canonical counties without county-linked records | 2,558 (unknown, not zero) |
+| Observed positive / observed zero floor counties | 577 / 0 |
+| Eligible exclusions for invalid population / SVI | 0 / 0 |
+| Native SVI source observation counts | unknown |
+
+The denominator is the governed ACS **2018-2022 population estimate**, in people;
+overall SVI is the national percentile on [0,1] from the same vintage.
+The consumer's null auxiliary DENOMINATOR field does not override the population
+measure semantics. Native Confirmed + Probable frequencies are summed within
+county-of-residence; unallocated frequencies are never allocated to counties.
+
+| Primary cohort distribution | Minimum | Q1 | Median | Q3 | Maximum |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Population estimate, people | 2,247 | 32,557 | 69,022 | 212,230 | 9,936,690 |
+| Overall SVI national percentile | 0.0041 | 0.1833 | 0.3516 | 0.5399 | 0.9965 |
+| Published floor per 100,000 | 0.050319 | 21.594636 | 66.099646 | 154.042282 | 1,255.902254 |
+
+Average ranks handle ties. Population has 575 unique values and four tied
+observations; SVI and normalized floor each have 577 unique values. The sole
+sensitivity uses inclusive linear-quantile population bounds
+[6,116.44, 2,257,144.2], removing 12 counties and retaining the weak negative category.
+
+**Spatial dependence and uncertainty:** 31 observed state/DC FIPS-prefix groups
+have between-state shares of rank variance of **22.4083% for SVI** and
+**52.5053% for floor**. Material state clustering makes county-independent
+precision misleading. The registered whole-state bootstrap (seed 61, 2,000
+draws, all defined) gives a descriptive 95% percentile interval
+**[-0.387094, -0.082937]**. It does not adjust for dependence across state
+borders or establish statistical significance. No naive p-value, Moran
+statistic, causal model, or additional sensitivity is claimed.
+
+**Interpretation and decision:** only 577 of 3,135 compatible frame counties
+have an observed published numeric county floor. The other 2,558 are unknown;
+publication selection and geographic restriction limit generalization.
+No incidence, individual-risk, causal, underreporting or exposure-location
+claim follows. The fresh snapshot is retrospective, not historical as-of
+forecasting evidence. Feature implication is **UNKNOWN** under the registered
+criteria; retain SVI as context and hold association-based model/product
+decisions for independent review. No training or production change follows.
+
+Reproduce from retained bytes with the research replay command below, replacing
+`--output outputs/eda61-validation.json --validate-only` with
+`--geography-amendment-v3 --output outputs/eda61-v3-result.json`.
+Raw data and generated reports remain local and ignored.
+
 ## Geography-informed pre-association amendment v3
 
 Independent scientific review and the requesting owner explicitly approve this
@@ -35,7 +109,7 @@ bootstrap settings remain unchanged. No incidence, causal or historical as-of
 claim. Use the already-retained inputs, no new acquisition/SVI/PROD query,
 warehouse write, ingestion or training. Commit this amendment before execution.
 
-## Current research result (input amendment v2)
+## Historical v2 mapping stop (superseded by registered v3)
 
 **Execution: STOP — MAPPING_BLOCKED. Proposed disposition: NOT_ESTIMABLE under
 the registered strict mapping gate, pending independent scientific review.**
@@ -506,52 +580,58 @@ contract/skill/hygiene, Ruff, format, strict mypy and pytest gates: **176 passed
 remained `c063b8aa4cf26b55cfc1b32cf0a660f955948195`. These tests establish code
 safeguards, not scientific input acceptance or a real cohort result.
 
+## Final v3 verification
+
+Latest origin/main was re-fetched and remained
+`7174168194f48d3f8a88f0289e0a9f27cecb15e9`, already merged into this branch.
+`uv sync --extra dev` and `uv run python scripts/verify.py` passed contract,
+skill and hygiene validation, Ruff, format, strict mypy and pytest:
+**268 passed, 1 optional Arize SDK skip**. A sandbox pytest-cache permission
+warning did not affect verification. The 59 synthetic #61 tests verify methods
+and guards; actual cohort counts and results above come from retained real inputs.
+
 ## Single held issue-comment draft
 
-**Not posted.** Hold for the requesting reviewer's independent scientific/code
-review. The proposed disposition below is specific to the proven mapping failure
-under the frozen stop rule, not private-metadata inaccessibility or evidence of
-zero association. A matched-county restriction may warrant a reviewed amendment.
+**Not posted.** Hold for independent scientific/code review.
 
 ### EDA #61 result
 
-**Disposition:** NOT_ESTIMABLE under the registered strict mapping gate
-(proposed; independent review pending).
+**Disposition:** WEAK_SIGNAL (proposed; review pending).
 
-**Headline:** The complete fresh 2022 CDC snapshot contains eight Connecticut
-geographies incompatible with the supplied SVI county frame, so the registered
-mapping gate stops the analysis before association statistics.
+**Headline:** Overall SVI has a weak negative association with the published
+2022 Confirmed + Probable county-linked Lyme lower-bound floor per 100,000
+among eligible non-Connecticut counties, never incidence.
 
 **Evidence:**
 
-- N counties: primary N not admitted; 585 numeric source geographies, 577 exact
-  matched county candidates, 8 unmatched source geographies; 3,144 consumer FIPS.
-- Spearman/Pearson: not computed; Spearman preregistered.
-- Uncertainty: unavailable; no naive county-independent p-value.
-- Missing/excluded: 2,376 source rows; 140 Suppressed-FIPS and 33 Unknown-FIPS
-  rows unallocated; 32 numeric-FIPS rows from eight Connecticut counties fail
-  mapping. Native SVI source row counts remain unknown, not 3,144.
-- Sensitivity result: not executed; outer 1% population tails preregistered.
+- N counties: 577; unweighted Spearman rho -0.223125.
+- Uncertainty: descriptive whole-state bootstrap 95% percentile interval
+  [-0.387094, -0.082937], seed 61, 2,000/2,000 valid draws; no naive p-value.
+- Spatial dependence: 31 state/DC groups; between-state rank-variance shares
+  22.4083% for SVI and 52.5053% for floor. Cross-border dependence remains unmodeled.
+- Missing/excluded: 2,376 native source rows; v3 excludes 32 rows from eight
+  legacy Connecticut counties and nine incompatible consumer planning regions;
+  173 Suppressed/Unknown rows remain unallocated. Of 3,135 compatible frame
+  counties, 2,558 have no county-linked record (unknown, not zero), 577 have
+  positive floors and zero have observed zero floors. No invalid eligible
+  population/SVI exclusions. Native SVI observation counts remain unknown.
+- Sensitivity: the sole outer 1% population-tail exclusion retains 565 counties,
+  rho -0.201810, preserving the weak negative category.
 
-**Interpretation:**
-
-- The same governed resource's complete fresh snapshot preserves Confirmed plus
-  Probable scope; it is retrospective evidence, not historical warehouse lineage.
-- SVI population is an ACS 2018–2022 estimate. The eight source Connecticut FIPS
-  do not join its nine current Connecticut FIPS; no crosswalk/allocation or
-  alternative denominator was invented. A mapped-county cohort may be estimable.
-- No result supports causal, incidence, individual-risk, underreporting or
-  exposure-location claims; real spatial dependence has not been assessed.
+**Interpretation:** The governed population denominator is the ACS 2018-2022
+estimate in people; overall SVI is a national percentile. The explicitly
+registered v3 geography amendment preceded statistics and preserved method,
+case scope and sensitivity. Publication selection, missing outcomes and state
+clustering limit generalization. This retrospective snapshot supports no
+incidence, causal, individual-risk, underreporting or exposure-location claim.
 
 **Feature implication:** UNKNOWN.
 
-**Product implication:** Hold SVI association-based feature decisions. Resolve
-the geography incompatibility or review an explicitly restricted matched-county
-cohort before statistics. Neither path authorizes scientific risk/causal claims,
-another source year/denominator, training or production changes.
+**Product implication:** Retain SVI as context; hold association-based feature
+and product decisions for independent review. No training or production change.
 
 **Links:** [Draft PR #89](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/pull/89),
 [EDA artifact](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/blob/codex/ml-61-svi-floor/docs/eda/61-svi-vs-published-lyme-floor.md),
 [governed CDC source profile](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-data/blob/a62f2e32c748d0b23033c19287e7594feb5857a9/config/sources/cdc_x5j9_wybp.yml).
-Exact fresh publisher/capture digests, queries and consumer release identity are
-recorded above. No merge, closure or issue comment before reviewer approval.
+Exact capture digests, queries and release identity appear above. No issue
+comment, merge or closure before reviewer approval.
