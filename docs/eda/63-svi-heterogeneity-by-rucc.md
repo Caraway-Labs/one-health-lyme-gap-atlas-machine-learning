@@ -172,3 +172,67 @@ and exact review head are in the PR. Snapshot and result JSON, extracts and
 caches remain ignored and uncommitted. Independent review, the single issue
 comment, merge and closure remain pending; this does not satisfy the merged
 evidence gate until reviewed and merged.
+
+## Parent-requested shared consumer capture for ML #61–65
+
+After the ML #63 result, the parent requested one shared capture to prevent
+sibling exports. [Shared SQL](../../sql/datasets/eda63_shared_consumer_capture.sql)
+and [manifest validator](../../scripts/eda63_shared_manifest.py) capture the
+existing authorized DEV consumer boundary, including **before and after**
+release rows, full public source/measure metadata and 17 selected atlas fields.
+The additional outcomes were selected from existing contracts and captured
+without examining their statistics. SVI/RUCC had already been analyzed above;
+this is not a claim of blindness to those two fields.
+
+The actual capture has **3,144 rows / unique canonical FIPS, 5 source metadata
+rows, 14 measure metadata rows**. Before/after release identity and bundle hash
+are identical, all metadata release versions agree, and its five-field SVI/RUCC
+subprojection exactly matches the earlier retained snapshot. Context was
+reverified and the validator checks the captured five-field context file.
+
+The bounds are 30 seconds per statement, five SELECTs with limits
+1 / 10 / 100 / 3,145 / 1, maximum 150 seconds of SQL execution. It reads the same
+three views plus `PRESENTATION.CURRENT_MEASURE_METADATA_V`; no private tables,
+alternate role, PROD query or production mutation. Existing capture is retained;
+this extension is the one additional shared projection, not five sibling exports.
+
+Retained local evidence, ignored and not committed:
+
+- `outputs/eda-shared-20261004-dev-consumer.json`, SHA-256
+  `be74f3affff2e7753f14e7b804d672fb83d21eabe8f1dc4abead873ea21e8e45`.
+- `outputs/eda-shared-20261004-dev-manifest.json`, sanitized manifest containing
+  release/context/row bounds, digests and scope limitations; no connection selector.
+  SHA-256 `5a950471806ad3247cb4fa8ef90c888506c56afbcd1f02772dbf25517aa9bd33`.
+- `outputs/shared-consumer-context.json`, actual context proof and successful
+  zero-row metadata access check. The manifest records its byte digest.
+  SHA-256 `e7d83efe86daf7343dbfc213e1e129bb6c6ac23f78be47ea95abffc5502e6f92`.
+- Normalized full county projection SHA-256
+  `5b59f2557221c570719f51d1b7cedb612ae1dd31981a35459ce5d2f42f208daa`.
+- Normalized public source/measure metadata SHA-256 respectively
+  `ad3c446bf87d9a39bc069b5684a7cfb71b38984147741559f0a365dbc78e0bb4` /
+  `705d8aea205e4abf08540638d73a61a0482d1c9581581447178d38648beeface`.
+
+The county fields are release/FIPS/state, ACS population, SVI and uninsured
+percentile/percent, RUCC, human status, **2023** human case/incidence floors,
+state-unallocated records, tick/scapularis/pacificus/burgdorferi statuses and
+evidence completeness. There is **no 2022 human numerator**; #61 must not use
+the 2023 field instead. Newly added status/outcome values are not profiled here;
+historical Unknown coverage is not treated as proof of current absence.
+
+```powershell
+# Reuse the existing immutable capture, do not repeat acquisition per sibling.
+uv run python scripts/eda63_shared_manifest.py --snapshot outputs/eda-shared-20261004-dev-consumer.json --context outputs/shared-consumer-context.json
+```
+
+[DATA #199 reconciliation](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-data/blob/main/docs/contracts/semantic-domain/story-199-svi-reconciliation-2026-10-02.md)
+confirms this existing consumer route and distinct SVI/population/percent units.
+[DATA #200 receipt handoff](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-data/issues/200#issuecomment-5965980365)
+narrows historical source-tuple binding for the **PROD September 18** release;
+it is not a receipt for this DEV September 17 capture. The current observation
+record/hash authority packet and five authoritative REVIEWED metadata envelopes
+remain unavailable through this consumer boundary. Public metadata are descriptive
+measure envelopes, not the full #191/#193 acceptance proof. Do not infer private
+source acceptance or ML feature admission from visible values, a hash shape,
+publication status or historical manifest alone. These are separate governance
+gaps, not failure to access the SVI/RUCC distributions estimated above. No denied
+private-table query was retried to resolve them.

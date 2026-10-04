@@ -9,6 +9,7 @@ import pytest
 from lyme_gap_atlas_ml.eda63 import RELEASE, County, analyze, cohort, omnibus, quantile
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from scripts.eda63_shared_manifest import validate_capture  # noqa: E402
 from scripts.eda63_svi_rucc import main  # noqa: E402
 
 
@@ -16,6 +17,20 @@ def test_rank_omnibus_known_no_ties() -> None:
     result = omnibus({1: [1, 2, 3], 2: [4, 5, 6], 3: [7, 8, 9]})
     assert result["h"] == pytest.approx(7.2)
     assert result["epsilon_squared"] == pytest.approx(5.2 / 6)
+
+
+def test_shared_capture_blocks_pointer_change_before_outcomes() -> None:
+    from lyme_gap_atlas_ml.eda63 import BUNDLE_SHA256
+
+    before = {"RELEASE_ID": RELEASE, "BUNDLE_SHA256": BUNDLE_SHA256}
+    after = {**before, "BUNDLE_SHA256": "changed"}
+    with pytest.raises(ValueError, match="pointer/identity changed"):
+        validate_capture([[{}], [before], [], [], [{}] * 3144, [after]])
+
+
+def test_shared_capture_blocks_overflow() -> None:
+    with pytest.raises(ValueError, match="shape/row bounds"):
+        validate_capture([[{}], [{}], [], [], [{}] * 3145, [{}]])
 
 
 def test_tie_correction_and_no_difference() -> None:
