@@ -2,7 +2,8 @@
 
 ## Current result: geography-amended v3
 
-**Disposition: WEAK_SIGNAL; independent scientific/code review pending.**
+**Disposition: WEAK_SIGNAL, a registered point-estimate/sensitivity classification;
+combined review pending retained-input replay.**
 Among 577 eligible non-Connecticut counties, overall SVI national percentile
 has unweighted Spearman rho **-0.223125** with the published 2022 Confirmed +
 Probable county-linked Lyme lower-bound floor per 100,000. The sole registered
@@ -59,6 +60,9 @@ draws, all defined) gives a descriptive 95% percentile interval
 **[-0.387094, -0.082937]**. It does not adjust for dependence across state
 borders or establish statistical significance. No naive p-value, Moran
 statistic, causal model, or additional sensitivity is claimed.
+The interval spans the registered NO_SIGNAL, WEAK_SIGNAL and SIGNAL magnitude
+ranges. It therefore does not support a confidence-based weak category;
+WEAK_SIGNAL classifies the observed point estimate and registered sensitivity.
 
 **Interpretation and decision:** only 577 of 3,135 compatible frame counties
 have an observed published numeric county floor. The other 2,558 are unknown;
@@ -590,13 +594,21 @@ skill and hygiene validation, Ruff, format, strict mypy and pytest:
 warning did not affect verification. The 59 synthetic #61 tests verify methods
 and guards; actual cohort counts and results above come from retained real inputs.
 
+These are the earlier local results against main
+`7174168194f48d3f8a88f0289e0a9f27cecb15e9`. Separately, the reviewer verified
+[hosted Verify run 37173977598](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/actions/runs/37173977598)
+tested reviewed head `639517fdf005ffe5633120b1c47ca914beb3049d` merged into
+`bcd5d9b` and passed **318 tests, 1 skip**. Hosted and earlier local test counts
+describe different repository states, not conflicting results.
+
 ## Single held issue-comment draft
 
 **Not posted.** Hold for independent scientific/code review.
 
 ### EDA #61 result
 
-**Disposition:** WEAK_SIGNAL (proposed; review pending).
+**Disposition:** WEAK_SIGNAL, a registered point-estimate/sensitivity
+classification (combined review pending retained-input replay).
 
 **Headline:** Overall SVI has a weak negative association with the published
 2022 Confirmed + Probable county-linked Lyme lower-bound floor per 100,000
@@ -607,6 +619,8 @@ among eligible non-Connecticut counties, never incidence.
 - N counties: 577; unweighted Spearman rho -0.223125.
 - Uncertainty: descriptive whole-state bootstrap 95% percentile interval
   [-0.387094, -0.082937], seed 61, 2,000/2,000 valid draws; no naive p-value.
+  The interval spans NO_SIGNAL, WEAK_SIGNAL and SIGNAL magnitude ranges;
+  it does not establish a confidence-based weak category.
 - Spatial dependence: 31 state/DC groups; between-state rank-variance shares
   22.4083% for SVI and 52.5053% for floor. Cross-border dependence remains unmodeled.
 - Missing/excluded: 2,376 native source rows; v3 excludes 32 rows from eight
@@ -631,7 +645,7 @@ incidence, causal, individual-risk, underreporting or exposure-location claim.
 and product decisions for independent review. No training or production change.
 
 **Links:** [Draft PR #89](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/pull/89),
-[EDA artifact](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/blob/codex/ml-61-svi-floor/docs/eda/61-svi-vs-published-lyme-floor.md),
+[Reviewed EDA artifact](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/blob/639517fdf005ffe5633120b1c47ca914beb3049d/docs/eda/61-svi-vs-published-lyme-floor.md),
 [governed CDC source profile](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-data/blob/a62f2e32c748d0b23033c19287e7594feb5857a9/config/sources/cdc_x5j9_wybp.yml).
 Exact capture digests, queries and release identity appear above. No issue
 comment, merge or closure before reviewer approval.
