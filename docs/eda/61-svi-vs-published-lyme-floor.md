@@ -19,10 +19,13 @@
 
 ## Execution evidence
 
-**Execution status: ACCESS_BLOCKED. Scientific disposition: pending. Feature implication: UNKNOWN.**
-No real association statistics, cohort counts, sensitivity result, or spatial diagnostics
-were computed. This is neither evidence of no signal nor a demonstrated NOT_ESTIMABLE
-finding. Issue #61 remains incomplete pending governed input validation and review.
+**Execution status: ACCESS_BLOCKED for required 2022 outcome/authority inputs.
+Scientific disposition: pending. Feature implication: UNKNOWN.**
+Existing consumer access to SVI/population is verified below. No real association
+statistics, eligible analysis cohort N, sensitivity result, or spatial diagnostics
+were computed. Consumer audit counts are distinct from analysis-cohort counts.
+This is neither evidence of no signal nor a demonstrated NOT_ESTIMABLE finding.
+Issue #61 remains incomplete pending required input validation and review.
 
 The pre-result registration commit is
 `fb2ec3165c0caa6db341b7a38dcc3e47589eb211`, based on main
@@ -75,9 +78,10 @@ must pass the existing governance gate (active approved/conditional decision,
 completed run, retained matching artifact, publication, retrieval, blocking DQ)
 before reuse. No approved immutable analysis snapshot was located/consumed.
 
-### Access evidence (2026-10-04 UTC)
+### Initial private-route context evidence (2026-10-04 UTC)
 
-Only connection/session context was queried. No governed data table was read.
+In the initial attempt only connection/session context was queried. No private
+governed data table was read. Later consumer-view evidence is recorded separately.
 The initial read-only query was:
 
 ```sql
@@ -98,7 +102,7 @@ It failed with Snowflake `002043 (02000)`, query ID
 `01c77e74-040b-d63b-0064-2d0701109736`: “Object does not exist, or operation
 cannot be performed.” This does not distinguish a missing schema from missing
 privilege. The mandatory five-field context check did not pass, so subsequent
-source reads stopped. No stronger role, production route, interactive login,
+private source reads stopped. No stronger role, production route, interactive login,
 grant, credential change, ingestion, or warehouse export was attempted.
 
 ### Result accounting
@@ -106,19 +110,87 @@ grant, credential change, ingestion, or warehouse export was attempted.
 | Required evidence | Actual result |
 | --- | --- |
 | Lyme source observation rows / distinct source geography | unavailable; access blocked |
-| Unique canonical counties / eligible analysis N | unavailable; access blocked |
-| Missing SVI / invalid population / absent floor / unmatched FIPS | unavailable; no real cohort inspected |
+| Current consumer county rows / unique FIPS | 3,144 / 3,144 (audit only; see follow-up) |
+| Eligible 2022 analysis N | unavailable; required numerator/authority unvalidated |
+| Consumer missing SVI / nonpositive or missing population / invalid SVI | 0 / 0 / 0 |
+| 2022 absent floor / cross-source unmatched FIPS / cohort exclusions | unavailable; no joined 2022 cohort inspected |
 | Zero versus positive observed floor / unknown outcomes | unavailable; preserved separately by code |
 | Spearman / uncertainty / distribution | not computed |
 | Registered sensitivity | not executed |
 | Material spatial dependence | not assessed on real data; county-independent inference prohibited |
 
 Product decision: do not change SVI feature selection or claim any relationship
-from this packet. The smallest unblock is an owner-verified authorized DEV
-context with an accessible explicit schema, or a reviewed immutable snapshot
-whose source authority, 2022 case scope, population compatibility, canonical
-mapping and release identity are demonstrated. This asks for evidence/access
-resolution, not a stronger role or a new scientific definition.
+from this packet. The smallest unblock is an existing-authority evidence packet
+or reviewed immutable snapshot of the required 2022 Lyme numerator and approved
+case scope, with SVI population/canonical joins and exact source/record/release
+identity demonstrated. SVI/population consumer access itself is no longer a gap.
+This asks for evidence/access resolution, not a stronger role, alternate year,
+denominator or new scientific definition.
+
+### Verified existing consumer route (follow-up, 2026-10-04 UTC)
+
+The parent identified DATA199's existing consumer route. The full current
+DATA199/200 comments, merged DATA586 audit at
+`e1d6be2e08bbfd670036f1953cad3eb11569970b`, V072 view definitions and semantic
+consumer/release contracts were read. These distinguish visible current values
+from private source/record/hash and REVIEWED metadata authority.
+
+`USE SCHEMA ONE_HEALTH_LYME_GAP_ATLAS_DEV.PRESENTATION` followed by the five-field
+context query **passed**: `MATTHEWCARAWAY`, `OH_LYME_DEV_READ`,
+`ONE_HEALTH_LYME_GAP_ATLAS_DEV`, `PRESENTATION`, `OH_LYME_DEV_INGEST_XS_WH`.
+Then `sql/validation/eda61-consumer-preflight.sql` executed once, with a 30-second
+statement timeout and SELECT limits of 2/2/2/10/50 rows. It read only existing
+`CURRENT_RELEASE_V`, `CURRENT_COUNTY_ATLAS_V`, `CURRENT_SOURCE_METADATA_V` and
+`CURRENT_MEASURE_METADATA_V`. No denied private route was retried.
+
+Actual visible current DEV release:
+`governed-2026-09-17-unknown-coverage`, bundle SHA-256
+`55192e53b0b046cfe5148c13ffe5c570f615ec233e2b5c1103247f00b1a51233`,
+schema `1.0.0`, method `semantic-1.0.0`.
+
+- Current county view: **3,144 rows / 3,144 distinct FIPS**; malformed FIPS 0,
+  missing/nonpositive population 0, missing SVI 0, invalid SVI 0, selected
+  population/SVI `-999` rows 0. This does not establish cross-source set equality,
+  source-record authority or the number of eligible 2022 outcome counties.
+- SVI source metadata reports **2022 (2018–2022 ACS)**. Measure metadata reports
+  `population_2022` as people/source-provided estimate and `svi_percentile_2022`
+  as national percentile, both ACS 2018–2022. Both exposed denominator fields
+  are null; DATA199 shows V123 constructs this null, so it is not evidence of
+  absent denominator semantics or a reviewed #191 envelope.
+- Human source metadata reports **2023**. The scoped measure query returned
+  `case_count_floor_2023` and the legacy-named `incidence_floor_2023`, period
+  2023; no `case_count_floor_2022` was returned. V072's atlas view exposes only
+  2023 human fields. This proves that this current consumer projection does
+  not supply #61's required 2022 numerator, **not** that governed 2022 source
+  records are nonexistent or scientifically unusable. No 2023 outcome was used.
+- As requested in the follow-up, a current status visibility audit returned
+  scapularis/pacificus `Unknown` in all 3,144 DEV counties; burgdorferi `Present`
+  689, `No records` 2,420, `Unknown` 35. These are real current county-view audit
+  counts, not fixtures or #61 association findings. Unknown and No records do
+  not establish a negative biological state. No PROD or restricted-source read
+  was performed and no historical tick-state assumption was substituted.
+
+DATA200 [comment 5965980365](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-data/issues/200#issuecomment-5965980365)
+and the merged DATA199 audit contribute historical source-tuple-to-PROD-bundle
+binding: build receipt `35328355391` at
+`7b80373187b8aa665891e2f39e6bf7f8c6fb35a1`, publication receipt `35362701191`,
+release `governed-2026-09-18-unknown-coverage`, bundle
+`038aa3f8c383a70699aff92c752f2bbcc6687a726d0c2f142c9f368841b42026`.
+This is useful contributed historical evidence and is not characterized as
+missing. It does not bind the current DEV release, provide a 2022 numerator,
+or establish current per-observation record/hash authority and actual REVIEWED
+metadata admission. The underlying receipts were not independently replayed here.
+
+**Remaining gap:** approved immutable 2022 confirmed/probable published
+numeric-county-FIPS frequencies, their exact scope/source/record/hash lineage,
+and defensible joins to the SVI estimate/release. An existing-authority packet
+must prove these without widening permissions. A blocked private source path
+does not invalidate the successful consumer access reported above.
+
+**Warehouse coordination:** no atlas row export or source export occurred.
+The parent assigned one outcome-blind, release-pinned consumer capture to #63;
+this issue will reuse that handoff if applicable and will not perform a second
+capture. That input alone cannot substitute the 2023 floor for the 2022 numerator.
 
 ## Reproduction and review
 
@@ -136,9 +208,18 @@ snapshot; any export must be sequential and capped, never repeatedly scanned.
 Do not use a truncated extract. Snapshot caps are 250,000 Lyme source rows
 and 3,144 SVI rows, with one extra sentinel row in SQL to detect overflow.
 
-After those prerequisites pass, the snapshot JSON has two arrays:
-`svi` (county_fips, population, svi_percentile) and `human`
+After those prerequisites pass, the snapshot JSON has three arrays:
+`canonical_fips` (independently approved canonical county identifiers),
+`svi` (source_record_id, county_fips, population, svi_percentile), and `human`
 (source_record_id, county_fips, report_year, case_status, frequency).
+SVI contains actual source rows only, never county-frame placeholders; absent
+SVI source rows are exclusions with `missing_svi_source_row`, not unmapped Lyme
+counties. A numeric Lyme or SVI FIPS outside the independent canonical frame
+fails mapping validation. Actual SVI rows with missing/sentinel fields remain
+source observations and receive field-level exclusions. Source row IDs must be
+nonempty/unique and the reviewed canonical-mapping gate must bind this frame's
+exact identity/digest to the source releases. The snapshot digest covers all
+three arrays; no county frame is inferred from SVI presence.
 The separate reviewed approval JSON requires `snapshot_sha256`, exactly the
 two governed `sources` with resource_key/release_id/data_source_version_id/
 ingestion_run_id/artifact_id/artifact_sha256/source_query_sha256, and `gates`.
@@ -168,7 +249,7 @@ No raw extracts, generated snapshots, caches, row outputs or plots are committed
 Synthetic test counts are only algorithm verification. Independent scientific
 and code review is pending; no claim of scientific PASS or issue completion.
 
-Final local verification: `uv sync --extra dev` and
+Initial local verification: `uv sync --extra dev` and
 `uv run python scripts/verify.py` passed (contract/skill/hygiene validation,
 Ruff, formatting, strict mypy, **151 passed, 1 optional Arize SDK skip**).
 The #61 tests cover ties, undefined correlation, missing-versus-zero outcome,
@@ -184,6 +265,22 @@ Prepared SQL SHA-256 (LF repository content):
   `d3139ad0a03c05defc37460ff6e3f9ce63cd714704de5e310b01cef49c861153`.
 - `sql/datasets/eda61-pinned-inputs.sql`:
   `048bdf375811172c55c1d5097405936ef1845641db5420c5907e8bef0832211b`.
+- `sql/validation/eda61-consumer-preflight.sql` (executed follow-up):
+  `f704c8ca447eecfaaa9270e2b0f0ea40e42db9e405f64d710bda88671d4489a3`.
+
+Independent review identified that the original implementation conflated SVI
+presence with the canonical county frame. Before any real replay, this was
+corrected as described above. Regression tests separately cover absent source
+rows, true mapping failure and placeholder rejection, successful snapshot
+replay, every prerequisite gate, every row cap and multi-county state resampling.
+The question, method, sensitivity and scientific eligibility specification did
+not change, and no real result statistics have been examined.
+
+Post-review local verification: `uv run python scripts/verify.py` passed all
+contract/skill/hygiene, Ruff, format, strict mypy and pytest gates: **176 passed,
+1 optional Arize SDK skip**, including 39 synthetic #61 cases. Latest ML main
+remained `c063b8aa4cf26b55cfc1b32cf0a660f955948195`. These tests establish code
+safeguards, not scientific input acceptance or a real cohort result.
 
 ## Single held issue-comment draft
 
@@ -197,34 +294,37 @@ Do not map an access failure to NOT_ESTIMABLE merely to fit the issue template.
 
 **Disposition:** pending — ACCESS_BLOCKED (scientific result unavailable).
 
-**Headline:** Governed 2022 SVI versus the published county-linked Lyme floor
-cannot yet be evaluated because required least-privilege DEV context validation
-failed before source reads.
+**Headline:** SVI/population are visible in the existing authorized consumer
+view, but #61's required 2022 Lyme numerator and exact authority are not yet
+available in a validated reproducible input.
 
 **Evidence:**
 
-- N counties: unavailable; no real cohort was inspected.
+- N counties: eligible 2022 N unavailable; current consumer audit is 3,144 unique
+  FIPS, not analysis N.
 - Spearman/Pearson: not computed; Spearman preregistered.
 - Uncertainty: unavailable; no naive county-independent p-value.
-- Missing/excluded: unavailable; source-row and county accounting implemented.
+- Missing/excluded: consumer SVI/population checks pass; 2022 outcome missingness,
+  joins and exclusions remain unavailable. Source-row/county accounting implemented.
 - Sensitivity result: not executed; outer 1% population tails preregistered.
 
 **Interpretation:**
 
 - Access failure does not demonstrate no association or scientific NOT_ESTIMABLE.
-- SVI population is an ACS 2018–2022 period estimate; 2022 case scope and live
-  release/denominator/mapping compatibility remain unvalidated.
+- SVI population is an ACS 2018–2022 period estimate; 2022 case scope and exact
+  outcome/SVI source-record and release compatibility remain unvalidated.
 - No result supports causal, incidence, individual-risk, underreporting or
   exposure-location claims; real spatial dependence has not been assessed.
 
 **Feature implication:** UNKNOWN.
 
-**Product implication:** Hold SVI feature decisions until an authorized explicit
-DEV schema or reviewed immutable snapshot resolves the named prerequisites.
-Do not substitute another denominator or year, or infer signal from fixtures.
+**Product implication:** Hold SVI feature decisions until an existing-authority
+packet or reviewed immutable 2022 snapshot resolves the named prerequisites.
+Consumer access is verified; do not substitute another denominator/year, or
+infer signal from fixtures. Reuse the parent's single capture where applicable.
 
 **Links:** [Draft PR #89](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/pull/89),
 [EDA artifact](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/blob/codex/ml-61-svi-floor/docs/eda/61-svi-vs-published-lyme-floor.md),
 [candidate source release manifest](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-data/blob/eb984723080c9ff3a3484a6d30f9adb0197bd847/docs/contracts/semantic-release/governed-2026-09-15-manifest.json).
-Exact source versions, runs and digests appear above and remain subject to live
-source validation. No merge, closure or issue comment before requesting review.
+Exact source versions, runs and digests appear above and remain subject to the
+named authority gates. No merge, closure or issue comment before reviewer approval.

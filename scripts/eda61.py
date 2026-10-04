@@ -53,9 +53,9 @@ def replay(snapshot: Path, approval: Path) -> dict[str, object]:
             if len(value) != 64 or any(c not in "0123456789abcdef" for c in value):
                 raise ValueError(f"invalid source digest: {field}")
     data = json.loads(raw)
-    if len(data["human"]) > 250000 or len(data["svi"]) > 3144:
+    if len(data["human"]) > 250000 or len(data["svi"]) > 3144 or len(data["canonical_fips"]) > 3144:
         raise ValueError("snapshot exceeds the reviewed extraction row caps")
-    counties, accounting = cohort(data["svi"], data["human"])
+    counties, accounting = cohort(data["svi"], data["human"], data["canonical_fips"])
     return {
         "snapshot_sha256": digest,
         "source_evidence": evidence,

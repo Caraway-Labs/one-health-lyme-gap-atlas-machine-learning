@@ -36,14 +36,26 @@ def number(value: object) -> float | None:
 
 
 def cohort(
-    svi: Sequence[Mapping[str, object]], human: Sequence[Mapping[str, object]]
+    svi: Sequence[Mapping[str, object]],
+    human: Sequence[Mapping[str, object]],
+    canonical_fips: Sequence[str],
 ) -> tuple[list[County], dict[str, object]]:
     """Consume pinned rows after authority/scope checks; never impute missing outcomes."""
+    canonical = set(canonical_fips)
+    if len(canonical) != len(canonical_fips) or any(not FIPS.fullmatch(f) for f in canonical):
+        raise ValueError("invalid or duplicate canonical county frame")
     identity: dict[str, Mapping[str, object]] = {}
+    svi_record_ids: set[str] = set()
     for row in svi:
         fips = str(row.get("county_fips", ""))
         if not FIPS.fullmatch(fips) or fips in identity:
-            raise ValueError("invalid or duplicate canonical SVI FIPS")
+            raise ValueError("invalid or duplicate SVI FIPS")
+        if fips not in canonical:
+            raise ValueError("SVI FIPS absent from canonical mapping")
+        record_id = str(row.get("source_record_id") or "")
+        if not record_id or record_id in svi_record_ids:
+            raise ValueError("missing or duplicate immutable SVI source-record identity")
+        svi_record_ids.add(record_id)
         identity[fips] = row
     totals: defaultdict[str, float] = defaultdict(float)
     rows = Counter[str]()
@@ -69,24 +81,29 @@ def cohort(
         if frequency is None or frequency < 0 or not frequency.is_integer():
             raise ValueError("eligible published frequency must be a nonnegative integer")
         rows["numeric_fips_scope_rows"] += 1
-        if fips not in identity:
+        if fips not in canonical:
             unmatched.add(fips)
             rows["unmatched_source_rows"] += 1
             continue
         totals[fips] += frequency
     if unmatched:
-        raise ValueError("numeric Lyme FIPS absent from canonical SVI mapping")
+        raise ValueError("numeric Lyme FIPS absent from canonical mapping")
     exclusions = Counter[str]()
     complete: list[County] = []
-    for fips, row in sorted(identity.items()):
-        population, percentile = number(row.get("population")), number(row.get("svi_percentile"))
+    for fips in sorted(canonical):
+        svi_source = identity.get(fips)
+        population = number(svi_source.get("population")) if svi_source is not None else None
+        percentile = number(svi_source.get("svi_percentile")) if svi_source is not None else None
         reasons = []
         if fips not in totals:
             reasons.append("no_county_linked_record")
-        if population is None or population <= 0:
-            reasons.append("invalid_population")
-        if percentile is None or not 0 <= percentile <= 1:
-            reasons.append("missing_or_invalid_svi")
+        if svi_source is None:
+            reasons.append("missing_svi_source_row")
+        else:
+            if population is None or population <= 0:
+                reasons.append("invalid_population")
+            if percentile is None or not 0 <= percentile <= 1:
+                reasons.append("missing_or_invalid_svi")
         exclusions.update(reasons)
         if reasons:
             exclusions["unique_excluded_counties"] += 1
@@ -99,11 +116,12 @@ def cohort(
     return complete, {
         "source_observation_rows": len(human),
         "svi_source_rows": len(svi),
-        "canonical_unique_counties": len(identity),
+        "svi_unique_source_counties": len(identity),
+        "canonical_unique_counties": len(canonical),
         "county_linked_outcome_counties": len(totals),
         "primary_unique_counties": len(complete),
         "outcome_states_canonical_counties": {
-            "no_county_linked_record": len(identity) - len(totals),
+            "no_county_linked_record": len(canonical) - len(totals),
             "observed_zero_floor": sum(value == 0 for value in totals.values()),
             "observed_positive_floor": sum(value > 0 for value in totals.values()),
         },
