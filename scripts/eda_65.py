@@ -9,6 +9,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from lyme_gap_atlas_ml.evidence_association_65 import analyze_counties
+from lyme_gap_atlas_ml.shared_capture_65 import PROD_RELEASE, SharedInputError, load_shared_capture
 from lyme_gap_atlas_ml.snowflake.evidence_65 import acquire, open_bounded_connection
 
 
@@ -17,10 +18,48 @@ def main() -> int:
     action = parser.add_mutually_exclusive_group(required=True)
     action.add_argument("--acquire", action="store_true")
     action.add_argument("--snapshot", type=Path)
+    action.add_argument("--shared-counties", type=Path, help="Local #63 PROD capture; no network")
     parser.add_argument("--expected-sha256", help="Required for replay; digest from original run")
+    parser.add_argument("--provenance", type=Path)
+    parser.add_argument("--expected-provenance-sha256")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
+    if args.shared_counties:
+        if not (args.expected_sha256 and args.provenance and args.expected_provenance_sha256):
+            parser.error("shared input requires county digest, provenance and provenance digest")
+        try:
+            rows, provenance = load_shared_capture(
+                args.shared_counties,
+                args.provenance,
+                args.expected_sha256,
+                args.expected_provenance_sha256,
+            )
+            result = analyze_counties(rows, PROD_RELEASE)
+        except (SharedInputError, OSError, ValueError) as error:
+            # No data/counts/connector messages are printed for an invalid input.
+            result = {
+                "status": "INPUT_BLOCKED",
+                "scientific_estimability": "UNASSESSED",
+                "counts": None,
+                "error_type": type(error).__name__,
+            }
+            (args.output / "summary.json").write_text(
+                json.dumps(result, indent=2, sort_keys=True), encoding="utf-8"
+            )
+            print(json.dumps(result, indent=2, sort_keys=True))
+            return 2
+        result.update(
+            county_sha256=args.expected_sha256,
+            provenance_sha256=args.expected_provenance_sha256,
+            provenance=provenance,
+            scope_amendment="65-prod-scope-amendment/v2",
+        )
+        (args.output / "summary.json").write_text(
+            json.dumps(result, indent=2, sort_keys=True), encoding="utf-8"
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return 0
     if args.acquire:
         connection = open_bounded_connection()
         try:

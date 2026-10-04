@@ -1,6 +1,13 @@
 # EDA #65: vector/pathogen documentation states
 
-**Disposition: NOT_ESTIMABLE.** The registered association has zero eligible
+**Issue status: INPUT_PENDING for PROD; scientific review pending.** See the
+pre-result [PROD scope amendment](../methodology/65-prod-scope-amendment.md),
+registered at `fb0a6a8`. The DEV result below does not settle #65. The shared
+PROD capture is owned by #63; no duplicate export or PROD statistics have been
+performed here. The same pairing/category/method rules will be applied after
+the retained input and provenance gates pass.
+
+**DEV-only disposition: NOT_ESTIMABLE.** The v1 registered association has zero eligible
 counties in the current governed DEV release: both vector-species statuses are
 Unknown for every county. This is a demonstrated data limitation, **not an
 access blocker, zero association, or biological absence**.
@@ -193,8 +200,13 @@ Per the subsequent shared-capture coordination instruction, the existing DEV
 capture was reported and no second county export was made. PROD scientific
 estimability is **unassessed**, not proven NOT_ESTIMABLE. This check does not
 expand or rewrite the frozen DEV analysis or infer source absence from the
-release's name. An extension would need its own recorded scope before statistics
-and an existing approved immutable paired input, rather than another ad hoc scan.
+release's name. The [PROD scope amendment](../methodology/65-prod-scope-amendment.md)
+is now registered at `fb0a6a8`, before PROD statistics. The local-only shared
+input path is implemented and synthetically tested; the precise fields,
+sidecar keys, source/release/receipt/context/digest gates and replay command are
+in the [shared-capture handoff](../methodology/65-shared-capture-handoff.md).
+Actual shared input and independent scientific review remain pending. No
+synthetic counts are substituted for PROD evidence, and no extra scan is made.
 
 Reproduce the metadata-only check, without county or warehouse export:
 

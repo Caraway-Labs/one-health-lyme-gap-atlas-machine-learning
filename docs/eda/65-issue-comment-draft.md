@@ -2,6 +2,12 @@
 
 Do not post before independent scientific/code review of the exact PR head.
 
+**Superseded DEV-only candidate; not ready as the final #65 result comment.**
+The pre-result PROD amendment is registered at `fb0a6a8`; shared capture and
+PROD analysis are pending. Replace the disposition, eligible N, table, effect,
+uncertainty and implications below after that analysis and scientific review.
+Keep #65 open. Retain the DEV counts as release-specific evidence only.
+
 ### EDA #65 result
 
 **Disposition:** NOT_ESTIMABLE
