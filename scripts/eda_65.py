@@ -123,7 +123,9 @@ def main() -> int:
     if snapshot["status"] != "ACQUIRED":
         result = {k: v for k, v in snapshot.items() if k != "counties"}
         result["snapshot_sha256"] = digest
-        result["disposition"] = "NOT_ESTIMABLE"
+        result["disposition"] = "INPUT_BLOCKED"
+        result["scientific_estimability"] = "UNASSESSED"
+        result["counts"] = None
         result["reason"] = "access/execution blocked; no empirical cohort inspected"
         exit_code = 2
     else:
