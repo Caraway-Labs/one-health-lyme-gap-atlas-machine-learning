@@ -1,5 +1,40 @@
 # EDA #61: SVI and published county-linked Lyme floor
 
+## Geography-informed pre-association amendment v3
+
+Independent scientific review and the requesting owner explicitly approve this
+eligible-county restriction before any association statistics are computed.
+The original national preregistration did not explicitly exclude Connecticut;
+this is an honestly labeled geography-informed amendment, not a claim that
+the original national cohort was unchanged.
+
+Pin incompatible CDC historical county FIPS to `09001`, `09003`, `09005`,
+`09007`, `09009`, `09011`, `09013`, `09015`, and incompatible SVI/ACS planning
+region FIPS to `09110`, `09120`, `09130`, `09140`, `09150`, `09160`, `09170`,
+`09180`, `09190`. Review identifies these as Connecticut's county-to-planning-
+region boundary change. Exclude these exact units for geographic incompatibility
+only, without outcome-based selection, geographic allocation or a crosswalk.
+Any other unmatched FIPS remains a strict failure. Any other `09`-prefix unit
+is an unexpected geography and must also fail, not be silently excluded.
+
+Validate the entire digest-pinned publisher/consumer captures first. Then remove
+the eight historical Connecticut geographies from analysis-source membership
+and the nine planning regions from the canonical analysis frame. Retain all
+native rows in source accounting: 2,376 = 2,171 matched numeric rows + 32
+Connecticut-incompatible rows + 173 unallocated rows; consumer 3,144 = nine
+incompatible Connecticut units + 3,135 non-Connecticut frame units. Native SVI
+source row counts remain unknown. The 577 exact-matched candidates become
+primary N only after unchanged population/percentile validity checks pass.
+
+The estimand is now unweighted monotonic association among eligible non-
+Connecticut counties with an observed published 2022 Confirmed + Probable
+county-linked floor and compatible SVI context. Source, year, case scope,
+ACS 2018–2022 population estimate, floor-per-100,000 naming, Spearman,
+interpretation thresholds, one 1% population-tail sensitivity and state-cluster
+bootstrap settings remain unchanged. No incidence, causal or historical as-of
+claim. Use the already-retained inputs, no new acquisition/SVI/PROD query,
+warehouse write, ingestion or training. Commit this amendment before execution.
+
 ## Current research result (input amendment v2)
 
 **Execution: STOP — MAPPING_BLOCKED. Proposed disposition: NOT_ESTIMABLE under
