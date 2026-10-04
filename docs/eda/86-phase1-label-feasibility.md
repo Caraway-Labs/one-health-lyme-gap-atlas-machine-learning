@@ -2,10 +2,11 @@
 
 Research date: 2026-10-04 UTC. Decision proposed for independent owner review:
 **BLOCK** a Phase 1 supervised experiment now. **No primary or fallback label
-is admitted.** Best next qualification candidate: Pennsylvania's official
-county report-year Lyme counts (A). Conditional fallback research: CDC
-publication-evidence transitions (C), not biological emergence. This is a
-bounded negative decision, not proof that defensible labels cannot exist.
+is admitted.** Best next qualification candidate: Maryland's official compilation (A),
+conditional on reproducing the reviewer receipt; PA is the locally reproduced fallback. Conditional fallback research: CDC
+publication-evidence transitions (C), not biological emergence. Published outcomes and coarse transitions exist. BLOCK concerns the unapproved
+priority proxy, historical predictor availability and later holdout; late
+outcome publication alone does not preclude retrospective evaluation.
 
 The user decision is where epidemiologists should give surveillance more
 attention. None of these outcomes directly measures the benefit of that
@@ -17,10 +18,12 @@ No production target, threshold, experiment, or model is adopted here.
 
 | Candidate | Proposed research definition and grain | Observed support | Scientifically usable Phase 1 label count | Disposition |
 | --- | --- | --- | --- | --- |
-| A: current CDC human Lyme | County of residence/report-year Y, reported Confirmed+Probable count; possible next-year count or rate regression | 45,513 demographic/status rows; 7,681 distinct published county-years, 2008–2023 | No exact mature totals admitted under current governed floor contract; strict historical eligibility unproved | **DEFER**; BLOCK exact totals/rates from current floors |
-| A alternative: PA DOH | County/report-year count, with publisher suppression; annual forward horizon only if reviewed | 67 county rows × 45 years = 3,015 cells, 1980–2024; 2,358 numeric, 657 suppressed | UNKNOWN after case-inclusion, revision, geography and historical-availability qualification; none admitted | **DEFER**, best bounded next lead |
-| B: CDC tracker/NSSP | Native region/week or month ED tick-bite visits per 100,000 ED visits | Five regions; controls 2017–2026, completeness unknown | County labels unsupported; native regional sample count UNKNOWN | **BLOCK** county target; **DEFER** regional comparator |
-| C: CDC tick/pathogen | New publisher-supported county/species/pathogen evidence between dated releases; proposed next-release horizon | Current cumulative-through-2025 county status; repeated eligible historical snapshots not proven | Transition/class counts UNKNOWN, none admitted | **DEFER** publication-event formulation; BLOCK annual incidence/absence inference |
+| A: current CDC human Lyme | County of residence/report-year Y, reported Confirmed+Probable count; possible next-year count or rate regression | 45,513 demographic/status rows; 7,681 distinct published county-years, 2008ΓÇô2023 | No exact mature totals admitted under current governed floor contract; strict historical eligibility unproved | **DEFER**; BLOCK exact totals/rates from current floors |
+| A alternative: PA DOH | County/report-year count, with publisher suppression; annual forward horizon only if reviewed | 67 county rows ├ù 45 years = 3,015 cells, 1980ΓÇô2024; 2,358 numeric, 657 suppressed | UNKNOWN after case-inclusion, revision, geography and historical-availability qualification; none admitted | **DEFER**, locally reproduced fallback |
+| A alternative: Maryland | County-year compilation, meaning to qualify | Reviewer verified 288 numeric cells, 24 jurisdictions, 2011–2022; local access 403/404 | None admitted; local receipt UNKNOWN | **DEFER**, conditional preferred lead |
+| A alternative: Wisconsin | Residence/onset-or-specimen-year count | 2,520 count county-years, 72 counties, 1991–2025 | None admitted; method eras and historical predictors unqualified | **DEFER**, temporal-depth lead |
+| B: CDC tracker/NSSP | Native region/week or month ED tick-bite visits per 100,000 ED visits | Five regions; controls 2017ΓÇô2026, completeness unknown | County labels unsupported; native regional sample count UNKNOWN | **BLOCK** county target; **DEFER** regional comparator |
+| C: CDC tick/pathogen | New publisher-supported county/species/pathogen evidence between dated releases; proposed next-release horizon | Current cumulative-through-2025 county status; repeated eligible historical snapshots not proven | Eisen 2016: 654 coarse 1996-to-2015 changes; no admitted examples | **DEFER** publication-event formulation; BLOCK annual incidence/absence inference |
 | C: NEON | Future qualifying individual test/event result at native site/plot, with completed effort/QA | Existing governed run has 171 canonical observations, one site/month/release | County labels unsupported; positive/negative native test counts UNKNOWN to this read role | **BLOCK** county target; site question would be a separate pivot |
 
 "None admitted" is an evidence decision, not a surveillance zero. UNKNOWN
@@ -50,8 +53,8 @@ counts, not their private run-pinned lineage or all category-completeness checks
 
 | Source/window | Source rows | Unallocated FIPS rows | Published county-years | Distinct counties | FIPS state prefixes |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| qtbi-xd4i, 2008–2021 | 40,468 | 2,855 | 6,445 | 782 | 41 |
-| x5j9-wybp, 2022–2023 | 5,045 | 363 | 1,236 | 688 | 35 |
+| qtbi-xd4i, 2008ΓÇô2021 | 40,468 | 2,855 | 6,445 | 782 | 41 |
+| x5j9-wybp, 2022ΓÇô2023 | 5,045 | 363 | 1,236 | 688 | 35 |
 
 The 840-county union is **prior #110 evidence**, not independently recounted
 by this script. The post-2022 query has 36 source state labels including
@@ -70,7 +73,7 @@ and publisher state labels are separately counted.
 Geographic concentration: WI/PA/NY/MN/VA account for 3,536 of 6,445 pre-2022
 keys (54.9%); the corresponding post-2022 source labels account for 621 of
 1,236 (50.2%). These are published-key concentration, not case burden shares.
-The 2011–2016 window has 2,765 keys and 2017–2019 has 1,573. Prior #110
+The 2011ΓÇô2016 window has 2,765 keys and 2017ΓÇô2019 has 1,573. Prior #110
 reports 626/639 counties respectively, 327 present in all six primary years,
 424 in all three replication years, and only 189 across all 14 pre-2022 years.
 Those overlap counts are inspected earlier evidence, not new live counts.
@@ -110,7 +113,7 @@ through this path remain UNKNOWN.
 
 Rates need governed same-year county population and geography. [DATA #111](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-data/issues/111)
 names Census PEP July 1 county estimates and exact archived vintages as the
-candidate denominator; current SVI 2022/ACS 2018–2022 is not that series.
+candidate denominator; current SVI 2022/ACS 2018ΓÇô2022 is not that series.
 Later intercensal revisions may evaluate retrospective rates but cannot be
 forecast inputs before their release. No population acquisition is justified
 until numerator/target feasibility passes. Count regression avoids a target
@@ -121,22 +124,22 @@ DATA #430 separately from DATA #431 timing. Dropping 2022 alone is no repair.
 ### Official alternatives: a concrete PA qualification lead
 
 The [PA DOH dashboard/data page](https://www.pa.gov/agencies/health/diseases-conditions/infectious-disease/vectorborne-diseases/tick-diseases/dashboard-data)
-links the [1980–2024 workbook](https://www.pa.gov/content/dam/copapwp-pagov/en/health/documents/topics/documents/diseases-and-conditions/vectorborne/OfficialLymeByReport2024withMap.xlsx).
+links the [1980ΓÇô2024 workbook](https://www.pa.gov/content/dam/copapwp-pagov/en/health/documents/topics/documents/diseases-and-conditions/vectorborne/OfficialLymeByReport2024withMap.xlsx).
 Its county count worksheet has 67 unique county names, 45 year columns, no
 missing cells, explicit numeric zeros and `*` suppression. Numeric cells are
 exact **displayed source counts**, not certified mature/complete target labels.
 No FIPS mapping is manufactured. Workbook notes identify PA-NEDSS/Vital
 Statistics, investigation-resource differences, enhanced surveillance in
-Butler/Delaware/York in 2012 and Allegheny in 2014, pandemic effects in 2020–21,
+Butler/Delaware/York in 2012 and Allegheny in 2014, pandemic effects in 2020ΓÇô21,
 and the 2022 lab-based case-definition change.
 
 | Window | County-year cells | Numeric positive | Explicit numeric zero | Suppressed | Numeric cells |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| 1980–2024 | 3,015 | 1,659 | 699 | 657 | 2,358 |
-| 2011–2016 | 402 | 389 | 3 | 10 | 392 |
-| 2017–2019 | 201 | 200 | 0 | 1 | 200 |
-| 2020–2021 | 134 | 95 | 12 | 27 | 107 |
-| 2022–2024 | 201 | 200 | 0 | 1 | 200 |
+| 1980ΓÇô2024 | 3,015 | 1,659 | 699 | 657 | 2,358 |
+| 2011ΓÇô2016 | 402 | 389 | 3 | 10 | 392 |
+| 2017ΓÇô2019 | 201 | 200 | 0 | 1 | 200 |
+| 2020ΓÇô2021 | 134 | 95 | 12 | 27 | 107 |
+| 2022ΓÇô2024 | 201 | 200 | 0 | 1 | 200 |
 
 These positive/zero counts describe the **source count sign**, not a chosen
 surveillance-priority class. `*` is never negative. The note says counts below
@@ -145,11 +148,11 @@ publisher clarification, rather than assuming which nonzero values were
 redacted. No classification threshold is adopted. Numeric annual cohorts have
 depth for a prospective holdout *in principle*, but release lineage and
 methodology comparability must still be qualified. The cohort is one state;
-national generalization cannot be claimed. 2014–2018 have 67 numeric positive
+national generalization cannot be claimed. 2014ΓÇô2018 have 67 numeric positive
 cells per year, making a presence classifier trivial and unsuitable.
 
 The workbook's core `modified` value is 2025-09-12T18:36:28Z, its `created`
-value is 2015-06-02T22:28:57Z, and its title is stale (1980–2021). None is a
+value is 2015-06-02T22:28:57Z, and its title is stale (1980ΓÇô2021). None is a
 verified public release timestamp. It is a current historical compilation,
 not 45 archived vintages. [2021 report](https://www.pa.gov/content/dam/copapwp-pagov/en/health/documents/topics/documents/diseases-and-conditions/vectorborne/Pennsylvania%20Lyme%20Disease%20Annual%20report%202021.pdf)
 is cover-dated June 2023, includes Confirmed+Probable cases and redacts <5;
@@ -167,7 +170,7 @@ inventory:
 - CDC's [current download page](https://www.cdc.gov/lyme/data-research/facts-stats/surveillance-data-1.html)
   lists state/locality and region case tables and national onset tables; county
   residence/onset pairs are not established by combining these. [WONDER](https://wonder.cdc.gov/nndss-annual-summary.html)
-  annual tables offer state/region strata, not county labels. Dated [2008–2015 MMWR](https://www.cdc.gov/mmwr/volumes/66/ss/ss6622a1.htm)
+  annual tables offer state/region strata, not county labels. Dated [2008ΓÇô2015 MMWR](https://www.cdc.gov/mmwr/volumes/66/ss/ss6622a1.htm)
   and [case maps](https://www.cdc.gov/lyme/data-research/facts-stats/lyme-disease-case-map.html)
   are evidence of surveillance publications, not complete county total files.
 - Three historically cited official CDC county file URLs returned HTTP 404
@@ -177,7 +180,7 @@ inventory:
   CDC Stacks/publisher archives remains a bounded #111 question.
 - [New York annual reports](https://www.health.ny.gov/statistics/diseases/communicable/index.htm)
   and the 2019/2022 county PDFs were found, but direct opens returned 403.
-  Indexed official 2022 notes describe 2013–2021 sampling/extrapolation in
+  Indexed official 2022 notes describe 2013ΓÇô2021 sampling/extrapolation in
   participating counties. Usable county counts and vintages remain UNKNOWN;
   estimated totals must not be relabeled as exact individual case totals.
 - [Minnesota statistics](https://www.health.mn.gov/diseases/lyme/statistics.html)
@@ -192,14 +195,14 @@ reported counts, not national incidence and not an automatic Phase 1 proxy.
 If eventually selected, regression/ranking and a prior-count baseline are
 plausible; errors and selection bias from suppression require explicit review.
 
-## B: tracker/NSSP — reuse DATA #384, no duplicate acquisition
+## B: tracker/NSSP ΓÇö reuse DATA #384, no duplicate acquisition
 
 [Merged PR #591](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-data/pull/591)
 (merge `9d3dece40a419ebf1b8a14d10672815a4da1b682`, 2026-10-03) records
 DEFER and public screenshots. Native regions are Midwest, Northeast, South
 Central, Southeast and West. Rate denominator is ED visits, not residents.
 The signal reflects text-detected tick-related ED care, not diagnosed Lyme.
-Weekly/monthly panels and 2017–2026 controls do not prove complete historic
+Weekly/monthly panels and 2017ΓÇô2026 controls do not prove complete historic
 observations. The inspected refresh is September 27, 2026; latest-month data
 are preliminary; December 2025 quality filters create a method-era concern.
 
@@ -239,10 +242,10 @@ and a missing/`No records` county is not a biological negative. A delta between
 snapshots can reflect new surveillance, old observation backfill, changed
 identification or revision. No repeated publisher-vintage series with
 availability and row revision lineage was proven by this authorized path.
-Actual transition positives, negatives, counties/states and concentration are
-UNKNOWN. Current snapshot county totals are not independent annual examples.
+Current annual transition counts remain UNKNOWN. Eisen 2016 supplies a
+concrete coarse comparison, evaluated in the independent-review amendment below. Current snapshot county totals are not independent annual examples.
 
-Conditional fallback definition: for county × species/pathogen, a **newly
+Conditional fallback definition: for county ├ù species/pathogen, a **newly
 published qualifying evidence record by the next dated release**, among a
 defined at-risk evidence cohort. The event is publication, not newly acquired
 biological presence. A no-new-publication comparator requires proven complete
@@ -299,7 +302,7 @@ SoQL `year,state,fips,count(*) as n,sum(frequency) as published_floor`, grouped
 and ordered by `year,state,fips`, `$limit=10000`. Each response is capped at
 2,000,000 bytes, timeout 30 seconds; a limit-sized result fails closed.
 PA mode makes one fixed 2 MB request and enforces a 10 MB uncompressed ZIP
-cap, the exact count worksheet, 67 distinct names and 1980–2024 range. Neither
+cap, the exact count worksheet, 67 distinct names and 1980ΓÇô2024 range. Neither
 persists raw extracts nor certifies scientific eligibility. Changed schema,
 duplicate aggregate keys and truncation block instead of producing false counts.
 Changing publisher responses can change digests; these are retrieval receipts,
@@ -341,11 +344,12 @@ persistent connection configuration, PROD, training, paid calls or Web changes.
 1. Independent review of this exact PR head, counts, semantics and proposed
    result comment; retain #86 open until the reviewed artifact is merged and
    its single decision-ready comment is authorized/published.
-2. Through existing DATA #110/#111, qualify PA **without ingestion**: verify
+2. Through existing DATA #110/#111, reproduce Maryland receipt and compare
+   its unsuppressed windows with PA **without ingestion**: verify
    report-year/residence definition and category inclusion by era; suppression
    intervals; reconcile 2021 report/workbook discrepancy; obtain dated prior
    vintages and exact revision/maturity evidence; verify county/FIPS identity.
-   Start with 2011–2016 and separately 2017–2019; assess pandemic/post-2022
+   Start with 2011ΓÇô2016 and separately 2017ΓÇô2019; assess pandemic/post-2022
    separately. DATA #113 then evaluates availability. Stop if these cannot be
    proven with bounded evidence. No blanket national source build is required.
 3. ML #23 records whether reported counts can answer Phase 1 or belong solely
@@ -353,8 +357,8 @@ persistent connection configuration, PROD, training, paid calls or Web changes.
    unsupervised/descriptive surveillance review formulation rather than
    learning the existing heuristic. No such pivot is implemented here.
 4. Reuse #384 for regional qualification. Reuse #429 for CDC state semantics;
-   first prove two dated complete releases and revision lineage before any
-   transition count/training proposal. A NEON site pivot needs separate scope.
+   reconcile Eisen narrative/table and qualify timing, identities and a later
+   comparable holdout before an experiment proposal. A NEON site pivot needs separate scope.
 
 Suggested experiment sufficiency considerations (not approved thresholds):
 multiple comparable outcome years plus an untouched later-year holdout;
@@ -364,9 +368,115 @@ No numerical production sufficiency threshold is invented.
 
 Validation: isolated ML branch from `c063b8aa4cf26b55cfc1b32cf0a660f955948195`;
 `uv run --no-sync python scripts/verify.py` passes contract validation, Ruff
-lint/format and mypy; pytest **140 passed, 1 skipped** (optional Arize SDK
+lint/format and mypy; pytest **142 passed, 1 skipped** (optional Arize SDK
 not installed). Latest-main reconciliation and `git diff --check` pass.
 Final head is recorded in [draft PR #87](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/pull/87).
 The [single result-comment draft](86-result-comment-draft.md) is review-only;
 no issue comment has been published and no issue is closed.
-Other worktrees, including concurrent #61–65 sessions, were not modified.
+Other worktrees, including concurrent #61ΓÇô65 sessions, were not modified.
+
+
+## Independent-review amendment
+
+This evidence supersedes the original artifact's PA-first recommendation and
+generic unknown transition counts. Overall **BLOCK** a supervised Phase 1
+experiment now; **DEFER** concrete human-outcome and status-transition leads.
+Outcomes exist. The blockers are an unapproved surveillance-priority proxy,
+unproved historical predictor availability and an unqualified later holdout.
+Late outcome availability alone does not reject a retrospective experiment:
+predictors must be frozen at the decision date; outcomes may mature later.
+
+### A: Maryland versus PA and Wisconsin
+
+The independent reviewer verified the [official Maryland PDF](https://health.maryland.gov/phpa/OIDEOR/CZVBD/Shared%20Documents/Lyme%20Disease%20Data%202011%20to%202022.pdf):
+24 jurisdictions (Baltimore City included) × 12 years = **288 numeric cells**,
+279 positive / 9 explicit zero; no suppression; all 12 sums match statewide
+totals. 2011–2016: 144 cells, 139 positive / 5 zero. 2017–2019: 72 cells,
+71 positive / 1 zero. Confirmed+probable through 2021 and probable-only 2022
+must be separate eras. May 1, 2024 is the compilation revision, not historical
+availability. Attribution and year basis remain unspecified.
+
+These counts are reviewer-reproduced, **not freshly reproduced by this laptop**:
+bounded default GET returned 403, browser-user-agent GET returned 404, web
+retrieval returned 404. Local PDF bytes/digest remain UNKNOWN. Access failure
+is not a zero count. Reproduce with one official PDF GET capped at 2 MB and
+30 seconds; extract 24 jurisdiction rows and 12 year columns; validate numeric
+cells, unique jurisdiction-year keys and column sums against the state row.
+Keep Baltimore City separate. Obtain an accessible official receipt before
+admission; do not manufacture a digest or substitute reviewer counts for bytes.
+
+**Maryland is the preferred next qualification lead**, conditional on source
+reproduction: unsuppressed primary-window cells and reconciled totals offer a
+clearer contract than PA's 10 suppressed cells in 2011–2016. PA remains the
+locally reproduced fallback with 67 versus 24 jurisdictions. Neither is an
+approved surveillance-priority label. DATA #110/#113 must resolve case meaning,
+geography, dated predictors/revisions and holdout; ML #23 must approve purpose.
+
+The [Wisconsin CSV](https://www.dhs.wisconsin.gov/epht/lyme-county.csv) freshly
+reproduces 5,040 source rows: **2,520 distinct count county-years** and 2,520
+rate rows. 72 FIPS × 35 years (1991–2025), exactly 72 each year; **2,264
+positive / 256 explicit zero / no unavailable count cells**. Rate rows are
+not extra outcomes. One-state geographic concentration limits external validity.
+Retrieved 2026-10-04 UTC; 266,790 bytes; SHA-256
+`285129992e2e272c5427bf66c33b2e664cf0ca05dcd1abf98d0b815140d3c1a5`.
+Reproduce: `uv run --no-sync python scripts/research_86.py --alternative wi`.
+
+[Official methods](https://www.dhs.wisconsin.gov/epht/lyme.htm), revised
+October 2, 2026, define residence and earlier onset/specimen year. Confirmed-only
+1991–2007, confirmed+probable from 2008, partial surveillance 2012–2021,
+2022 definition change and 2025 electronic rash reporting prevent a stable
+35-year regime assumption. County undercount during partial surveillance is
+explicit; statewide estimated cases were not available by county. Methods
+also describe 2020 population reused for 2021–2022 rates. Current compilation
+does not establish 35 publication vintages. **DEFER** this temporal-depth lead;
+count zeros do not establish no infection, and rates do not measure true incidence.
+
+### C: concrete vector-status transition support
+
+[CDC-authored Eisen et al. 2016](https://pmc.ncbi.nlm.nih.gov/articles/PMC4844559/)
+compares December 1996 and August 2015 cumulative I. scapularis status.
+DOI 10.1093/jme/tjv237; J Med Entomol 53(2):349–386. Narrative:
+**262 no-record→established, 184 reported→established, 208 no-record→reported**,
+or **654 changed county-intervals**, including 446 establishment upgrades.
+Its 1,420 recorded counties/37 states in 2015 are source support, not annual
+examples. No-record does not mean absence; change does not prove biological
+emergence, pathogen detection, human incidence or surveillance benefit.
+
+Bounded HTML retrieved 2026-10-04 UTC: 727,581 bytes, SHA-256
+`7e86f3d28978b27b1baedb59e1179f819b6abc04b8557b2b190b0ae0794e748d`.
+Reproduce: `uv run --no-sync python scripts/research_86.py --alternative eisen`.
+The displayed county table has state/county identities, change codes and
+supporting references. Methods describe a FIPS database; the HTML does not
+expose those FIPS. **Reconciliation blocker:** displayed codes reproduce
+264 N-E / 182 R-E / 208 N-R, still 654, versus the narrative subtype split.
+One duplicate unchanged Brevard FL row, blank status for Baltimore City and
+Rensselaer, and missing displayed source for Lawrence IN, Crow Wing MN and
+Paulding OH remain explicit. The parser inventories 1,417 distinct
+status-bearing names (840 established/577 reported) versus narrative
+1,420/842/578. It does not repair discrepancies or certify county labels.
+
+Displayed changed rows span 30 states. Virginia 63, Ohio 61, North Carolina 46,
+Indiana 44 and Pennsylvania 44 comprise 258/654 (39.4%). The paper describes
+North-Central/Northeast concentration and merging foci. The 763 parsed
+unchanged recorded identities are **not validated negatives**: established
+status persists and reported status is inherited unless upgraded. Unrecorded
+counties and unequal sampling cannot become biological negatives.
+
+Established requires ≥6 individuals or ≥2 of 3 host-seeking life stages in a
+single collection year; reported includes lesser records or missing count/stage
+detail. Literature searches span 1996–August 25, 2015, supplemented by state
+websites and expert contacts. Heterogeneous collection and inherited status
+do not prove contemporary sampling. Two cumulative cutoffs give one coarse
+19-year interval, not annual first detections or equal observation windows.
+Publication is March 2016; [CDC Stacks](https://stacks.cdc.gov/view/cdc/39097)
+records availability March 1, 2017. Neither proves original timing of every
+collection/report or predictor. A 2025 snapshot could be a later comparison
+only after harmonizing criteria, FIPS, backfill and revisions under DATA #429;
+no comparable later holdout is established here.
+
+**DEFER** this source-backed coarse status-transition proxy with real support.
+**BLOCK** biological absence/emergence and annual forecasts from this pair.
+Admitted Phase 1 examples remain none; eventual eligible example/comparator
+balance is UNKNOWN. NEON remains NOT_COUNTY_REPRESENTATIVE. NSSP county
+labels remain BLOCK under reused DATA #384/merged PR #591. No target, threshold,
+training, ingestion or new surveillance semantics is adopted.
