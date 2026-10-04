@@ -93,3 +93,22 @@ Within-state >=10/group contrasts and IQR/range/CDF overlap stay descriptive.
 The near-0.5 counterexample above must remain a regression test. This amendment
 changes interpretation precision, not taxon/state selection or the estimand;
 no SVI outcome statistics have been inspected.
+
+## Shared-input gate record — before any alternative outcome analysis
+
+The parent's shared DEV consumer capture SHA-256
+`be74f3affff2e7753f14e7b804d672fb83d21eabe8f1dc4abead873ea21e8e45`
+matches current DEV release September 17 and again has only Unknown taxa.
+Shared PROD public summary SHA-256
+`5dbc0e4a66e1d702b5deafc3a430d62fe317984a6ee2e5c1759b74182f06e9ed`
+matches September 18 but lacks species states and raw SVI. Combined tick status
+must not replace species-specific evidence; no taxon or PROD eligible N selected.
+A single documented public county-detail probe at fixed county 01001 confirmed
+the required fields exist at that PROD release/hash. It is a field/provenance
+availability check, not a representative cohort, eligibility screen or result.
+No outcome distribution statistics were inspected. No valid scientific scope
+or source-input amendment has been admitted for alternative outcome execution.
+Remain stopped pending a bounded approved species/SVI cohort projection with
+matching source/release/vintage and metadata authority. No broad detail crawl,
+private-object retry, new grants, alternate restricted-source identity or
+change to question, taxon order, states, method or thresholds.
