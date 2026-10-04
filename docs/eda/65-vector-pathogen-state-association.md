@@ -153,6 +153,56 @@ scientifically NOT_ESTIMABLE **for this DEV release**; no extrapolation to PROD
 or an unrestricted source workbook is supported. The issue comment is prepared
 for review and will not be posted, merged or closed before Matthew's review.
 
+## Public PROD route check after cross-repository steering
+
+The requested existing public consumer route was checked at
+`https://api.carawaylabs.com/v1/atlas/metadata` with one anonymous GET, limited
+to 30 seconds and 262,144 bytes. HTTP 200 returned 4,359 bytes at
+`2026-10-04T01:14:05Z`; response byte SHA-256
+`648cbaa80b7595bec80283d62916c5f2492f9b26c9d6fc996f519abdc5fe42ff`.
+It identifies **a different PROD release**,
+`governed-2026-09-18-unknown-coverage`, bundle SHA-256
+`038aa3f8c383a70699aff92c752f2bbcc6687a726d0c2f142c9f368841b42026`,
+schema `1.0.0`, method `semantic-1.0.0`, and separate tick/pathogen source
+descriptions with cumulative vintage `through 2025-12-31`. The metadata is
+accessible; no claim that the PROD input is inaccessible has been made.
+
+The existing [DATA #200 receipt review](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-data/issues/200#issuecomment-5965980365)
+links successful build/publication receipts for that same release/hash. The
+[manifest at the exact build head](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-data/blob/7b80373187b8aa665891e2f39e6bf7f8c6fb35a1/docs/contracts/semantic-release/governed-2026-09-15-manifest.json)
+was inspected directly (Git blob `ef7e08c2919d38bdf6bdaa8ef79316b1bafd00f5`).
+Its tick tuple is source version `b81c116f-d93d-4c6b-9d11-ac2477e0e242`, run
+`ec14cc85-85d6-4064-80f1-1354238b88d6`, artifact
+`e0db2aaf-7412-47d1-ac14-ba8807375549`, SHA-256
+`e35a5066a7c77b2e79c50f315a18e042405ab7baa8a414a1a907792bb25d2adc`.
+Its distinct pathogen tuple is source version
+`92b22f19-0d5d-4576-a7c6-6c9af9343edf`, run
+`796731a3-cd7f-4510-aa0c-738ab74a6a76`, artifact
+`d93ff6a3-4201-4a06-bfa3-da6026a706d9`, SHA-256
+`68baef5f20b1e41821d0e6955cbb1809262e0f3624e387e88c04f6ddb0266f2f`.
+These are historical manifest identities, not a fresh restricted-source read
+or a substitution of PROD lineage for this analysis's DEV snapshot.
+
+The remaining PROD association input would be release-bound **paired county
+species/pathogen states**, with the existing provenance receipts preserved.
+Metadata alone has no county-state contingency table. API models expose the
+species states on county detail; the score summary does not expose those
+species fields. No PROD county detail/score rows, production Snowflake role,
+restricted source, denied internal table or alternate identity was used here.
+Per the subsequent shared-capture coordination instruction, the existing DEV
+capture was reported and no second county export was made. PROD scientific
+estimability is **unassessed**, not proven NOT_ESTIMABLE. This check does not
+expand or rewrite the frozen DEV analysis or infer source absence from the
+release's name. An extension would need its own recorded scope before statistics
+and an existing approved immutable paired input, rather than another ad hoc scan.
+
+Reproduce the metadata-only check, without county or warehouse export:
+
+```powershell
+curl.exe --fail --silent --show-error --max-time 30 --max-filesize 262144 --output outputs/65-public/metadata.json https://api.carawaylabs.com/v1/atlas/metadata
+Get-FileHash outputs/65-public/metadata.json -Algorithm SHA256
+```
+
 ## Reproduction and retained evidence
 
 Read-only objects, and no others:

@@ -33,9 +33,15 @@ documentation and vector availability separately. No training authorized.
 these are cumulative documentation states, not annual incidence, pathogen
 absence, causal effects or individual exposure risk.
 
-**Links:** PR link to be filled after creation; [artifact](65-vector-pathogen-state-association.md);
+**Links:** [draft PR #91](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/pull/91);
+[artifact](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/blob/codex/ml-65-vector-pathogen/docs/eda/65-vector-pathogen-state-association.md);
 [source contract](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-data/blob/614dbb7e95766e586e4cac6332d126e53e23933e/docs/contracts/semantic-release/README.md).
 Preregistration commit `459d53d`; release
 `governed-2026-09-17-unknown-coverage`. A future association requires a separately
 governed release with explicit vector states; this issue makes no source-contract
 or production change. Independent review and merge remain pending.
+
+Public PROD metadata was also reachable and identifies a different immutable
+release/hash; its county association was not inspected. DEV nonestimability is
+not a claim about PROD or the underlying source workbook. No additional county
+export was made after the shared-capture coordination instruction.
