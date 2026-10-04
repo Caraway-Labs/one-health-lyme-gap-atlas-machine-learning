@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from scripts.eda62_availability import audit_profile  # noqa: E402
+from scripts.eda62_availability import audit_atlas_screen, audit_profile  # noqa: E402
 
 
 def profile(measure: str) -> dict[str, object]:
@@ -21,7 +21,7 @@ def profile(measure: str) -> dict[str, object]:
 
 def test_unpublished_is_access_blocker_not_negative_or_scientific_stop() -> None:
     result = audit_profile([profile("human_status")])
-    assert result["execution_status"] == "ACCESS_BLOCKED"
+    assert result["execution_status"] == "VIEW_EXCLUDES_INPUTS"
     assert result["scientific_disposition"] is None
     assert result["group_n"] == {"ESTABLISHED": None, "REPORTED": None}
     assert result["effect"] is None
@@ -63,3 +63,75 @@ def test_invalid_count_rejected(count: object) -> None:
     row["UNIQUE_COUNTIES"] = count
     with pytest.raises(ValueError, match="counts"):
         audit_profile([row])
+
+
+def atlas_row(taxon: str, status: str = "Unknown") -> dict[str, object]:
+    return {
+        "RELEASE_ID": "fictional-test-only",
+        "TAXON_FIELD": taxon,
+        "SOURCE_STATUS": status,
+        "COUNTY_ROWS": 2,
+        "UNIQUE_COUNTIES": 2,
+        "UNIQUE_STATES": 1,
+        "INVALID_FIPS": 0,
+        "SVI_NULL": 0,
+        "SVI_INVALID_DOMAIN": 0,
+    }
+
+
+def test_complete_unknown_is_no_positive_contrast_in_this_release_only() -> None:
+    result = audit_atlas_screen([atlas_row("SCAPULARIS_STATUS"), atlas_row("PACIFICUS_STATUS")])
+    assert result["execution_status"] == "NO_POSITIVE_CONTRAST"
+    assert result["positive_group_n_by_taxon"]["SCAPULARIS_STATUS"] == {
+        "ESTABLISHED": 0,
+        "REPORTED": 0,
+    }
+    assert result["source_authority_verified"] is False
+    assert result["selected_taxon"] is None
+
+
+def test_partial_unknown_does_not_establish_all_taxa_ineligible() -> None:
+    result = audit_atlas_screen([atlas_row("SCAPULARIS_STATUS")])
+    assert result["execution_status"] == "SCREENING_PENDING"
+    assert result["positive_group_n_by_taxon"] is None
+
+
+def test_positive_visibility_does_not_grant_scientific_admission() -> None:
+    result = audit_atlas_screen(
+        [
+            atlas_row("SCAPULARIS_STATUS", "Established"),
+            atlas_row("PACIFICUS_STATUS"),
+        ]
+    )
+    assert result["execution_status"] == "SCREENING_PENDING"
+    assert result["scientific_disposition_for_this_release"] is None
+    assert result["source_authority_verified"] is False
+
+
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("UNIQUE_COUNTIES", 1),
+        ("INVALID_FIPS", 1),
+        ("SVI_NULL", -1),
+        ("UNIQUE_STATES", 3),
+    ],
+)
+def test_atlas_invalid_aggregate_rejected(field: str, value: int) -> None:
+    row = atlas_row("SCAPULARIS_STATUS")
+    row[field] = value
+    with pytest.raises(ValueError):
+        audit_atlas_screen([row])
+
+
+def test_atlas_mixed_releases_rejected() -> None:
+    a, b = atlas_row("SCAPULARIS_STATUS"), atlas_row("PACIFICUS_STATUS")
+    b["RELEASE_ID"] = "another"
+    with pytest.raises(ValueError):
+        audit_atlas_screen([a, b])
+
+
+def test_atlas_duplicate_status_rejected() -> None:
+    row = atlas_row("SCAPULARIS_STATUS")
+    with pytest.raises(ValueError):
+        audit_atlas_screen([row, row])
