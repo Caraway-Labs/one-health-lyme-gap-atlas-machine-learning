@@ -172,9 +172,20 @@ Tests cover known ranks/ties, zero/missing/invalid outcomes, identity/release
 rejection, canonical digest, group support and deterministic bounded state
 resampling. Fictional tests are not cohort evidence. Required offline checks
 and exact review head are in the PR. Snapshot and result JSON, extracts and
-caches remain ignored and uncommitted. Independent review, the single issue
-comment, merge and closure remain pending; this does not satisfy the merged
-evidence gate until reviewed and merged.
+caches remain ignored and uncommitted. Independent scientific/code review and
+separate retained-snapshot/digest/statistic/2,000-state-block replay review PASS
+were reported at `d7b481c2179ed7e61ed1d38813c3509e174ed9db`. Clean reconciliation
+onto merged ML #86 main preserved all six reviewed commits unchanged (range-diff
+and issue-local file comparison), producing `a2736b50c4bc517ce36c84ec1b484635d3e3fb4f`.
+Required offline gates passed with 154 tests and one optional SDK skip; exact-head
+hosted checks [37168667867](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/actions/runs/37168667867)
+and [37168670652](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/actions/runs/37168670652)
+passed. The single [decision-ready issue comment](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/issues/63#issuecomment-5975477623)
+records the reviewed result and immutable artifact links. Merge/main-CI/closure
+state is tracked by [PR #92](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/pull/92)
+and the owning issue; no runtime deployment or training is required. The merged
+evidence criterion is satisfied by merging this durable artifact under normal
+repository rules, without clearing the separate source-admission gaps below.
 
 ## Parent-requested shared consumer capture for ML #61–65
 
