@@ -5,7 +5,9 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import math
 import os
+import statistics
 import subprocess
 from collections import Counter
 from datetime import UTC, datetime
@@ -18,6 +20,7 @@ RELEASE_ID = "governed-2026-09-17-unknown-coverage"
 BUNDLE_SHA256 = "55192e53b0b046cfe5148c13ffe5c570f615ec233e2b5c1103247f00b1a51233"
 FEATURE_COLUMNS = (
     "human_published_floor",
+    "human_case_count_floor_log1p",
     "pathogen_present",
     "pathogen_no_records",
     "pathogen_unknown",
@@ -36,7 +39,8 @@ OUTPUT_COLUMNS = (
     "bundle_sha256",
 )
 COUNTY_SQL = (
-    "SELECT FIPS, HUMAN_STATUS, SCAPULARIS_STATUS, PACIFICUS_STATUS, "
+    "SELECT FIPS, HUMAN_STATUS, CASE_COUNT_FLOOR_2023, "
+    "SCAPULARIS_STATUS, PACIFICUS_STATUS, "
     "BURGDORFERI_STATUS, SVI_PERCENTILE, RUCC_2023 "
     f"FROM {DATABASE}.PRESENTATION.CURRENT_COUNTY_ATLAS_V ORDER BY FIPS"
 )
@@ -87,6 +91,7 @@ def build_matrix(source: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], di
         name: Counter()
         for name in ("HUMAN_STATUS", "BURGDORFERI_STATUS", "SCAPULARIS_STATUS", "PACIFICUS_STATUS")
     }
+    published_floors: list[int] = []
     for row in sorted(source, key=lambda item: str(item["FIPS"])):
         fips = str(row["FIPS"])
         if len(fips) != 5 or not fips.isdigit() or fips in seen:
@@ -98,6 +103,17 @@ def build_matrix(source: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], di
         pacificus = row["PACIFICUS_STATUS"]
         if human not in {"published_count_floor", "no_county_linked_record"}:
             raise ValueError(f"Unrecognized human state: {human}")
+        floor = row["CASE_COUNT_FLOOR_2023"]
+        if human == "published_count_floor":
+            if isinstance(floor, bool) or not isinstance(floor, int) or floor < 0:
+                raise ValueError("Published count floor must be a nonnegative integer")
+            published_floors.append(floor)
+            human_magnitude = math.log1p(floor)
+        else:
+            if floor is not None:
+                raise ValueError("No-county-record state must have null count floor")
+            # A model placeholder, never an observed count or observed zero.
+            human_magnitude = 0.0
         if pathogen not in {"Present", "No records", "Unknown"}:
             raise ValueError(f"Unrecognized pathogen state: {pathogen}")
         if scapularis != "Unknown" or pacificus != "Unknown":
@@ -114,6 +130,7 @@ def build_matrix(source: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], di
             {
                 "county_fips": fips,
                 "human_published_floor": int(human == "published_count_floor"),
+                "human_case_count_floor_log1p": human_magnitude,
                 "pathogen_present": int(pathogen == "Present"),
                 "pathogen_no_records": int(pathogen == "No records"),
                 "pathogen_unknown": int(pathogen == "Unknown"),
@@ -138,12 +155,15 @@ def build_matrix(source: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], di
         name: {
             "missing": sum(row[name] is None for row in output),
             "distinct": len({row[name] for row in output}),
-            "observed_zero": sum(row[name] == 0 for row in output),
+            "encoded_zero": sum(row[name] == 0 for row in output),
         }
         for name in FEATURE_COLUMNS
     }
     if any(item["distinct"] < 2 for item in feature_stats.values()):
         raise ValueError("Selected predictor is constant")
+    if not published_floors:
+        raise ValueError("No published human count floors in selected release")
+    transformed_floors = [math.log1p(value) for value in published_floors]
     report = {
         "feature_set_version": VERSION,
         "release_id": RELEASE_ID,
@@ -158,6 +178,27 @@ def build_matrix(source: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], di
         "not_estimable_counties": 0,
         "excluded_counties": 0,
         "feature_stats": feature_stats,
+        "human_count_floor": {
+            "published_non_null_rows": len(published_floors),
+            "no_county_record_rows": len(output) - len(published_floors),
+            "published_observed_zero_count": published_floors.count(0),
+            "model_placeholder_count": len(output) - len(published_floors),
+            "published_floor_min_median_max": [
+                min(published_floors),
+                statistics.median(published_floors),
+                max(published_floors),
+            ],
+            "published_log1p_min_median_max": [
+                min(transformed_floors),
+                statistics.median(transformed_floors),
+                max(transformed_floors),
+            ],
+            "all_rows_log1p_min_median_max": [
+                min(row["human_case_count_floor_log1p"] for row in output),
+                statistics.median(row["human_case_count_floor_log1p"] for row in output),
+                max(row["human_case_count_floor_log1p"] for row in output),
+            ],
+        },
         "source_states": {name: dict(counts) for name, counts in source_states.items()},
         "svi_range": [
             min(row["svi_percentile_2022"] for row in output),
