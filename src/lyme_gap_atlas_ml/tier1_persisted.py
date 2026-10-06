@@ -141,7 +141,8 @@ def build(
             }
         )
     output.sort(key=lambda row: row["county_fips"])
-    validate(output, identity)
+    expected_fips = {str(row["county_fips"]) for row in rows}
+    validate(output, identity, expected_fips=expected_fips)
     digest = hashlib.sha256(
         json.dumps(output, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()
     ).hexdigest()
@@ -160,9 +161,12 @@ def build(
     return manifest, output
 
 
-def validate(rows: list[dict[str, Any]], identity: str) -> None:
+def validate(rows: list[dict[str, Any]], identity: str, *, expected_fips: set[str]) -> None:
+    """Require exact equality with the regenerated governed feature population."""
     if len(rows) != 3144 or len({row.get("county_fips") for row in rows}) != len(rows):
         raise ValueError("Incomplete or duplicate county output population")
+    if len(expected_fips) != 3144 or {row.get("county_fips") for row in rows} != expected_fips:
+        raise ValueError("County output population differs from governed feature population")
     tiers: Counter[str] = Counter()
     sufficiency: Counter[str] = Counter()
     for row in rows:

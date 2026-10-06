@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 from jsonschema import validate as validate_json_schema
 
-from lyme_gap_atlas_ml import tier1_persisted, tier1_selection
+from lyme_gap_atlas_ml import tier1_features, tier1_persisted, tier1_selection
 from lyme_gap_atlas_ml.contracts import ContractError, validate_bundle
 from lyme_gap_atlas_ml.unsupervised_lineage import SCHEMA, validate_tier1_lineage
 
@@ -105,11 +105,33 @@ def test_reasons_are_bounded_and_noncausal() -> None:
 
 
 def test_incomplete_or_duplicate_batch_fails_before_publish() -> None:
+    expected = synthetic_governed_fips()
     with pytest.raises(ValueError, match="Incomplete"):
-        tier1_persisted.validate([], tier1_persisted.batch_id(COMMIT))
+        tier1_persisted.validate([], tier1_persisted.batch_id(COMMIT), expected_fips=expected)
     row = {"county_fips": "01001"}
     with pytest.raises(ValueError, match="Incomplete or duplicate"):
-        tier1_persisted.validate([copy.deepcopy(row)] * 3144, tier1_persisted.batch_id(COMMIT))
+        tier1_persisted.validate(
+            [copy.deepcopy(row)] * 3144, tier1_persisted.batch_id(COMMIT), expected_fips=expected
+        )
+
+
+def synthetic_governed_fips() -> set[str]:
+    """Derive a test population through the same governed feature construction path."""
+    source = [
+        {
+            "FIPS": f"{i:05d}",
+            "HUMAN_STATUS": "published_count_floor" if i % 2 else "no_county_linked_record",
+            "CASE_COUNT_FLOOR_2023": i + 1 if i % 2 else None,
+            "SCAPULARIS_STATUS": "Unknown",
+            "PACIFICUS_STATUS": "Unknown",
+            "BURGDORFERI_STATUS": ("Present", "No records", "Unknown")[i % 3],
+            "SVI_PERCENTILE": i / 3143,
+            "RUCC_2023": i % 9 + 1,
+        }
+        for i in range(3144)
+    ]
+    matrix, _ = tier1_features.build_matrix(source)
+    return {row["county_fips"] for row in matrix}
 
 
 def synthetic_complete_batch() -> list[dict[str, object]]:
@@ -166,10 +188,11 @@ def synthetic_complete_batch() -> list[dict[str, object]]:
 )
 def test_wrong_lineage_or_state_cannot_pass_publication(field: str, bad: str) -> None:
     rows = synthetic_complete_batch()
-    tier1_persisted.validate(rows, tier1_persisted.batch_id(COMMIT))
+    expected = synthetic_governed_fips()
+    tier1_persisted.validate(rows, tier1_persisted.batch_id(COMMIT), expected_fips=expected)
     rows[0][field] = bad
     with pytest.raises(ValueError):
-        tier1_persisted.validate(rows, tier1_persisted.batch_id(COMMIT))
+        tier1_persisted.validate(rows, tier1_persisted.batch_id(COMMIT), expected_fips=expected)
 
 
 def test_not_estimable_cannot_be_low() -> None:
@@ -177,4 +200,34 @@ def test_not_estimable_cannot_be_low() -> None:
     rows[0]["evidence_sufficiency"] = "NOT_ESTIMABLE"
     rows[0]["priority_tier"] = "LOW"
     with pytest.raises(ValueError, match="NOT_ESTIMABLE"):
-        tier1_persisted.validate(rows, tier1_persisted.batch_id(COMMIT))
+        tier1_persisted.validate(
+            rows, tier1_persisted.batch_id(COMMIT), expected_fips=synthetic_governed_fips()
+        )
+
+
+def test_exact_governed_population_passes() -> None:
+    tier1_persisted.validate(
+        synthetic_complete_batch(),
+        tier1_persisted.batch_id(COMMIT),
+        expected_fips=synthetic_governed_fips(),
+    )
+
+
+def test_same_size_valid_looking_substitute_fails() -> None:
+    rows = synthetic_complete_batch()
+    rows[0]["county_fips"] = "99999"
+    with pytest.raises(ValueError, match="governed feature population"):
+        tier1_persisted.validate(
+            rows, tier1_persisted.batch_id(COMMIT), expected_fips=synthetic_governed_fips()
+        )
+
+
+def test_missing_and_replacement_fips_fail_at_unchanged_count() -> None:
+    rows = synthetic_complete_batch()
+    rows[0]["county_fips"] = "99998"
+    rows[1]["county_fips"] = "99999"
+    assert len(rows) == 3144 and len({row["county_fips"] for row in rows}) == 3144
+    with pytest.raises(ValueError, match="governed feature population"):
+        tier1_persisted.validate(
+            rows, tier1_persisted.batch_id(COMMIT), expected_fips=synthetic_governed_fips()
+        )

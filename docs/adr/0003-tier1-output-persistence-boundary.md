@@ -1,6 +1,6 @@
 # 0003: Tier 1 output persistence boundary
 
-Status: Proposed for product, data, API, and security owner review
+Status: Product direction approved; exact Data implementation and security review pending
 Date: 2026-10-05
 Decision owner: Atlas product, data, ML, API, and security leads
 
@@ -8,7 +8,7 @@ Decision owner: Atlas product, data, ML, API, and security leads
 
 Workspace ADR 0020 reserves ML output promotion into API-readable Snowflake objects for a later decision. ML #30 selected the unsupervised statistical reference. The DEV `FEATURE_STORE` schema exists but contains no prediction object; the ML repository has no write migration or approved ML publisher role. The read-only DEV identity must not create objects or broaden grants.
 
-## Proposed decision
+## Approved product direction
 
 Data owns one narrow `FEATURE_STORE.TIER1_COUNTY_REVIEW_OUTPUTS` table, one `FEATURE_STORE.TIER1_REVIEW_BATCHES` manifest table, and a `PRESENTATION.CURRENT_TIER1_COUNTY_REVIEW_V` read view. A protected data-repository migration creates these objects and grants a dedicated ML publisher only the minimum batch publication procedure `USAGE`; API runtime receives `SELECT` on the view only. The procedure accepts an immutable complete batch, validates expected population and digest against the manifest, then publishes the active batch in a single transaction. It rejects replay with changed bytes and never updates an approved row. No direct runtime table DML, general model registry, scheduler, or public browser connection is authorized. DEV is the first application target; PROD uses the existing protected data promotion process after reviewed evidence and approval.
 
@@ -16,7 +16,7 @@ ML owns the score, percentile, tier, evidence sufficiency, reasons, lineage, and
 
 ## Consequences and gate
 
-This proposal does not create a Snowflake object or grant. Owner review must settle the exact migration, procedure identity, and protected promotion path before any live write. The ML branch can regenerate and validate the local batch without pretending that file evidence is persisted approval. If a complete batch fails validation or publication, the active pointer remains at the previous approved batch. PROD promotion remains separately protected.
+This ADR does not create a Snowflake object or grant. Data and security review must settle the exact migration, procedure identity, role bootstrap, and protected promotion path before any live write. The ML branch can regenerate and validate a local batch without pretending that file evidence is persisted approval. Its county FIPS set must exactly equal the regenerated governed feature population, and the Data-owned publisher must verify that equality independently before activation. A pre-merge PR artifact is review evidence only. The first publishable candidate must be regenerated from the final merged `origin/main` commit; its source commit, batch ID, output digest, and generation time are recorded after that run, including when the PR is squash merged. If validation or publication fails, the active pointer remains at the previous approved batch. PROD promotion remains separately protected.
 
 ## Alternatives considered
 
@@ -28,6 +28,14 @@ Writing an unmanaged ML-owned table, using a public API table created ad hoc, an
 - DEV migration and publication are verified with a real selected batch and API read role.
 - Partial, duplicate, wrong-lineage, and changed-digest replays leave the prior active batch readable.
 - Protected PROD promotion is separately approved if API #10 requires PROD.
+
+## Data implementation handoff
+
+Implement the approved direction in a separate Data-repository issue, isolated worktree, and PR based on its then-current `origin/main`. Data #114 remains its deferred, post-slice boundary-documentation story; it is not the migration issue. Use the next available forward-only migration version at implementation time, after verifying the live ledger and main. Do not alter historical migration checksums.
+
+The bounded migration needs the two named `FEATURE_STORE` tables, a singleton active-batch pointer and write-serialization row, a narrow owner-rights chunk-stage procedure and finalize/activate procedure, and the named `PRESENTATION` current-batch view. Stage immutable county rows in bounded chunks under an unpublished batch ID. The Data PR must specify and test byte-identical canonical row serialization for the ML output digest; Snowflake `VARIANT` reserialization must not silently change it. The finalize procedure must serialize concurrent publishers, reject changed-digest replay, independently compare the exact staged FIPS set to the pinned governed release's county population in the same environment, validate row count, lineage, selected model, score/tier/evidence invariants, and digest, then activate the pointer in one transaction. An error or lost acknowledgment must leave the previous active batch intact and support an idempotent same-digest retry. Snowflake informational primary/unique keys alone do not enforce this.
+
+Security review must approve an environment-specific, least-privilege ML publisher service role with only procedure `USAGE`, a separate non-login procedure owner with only required object privileges, and the existing `OH_LYME_{ENV}_READ` consumer role's `SELECT` on the current-batch view only. No direct publisher table DML or API base-table access is proposed. Account-level role/service bootstrap is separate from the Data migration and needs its own reviewed authorization. DEV migration application uses the Data repository's protected `deploy-dev.yml`; PROD uses its protected `promote-prod.yml` only after DEV proof and a reviewed, same-environment governed release/batch plan. A DEV-only release ID must not be silently copied into PROD.
 
 ## Rollout, rollback, and links
 
