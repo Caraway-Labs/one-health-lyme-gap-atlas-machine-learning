@@ -6,6 +6,7 @@ Generated 2026-10-05 21:12 MDT (`2026-10-06T03:12:06Z`) from
 `55192e53b0b046cfe5148c13ffe5c570f615ec233e2b5c1103247f00b1a51233`.
 This is a local, read-only DEV generation. The matrix CSV is ignored and not
 committed. Reproduce with the command in the feature contract.
+Implementation commit: `277371d` (full SHA recorded in the PR).
 
 | Check | Observed |
 | --- | ---: |

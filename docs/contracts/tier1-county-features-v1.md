@@ -1,7 +1,8 @@
 # Tier 1 county features v1 (ML #24)
 
-**Feature-set version:** `tier1-county-features-v1`  
-**Owner:** Atlas ML  
+**Feature-set version:** `tier1-county-features-v1`
+
+**Owner:** Atlas ML
 **Snapshot:** DEV `governed-2026-09-17-unknown-coverage`, bundle SHA-256
 `55192e53b0b046cfe5148c13ffe5c570f615ec233e2b5c1103247f00b1a51233`.
 The release bundle fixes source membership and revisions. Source products below
