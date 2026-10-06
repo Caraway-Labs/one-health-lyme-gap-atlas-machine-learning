@@ -14,6 +14,7 @@ build/
 .ipynb_checkpoints/
 mlruns/
 outputs/
+.local/
 data/local/
 # Transient exploratory exports; explicitly required curated fixtures need review.
 *.csv
