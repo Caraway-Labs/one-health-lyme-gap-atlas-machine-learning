@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Atlas selected unsupervised Tier 1 lineage v2",
+  "type": "object",
+  "required": ["schema", "supervision_mode", "model_version", "feature_set_version", "evaluation_version", "tier_policy_version", "release_id", "bundle_sha256", "source_commit", "prediction_batch_version", "generated_at_utc", "output_sha256", "row_count", "intended_use_ref"],
+  "properties": {
+    "schema": {"const": "atlas-ml-contracts/v2"},
+    "supervision_mode": {"const": "unsupervised"},
+    "model_version": {"const": "tier1-statistical-reference-v1"},
+    "feature_set_version": {"const": "tier1-county-features-v1"},
+    "evaluation_version": {"const": "tier1-selection-evaluation-v1"},
+    "tier_policy_version": {"const": "tier1-review-percentile-v1"},
+    "release_id": {"const": "governed-2026-09-17-unknown-coverage"},
+    "bundle_sha256": {"const": "55192e53b0b046cfe5148c13ffe5c570f615ec233e2b5c1103247f00b1a51233"},
+    "source_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "prediction_batch_version": {"type": "string", "pattern": "^tier1-review-priority-[0-9a-f]{16}$"},
+    "generated_at_utc": {"type": "string", "pattern": "Z$"},
+    "output_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "row_count": {"const": 3144},
+    "intended_use_ref": {"const": "docs/contracts/tier1-persisted-output-v1.md"}
+  },
+  "additionalProperties": false
+}
