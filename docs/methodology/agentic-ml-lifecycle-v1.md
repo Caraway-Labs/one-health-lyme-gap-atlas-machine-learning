@@ -2,6 +2,12 @@
 
 This is an Atlas adaptation of [Aurélien Géron's ML project checklist](https://github.com/ageron/handson-ml3/blob/main/ml-project-checklist.md), not a copy of its text. The order is useful, but Atlas adds public-health use limits, governed Snowflake data, point-in-time availability, geographic dependence, auditable holdout access, and human decisions. This document and `atlas-ml-lifecycle/v1` state are a workflow contract, not approval of any model or target.
 
+For the approved Tier 1 unsupervised objective, use the
+[ML #23 contract](../contracts/tier-1-surveillance-review-priority-v1.md).
+Its training target is none: label-maturity and post-label evaluation
+requirements below apply only to a separately approved supervised target.
+The Tier 1 evaluation and reference comparison are governed by ML #30.
+
 ## Gates and outputs
 
 Stages are sequential. A completed stage needs its named evidence and applicable versioned references. A stage marked `not_applicable` needs a reason, an evidence reference, and an approved review decision. A blocked stage needs a named dependency and reason. Later stages cannot start until all preceding stages are terminal. Evidence references identify reviewable artifacts; a string alone does not prove their contents. Before a transition, the agent must inspect the artifact and record the reviewer decision where required.

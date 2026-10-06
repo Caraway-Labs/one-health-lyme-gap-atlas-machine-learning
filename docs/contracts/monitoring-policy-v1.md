@@ -1,5 +1,12 @@
 # Atlas monitoring policy v1 (Story #43)
 
+The [Tier 1 unsupervised contract](tier-1-surveillance-review-priority-v1.md)
+has no supervised ground-truth label. The delayed-label and `post_label`
+provisions below apply only when a separate supervised target is approved;
+they are not prerequisites for Tier 1 inference or evaluation. Its pre-label
+signals describe input/output quality and operations, not disease prediction
+performance.
+
 The offline Atlas-owned contract lives in `lyme_gap_atlas_ml.monitoring`. It validates against the **complete** Story #41 lineage bundle. The exact canonical model/version, Arize project mapping, and monitoring policy reference must match. Arize IDs are optional external references on monitors and evidence; Arize executes and displays approved signals, while Atlas owns their meaning. Neither the policy nor its examples authorize telemetry or credentials. ADR 0002 already establishes this boundary; Story #43 adds no new architecture decision.
 
 ## Regimes and evidence
