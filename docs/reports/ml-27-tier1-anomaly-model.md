@@ -12,7 +12,7 @@ $env:SNOWFLAKE_CONNECTION_NAME = '<approved read-only DEV connection>'
 uv run python -m lyme_gap_atlas_ml.tier1_model --output-dir .local/ml-27
 ```
 
-The command creates ignored `county-scores.csv`, `isolation-forest.joblib`, and `run-summary.json`. The latter records run time, run ID, source commit, release, predictor order, seed, configuration, diagnostic slices, and serialized artifact SHA-256. Regeneration from the pinned source is the durable reconstruction path; the generated model is a local artifact pending #30 review. The observed run was `ml-27-20261006T040659Z`, artifact SHA-256 `021715cda001e88c470673300a76d57948822f1e7fe887973b1051e7cc40ce1e`.
+The command creates ignored `county-scores.csv`, `isolation-forest.joblib`, and `run-summary.json`. The latter records run time, run ID, source commit, release, predictor order, seed, configuration, diagnostic slices, and serialized artifact SHA-256. Regeneration from the pinned source is the durable reconstruction path; the generated model is a local artifact pending #30 review. The observed post-implementation run was `ml-27-20261006T040933Z` from code commit `8cf6284b95c68b9c2845849e252307701246b743`, artifact SHA-256 `021715cda001e88c470673300a76d57948822f1e7fe887973b1051e7cc40ce1e`.
 
 ## Methods
 
