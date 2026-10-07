@@ -25,7 +25,9 @@ EXPECTED_TIERS = {"HIGH": 315, "MEDIUM": 628, "LOW": 2201}
 EXPECTED_SUFFICIENCY = {"SUFFICIENT": 651, "INSUFFICIENT": 2493, "NOT_ESTIMABLE": 0}
 
 
-def batch_id(source_commit: str) -> str:
+def batch_id(
+    source_commit: str, snapshot: tier1_features.Snapshot = tier1_features.SNAPSHOTS["dev"]
+) -> str:
     """A deterministic identity for this pinned source, model and policy."""
     if len(source_commit) != 40 or any(c not in "0123456789abcdef" for c in source_commit):
         raise ValueError("Source commit must be a full lowercase SHA")
@@ -34,9 +36,9 @@ def batch_id(source_commit: str) -> str:
         + hashlib.sha256(
             "|".join(
                 (
-                    tier1_features.RELEASE_ID,
-                    tier1_features.BUNDLE_SHA256,
-                    tier1_features.VERSION,
+                    snapshot.release_id,
+                    snapshot.bundle_sha256,
+                    snapshot.feature_version,
                     tier1_selection.SELECTED_MODEL_VERSION,
                     EVALUATION_VERSION,
                     tier1_selection.TIER_POLICY_VERSION,
@@ -97,15 +99,18 @@ def reasons(feature: dict[str, Any], svi_center: float) -> list[dict[str, str]]:
 
 
 def build(
-    rows: list[dict[str, Any]], source_commit: str, generated_at: str
+    rows: list[dict[str, Any]],
+    source_commit: str,
+    generated_at: str,
+    snapshot: tier1_features.Snapshot = tier1_features.SNAPSHOTS["dev"],
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     """Regenerate selected scores from feature rows and fail closed on drift."""
     if len(rows) != 3144 or len({row["county_fips"] for row in rows}) != len(rows):
         raise ValueError("Incomplete or duplicate county feature population")
-    matrix = tier1_model._validated_matrix(rows)
+    matrix = tier1_model._validated_matrix(rows, snapshot)
     scores = tier1_model._reference(matrix)
     percentiles = tier1_model._percentiles(scores)
-    identity = batch_id(source_commit)
+    identity = batch_id(source_commit, snapshot)
     svi_center = float(np.mean(matrix[:, 5]))
     output: list[dict[str, Any]] = []
     for i, feature in enumerate(rows):
@@ -120,13 +125,13 @@ def build(
             {
                 "county_fips": feature["county_fips"],
                 "model_version": tier1_selection.SELECTED_MODEL_VERSION,
-                "feature_set_version": tier1_features.VERSION,
+                "feature_set_version": snapshot.feature_version,
                 "evaluation_version": EVALUATION_VERSION,
                 "tier_policy_version": tier1_selection.TIER_POLICY_VERSION,
                 "prediction_batch_version": identity,
                 "run_id": identity,
-                "release_id": tier1_features.RELEASE_ID,
-                "bundle_sha256": tier1_features.BUNDLE_SHA256,
+                "release_id": snapshot.release_id,
+                "bundle_sha256": snapshot.bundle_sha256,
                 "source_commit": source_commit,
                 "generated_at_utc": generated_at,
                 "raw_model_score": float(scores[i]),
@@ -142,7 +147,7 @@ def build(
         )
     output.sort(key=lambda row: row["county_fips"])
     expected_fips = {str(row["county_fips"]) for row in rows}
-    validate(output, identity, expected_fips=expected_fips)
+    validate(output, identity, expected_fips=expected_fips, snapshot=snapshot)
     digest = hashlib.sha256(
         json.dumps(output, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()
     ).hexdigest()
@@ -155,13 +160,19 @@ def build(
         "output_sha256": digest,
         "tier_counts": dict(Counter(row["priority_tier"] for row in output)),
         "sufficiency_counts": dict(Counter(row["evidence_sufficiency"] for row in output)),
-        "release_id": tier1_features.RELEASE_ID,
-        "bundle_sha256": tier1_features.BUNDLE_SHA256,
+        "release_id": snapshot.release_id,
+        "bundle_sha256": snapshot.bundle_sha256,
     }
     return manifest, output
 
 
-def validate(rows: list[dict[str, Any]], identity: str, *, expected_fips: set[str]) -> None:
+def validate(
+    rows: list[dict[str, Any]],
+    identity: str,
+    *,
+    expected_fips: set[str],
+    snapshot: tier1_features.Snapshot = tier1_features.SNAPSHOTS["dev"],
+) -> None:
     """Require exact equality with the regenerated governed feature population."""
     if len(rows) != 3144 or len({row.get("county_fips") for row in rows}) != len(rows):
         raise ValueError("Incomplete or duplicate county output population")
@@ -185,18 +196,18 @@ def validate(rows: list[dict[str, Any]], identity: str, *, expected_fips: set[st
             row.get("run_id"),
         ) != (
             tier1_selection.SELECTED_MODEL_VERSION,
-            tier1_features.VERSION,
+            snapshot.feature_version,
             EVALUATION_VERSION,
             tier1_selection.TIER_POLICY_VERSION,
-            tier1_features.RELEASE_ID,
-            tier1_features.BUNDLE_SHA256,
+            snapshot.release_id,
+            snapshot.bundle_sha256,
             identity,
             identity,
         ):
             raise ValueError("Selected model or lineage mismatch")
         if (
             not isinstance(row.get("source_commit"), str)
-            or batch_id(row["source_commit"]) != identity
+            or batch_id(row["source_commit"], snapshot) != identity
             or not row.get("generated_at_utc")
             or row.get("limitation_ref") != LIMITATION_REF
         ):
@@ -264,29 +275,31 @@ def main() -> None:
     """Read the pinned DEV release and write a local, unpublished batch artifact."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output-dir", type=Path, default=Path(".local/ml-32"))
+    parser.add_argument("--environment", choices=tier1_features.SNAPSHOTS, default="dev")
     args = parser.parse_args()
+    snapshot = tier1_features.SNAPSHOTS[args.environment]
     connection = os.environ.get("SNOWFLAKE_CONNECTION_NAME")
     if not connection:
-        raise SystemExit("Set SNOWFLAKE_CONNECTION_NAME to an approved read-only DEV connection")
-    tier1_features._validate_context(connection)
-    tier1_features._validate_release(connection)
+        raise SystemExit("Set SNOWFLAKE_CONNECTION_NAME to an approved read-only connection")
+    tier1_features._validate_context(connection, snapshot)
+    tier1_features._validate_release(connection, snapshot)
     features, _ = tier1_features.build_matrix(
-        tier1_features._query(connection, tier1_features.COUNTY_SQL)
+        tier1_features._query(connection, tier1_features.county_sql(snapshot), snapshot), snapshot
     )
     commit = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
     generated_at = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
-    manifest, rows = build(features, commit, generated_at)
+    manifest, rows = build(features, commit, generated_at, snapshot)
     from lyme_gap_atlas_ml.unsupervised_lineage import SCHEMA, validate_tier1_lineage
 
     lineage = {
         "schema": SCHEMA,
         "supervision_mode": "unsupervised",
         "model_version": tier1_selection.SELECTED_MODEL_VERSION,
-        "feature_set_version": tier1_features.VERSION,
+        "feature_set_version": snapshot.feature_version,
         "evaluation_version": EVALUATION_VERSION,
         "tier_policy_version": tier1_selection.TIER_POLICY_VERSION,
-        "release_id": tier1_features.RELEASE_ID,
-        "bundle_sha256": tier1_features.BUNDLE_SHA256,
+        "release_id": snapshot.release_id,
+        "bundle_sha256": snapshot.bundle_sha256,
         "source_commit": commit,
         "prediction_batch_version": manifest["batch_id"],
         "generated_at_utc": generated_at,

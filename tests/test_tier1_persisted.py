@@ -65,6 +65,46 @@ def test_unlabeled_lineage_is_versioned_and_has_no_fabricated_label() -> None:
             validate_tier1_lineage(invalid)
 
 
+def test_prod_lineage_admits_only_pinned_versioned_snapshot() -> None:
+    snapshot = tier1_features.SNAPSHOTS["prod"]
+    value = lineage() | {
+        "feature_set_version": snapshot.feature_version,
+        "release_id": snapshot.release_id,
+        "bundle_sha256": snapshot.bundle_sha256,
+        "prediction_batch_version": tier1_persisted.batch_id(COMMIT, snapshot),
+    }
+    assert validate_tier1_lineage(value) == value
+    schema = json.loads(
+        (ROOT / "docs/architecture/declarative-ml-contracts-v2.schema.json").read_text()
+    )
+    validate_json_schema(value, schema)
+    with pytest.raises(ContractError):
+        validate_tier1_lineage(value | {"feature_set_version": tier1_features.VERSION})
+    from jsonschema import ValidationError
+
+    with pytest.raises(ValidationError):
+        validate_json_schema(value | {"feature_set_version": tier1_features.VERSION}, schema)
+
+
+def test_prod_serialization_rejects_dev_lineage_and_accepts_pinned_identity() -> None:
+    snapshot = tier1_features.SNAPSHOTS["prod"]
+    identity = tier1_persisted.batch_id(COMMIT, snapshot)
+    rows = synthetic_complete_batch()
+    for row in rows:
+        row.update(
+            feature_set_version=snapshot.feature_version,
+            release_id=snapshot.release_id,
+            bundle_sha256=snapshot.bundle_sha256,
+            prediction_batch_version=identity,
+            run_id=identity,
+        )
+    expected = synthetic_governed_fips()
+    tier1_persisted.validate(rows, identity, expected_fips=expected, snapshot=snapshot)
+    json.dumps(rows, sort_keys=True, separators=(",", ":"), allow_nan=False)
+    with pytest.raises(ValueError, match="lineage"):
+        tier1_persisted.validate(rows, identity, expected_fips=expected)
+
+
 def test_selected_policy_boundaries_and_partial_evidence() -> None:
     for percentile, expected in (
         (0, "LOW"),

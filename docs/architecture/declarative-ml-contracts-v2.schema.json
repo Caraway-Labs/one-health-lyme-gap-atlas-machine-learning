@@ -7,11 +7,11 @@
     "schema": {"const": "atlas-ml-contracts/v2"},
     "supervision_mode": {"const": "unsupervised"},
     "model_version": {"const": "tier1-statistical-reference-v1"},
-    "feature_set_version": {"const": "tier1-county-features-v1"},
+    "feature_set_version": {"enum": ["tier1-county-features-v1", "tier1-county-features-v2"]},
     "evaluation_version": {"const": "tier1-selection-evaluation-v1"},
     "tier_policy_version": {"const": "tier1-review-percentile-v1"},
-    "release_id": {"const": "governed-2026-09-17-unknown-coverage"},
-    "bundle_sha256": {"const": "55192e53b0b046cfe5148c13ffe5c570f615ec233e2b5c1103247f00b1a51233"},
+    "release_id": {"type": "string"},
+    "bundle_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "source_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
     "prediction_batch_version": {"type": "string", "pattern": "^tier1-review-priority-[0-9a-f]{16}$"},
     "generated_at_utc": {"type": "string", "pattern": "Z$"},
@@ -19,5 +19,9 @@
     "row_count": {"const": 3144},
     "intended_use_ref": {"const": "docs/contracts/tier1-persisted-output-v1.md"}
   },
-  "additionalProperties": false
+  "additionalProperties": false,
+  "oneOf": [
+    {"properties": {"feature_set_version": {"const": "tier1-county-features-v1"}, "release_id": {"const": "governed-2026-09-17-unknown-coverage"}, "bundle_sha256": {"const": "55192e53b0b046cfe5148c13ffe5c570f615ec233e2b5c1103247f00b1a51233"}}},
+    {"properties": {"feature_set_version": {"const": "tier1-county-features-v2"}, "release_id": {"const": "governed-2026-09-18-unknown-coverage"}, "bundle_sha256": {"const": "038aa3f8c383a70699aff92c752f2bbcc6687a726d0c2f142c9f368841b42026"}}}
+  ]
 }

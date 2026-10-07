@@ -10,14 +10,48 @@ import os
 import statistics
 import subprocess
 from collections import Counter
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 VERSION = "tier1-county-features-v1"
 DATABASE = "ONE_HEALTH_LYME_GAP_ATLAS_DEV"
 RELEASE_ID = "governed-2026-09-17-unknown-coverage"
 BUNDLE_SHA256 = "55192e53b0b046cfe5148c13ffe5c570f615ec233e2b5c1103247f00b1a51233"
+
+
+@dataclass(frozen=True)
+class Snapshot:
+    environment: str
+    database: str
+    role: str
+    warehouse: str
+    release_id: str
+    bundle_sha256: str
+    feature_version: str
+
+
+SNAPSHOTS = {
+    "dev": Snapshot(
+        "dev",
+        DATABASE,
+        "OH_LYME_DEV_READ",
+        "OH_LYME_DEV_INGEST_XS_WH",
+        RELEASE_ID,
+        BUNDLE_SHA256,
+        VERSION,
+    ),
+    "prod": Snapshot(
+        "prod",
+        "ONE_HEALTH_LYME_GAP_ATLAS_PROD",
+        "OH_LYME_PROD_READ",
+        "COMPUTE_WH",
+        "governed-2026-09-18-unknown-coverage",
+        "038aa3f8c383a70699aff92c752f2bbcc6687a726d0c2f142c9f368841b42026",
+        "tier1-county-features-v2",
+    ),
+}
 FEATURE_COLUMNS = (
     "human_published_floor",
     "human_case_count_floor_log1p",
@@ -39,51 +73,66 @@ OUTPUT_COLUMNS = (
     "bundle_sha256",
 )
 COUNTY_SQL = (
-    "SELECT FIPS, HUMAN_STATUS, CASE_COUNT_FLOOR_2023, "
+    "SELECT FIPS, HUMAN_STATUS, CASE_COUNT_FLOOR_2023, TICK_STATUS, "
     "SCAPULARIS_STATUS, PACIFICUS_STATUS, "
     "BURGDORFERI_STATUS, SVI_PERCENTILE, RUCC_2023 "
     f"FROM {DATABASE}.PRESENTATION.CURRENT_COUNTY_ATLAS_V ORDER BY FIPS"
 )
 
 
-def _query(connection: str, sql: str) -> list[dict[str, Any]]:
+def county_sql(snapshot: Snapshot) -> str:
+    return COUNTY_SQL.replace(DATABASE, snapshot.database)
+
+
+def _query(
+    connection: str, sql: str, snapshot: Snapshot = SNAPSHOTS["dev"]
+) -> list[dict[str, Any]]:
+    statement = (
+        f"USE WAREHOUSE {snapshot.warehouse}; " if snapshot.environment == "prod" else ""
+    ) + sql
     completed = subprocess.run(
-        ["snow", "sql", "-c", connection, "--format", "JSON", "-q", sql],
+        ["snow", "sql", "-c", connection, "--format", "JSON", "-q", statement],
         check=True,
         capture_output=True,
         text=True,
     )
     result: list[dict[str, Any]] = json.loads(completed.stdout)
-    return result
+    return cast(list[dict[str, Any]], result[-1] if snapshot.environment == "prod" else result)
 
 
-def _validate_context(connection: str) -> None:
+def _validate_context(connection: str, snapshot: Snapshot = SNAPSHOTS["dev"]) -> None:
     rows = _query(
         connection,
         "SELECT CURRENT_USER() AS USER_NAME, CURRENT_ROLE() AS ROLE_NAME, "
         "CURRENT_DATABASE() AS DATABASE_NAME, CURRENT_WAREHOUSE() AS WAREHOUSE_NAME",
+        snapshot,
     )
     if len(rows) != 1 or not rows[0]["USER_NAME"]:
         raise ValueError("Snowflake identity could not be verified")
-    if rows[0]["ROLE_NAME"] != "OH_LYME_DEV_READ" or rows[0]["DATABASE_NAME"] != DATABASE:
-        raise ValueError("Expected read-only DEV context")
-    if not rows[0]["WAREHOUSE_NAME"]:
-        raise ValueError("Snowflake warehouse is unavailable")
+    if (rows[0]["ROLE_NAME"], rows[0]["DATABASE_NAME"], rows[0]["WAREHOUSE_NAME"]) != (
+        snapshot.role,
+        snapshot.database,
+        snapshot.warehouse,
+    ):
+        raise ValueError("Expected pinned read-only environment and warehouse context")
 
 
-def _validate_release(connection: str) -> None:
+def _validate_release(connection: str, snapshot: Snapshot = SNAPSHOTS["dev"]) -> None:
     rows = _query(
         connection,
-        f"SELECT RELEASE_ID, BUNDLE_SHA256 FROM {DATABASE}.PRESENTATION.CURRENT_RELEASE_V",
+        f"SELECT RELEASE_ID, BUNDLE_SHA256 FROM {snapshot.database}.PRESENTATION.CURRENT_RELEASE_V",
+        snapshot,
     )
     if len(rows) != 1 or (rows[0]["RELEASE_ID"], rows[0]["BUNDLE_SHA256"]) != (
-        RELEASE_ID,
-        BUNDLE_SHA256,
+        snapshot.release_id,
+        snapshot.bundle_sha256,
     ):
         raise ValueError("Current governed release differs from the pinned feature snapshot")
 
 
-def build_matrix(source: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+def build_matrix(
+    source: list[dict[str, Any]], snapshot: Snapshot = SNAPSHOTS["dev"]
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     """Validate source semantics, then return sorted rows and a bounded coverage summary."""
     output: list[dict[str, Any]] = []
     seen: set[str] = set()
@@ -116,8 +165,18 @@ def build_matrix(source: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], di
             human_magnitude = 0.0
         if pathogen not in {"Present", "No records", "Unknown"}:
             raise ValueError(f"Unrecognized pathogen state: {pathogen}")
-        if scapularis != "Unknown" or pacificus != "Unknown":
-            raise ValueError("Vector state changed; review feature admission before regeneration")
+        vector_states = (
+            {"Unknown"}
+            if snapshot.environment == "dev"
+            else {"Established", "Reported", "No records", "Unknown"}
+        )
+        if scapularis not in vector_states or pacificus not in vector_states:
+            raise ValueError("Vector state is outside the reviewed feature admission")
+        tick = row.get("TICK_STATUS", "Unknown" if snapshot.environment == "dev" else None)
+        if tick not in vector_states:
+            raise ValueError("Aggregate vector state is outside the reviewed feature admission")
+        if snapshot.environment == "dev" and tick != "Unknown":
+            raise ValueError("DEV vector context changed")
         svi = row["SVI_PERCENTILE"]
         if svi is None or not 0 <= float(svi) <= 1:
             raise ValueError("SVI is unavailable or outside [0, 1]")
@@ -137,16 +196,16 @@ def build_matrix(source: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], di
                 "svi_percentile_2022": float(svi),
                 "human_evidence_state": human,
                 "pathogen_evidence_state": pathogen,
-                "vector_evidence_state": "Unknown",
+                "vector_evidence_state": tick,
                 "rucc_2023_context": int(rucc),
                 "feature_evidence_state": (
                     "PARTIAL"
                     if human == "no_county_linked_record" or pathogen == "Unknown"
                     else "OBSERVED"
                 ),
-                "feature_set_version": VERSION,
-                "release_id": RELEASE_ID,
-                "bundle_sha256": BUNDLE_SHA256,
+                "feature_set_version": snapshot.feature_version,
+                "release_id": snapshot.release_id,
+                "bundle_sha256": snapshot.bundle_sha256,
             }
         )
     if len(output) != 3144:
@@ -165,9 +224,9 @@ def build_matrix(source: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], di
         raise ValueError("No published human count floors in selected release")
     transformed_floors = [math.log1p(value) for value in published_floors]
     report = {
-        "feature_set_version": VERSION,
-        "release_id": RELEASE_ID,
-        "bundle_sha256": BUNDLE_SHA256,
+        "feature_set_version": snapshot.feature_version,
+        "release_id": snapshot.release_id,
+        "bundle_sha256": snapshot.bundle_sha256,
         "expected_counties": 3144,
         "matrix_rows": len(output),
         "duplicate_keys": len(output) - len(seen),
@@ -222,13 +281,15 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--report", type=Path, required=True)
+    parser.add_argument("--environment", choices=SNAPSHOTS, default="dev")
     args = parser.parse_args()
+    snapshot = SNAPSHOTS[args.environment]
     connection = os.environ.get("SNOWFLAKE_CONNECTION_NAME")
     if not connection:
-        raise SystemExit("Set SNOWFLAKE_CONNECTION_NAME to an approved read-only DEV connection")
-    _validate_context(connection)
-    _validate_release(connection)
-    matrix, report = build_matrix(_query(connection, COUNTY_SQL))
+        raise SystemExit("Set SNOWFLAKE_CONNECTION_NAME to an approved read-only connection")
+    _validate_context(connection, snapshot)
+    _validate_release(connection, snapshot)
+    matrix, report = build_matrix(_query(connection, county_sql(snapshot), snapshot), snapshot)
     report["generated_at_utc"] = datetime.now(UTC).isoformat()
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.report.parent.mkdir(parents=True, exist_ok=True)

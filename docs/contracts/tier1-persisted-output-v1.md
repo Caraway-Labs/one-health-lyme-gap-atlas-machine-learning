@@ -1,5 +1,13 @@
 # Tier 1 persisted county review output v1
 
+PROD admission under ML #104 uses [feature v2](tier1-county-features-v2.md)
+against the pinned PROD release while preserving this output schema, selected
+model, evaluation, tier policy, reason meanings, and publication invariants.
+The DEV identity and counts below document the original v1 batch; see the
+[PROD comparison](../reports/ml-104-prod-feature-admission.md) for admission
+evidence. A PR-head PROD artifact is a review candidate until regenerated
+from a reviewed final source commit.
+
 **Owner:** Atlas ML for values and semantics; Atlas data for Snowflake objects. **Status:** Product direction approved; exact Data implementation and security review pending. No live batch is approved.
 
 The selected model is `tier1-statistical-reference-v1`, using `tier1-county-features-v1`, evaluation `tier1-selection-evaluation-v1`, and tier policy `tier1-review-percentile-v1`. The pinned DEV release is `governed-2026-09-17-unknown-coverage` with bundle SHA-256 `55192e53b0b046cfe5148c13ffe5c570f615ec233e2b5c1103247f00b1a51233`. No Isolation Forest output may be published as the selected batch.
