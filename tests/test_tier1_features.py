@@ -4,6 +4,7 @@ from math import log1p
 import pytest
 
 from lyme_gap_atlas_ml import tier1_features as features
+from lyme_gap_atlas_ml import tier1_model, tier1_persisted
 
 
 def _rows() -> list[dict[str, object]]:
@@ -103,3 +104,30 @@ def test_priority_fields_never_enter_matrix() -> None:
     matrix, _ = features.build_matrix(rows)
     assert not any("score" in name or "tier" in name for name in matrix[0])
     assert "county_fips" not in features.FEATURE_COLUMNS
+
+
+def test_prod_vector_admission_preserves_six_predictors_and_selected_scores() -> None:
+    dev_source = _rows()
+    prod_source = deepcopy(dev_source)
+    for index, row in enumerate(prod_source):
+        row["SCAPULARIS_STATUS"] = ("Established", "Reported", "No records")[index % 3]
+        row["PACIFICUS_STATUS"] = ("No records", "Established", "Reported")[index % 3]
+        row["TICK_STATUS"] = row["SCAPULARIS_STATUS"]
+    dev, _ = features.build_matrix(dev_source)
+    snapshot = features.SNAPSHOTS["prod"]
+    prod, report = features.build_matrix(prod_source, snapshot)
+    assert [tuple(row[column] for column in features.FEATURE_COLUMNS) for row in dev] == [
+        tuple(row[column] for column in features.FEATURE_COLUMNS) for row in prod
+    ]
+    assert all(row["vector_evidence_state"] != "Unknown" for row in prod)
+    assert report["feature_set_version"] == "tier1-county-features-v2"
+    assert (
+        tier1_model._reference(tier1_model._validated_matrix(dev))
+        == tier1_model._reference(tier1_model._validated_matrix(prod, snapshot))
+    ).all()
+    assert tier1_persisted.batch_id("a" * 40) != tier1_persisted.batch_id("a" * 40, snapshot)
+    with pytest.raises(ValueError, match="Vector state"):
+        features.build_matrix(prod_source)
+    prod_source[0]["TICK_STATUS"] = "invalid"
+    with pytest.raises(ValueError, match="Aggregate vector"):
+        features.build_matrix(prod_source, snapshot)

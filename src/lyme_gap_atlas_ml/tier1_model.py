@@ -46,15 +46,17 @@ OUTPUT_COLUMNS = (
 )
 
 
-def _validated_matrix(rows: list[dict[str, Any]]) -> npt.NDArray[np.float64]:
+def _validated_matrix(
+    rows: list[dict[str, Any]], snapshot: features.Snapshot = features.SNAPSHOTS["dev"]
+) -> npt.NDArray[np.float64]:
     if not rows or len({str(row["county_fips"]) for row in rows}) != len(rows):
         raise ValueError("Empty matrix or duplicate county keys")
     matrix = []
     for row in rows:
         if (row["feature_set_version"], row["release_id"], row["bundle_sha256"]) != (
-            features.VERSION,
-            features.RELEASE_ID,
-            features.BUNDLE_SHA256,
+            snapshot.feature_version,
+            snapshot.release_id,
+            snapshot.bundle_sha256,
         ):
             raise ValueError("Feature or governed release mismatch")
         if len(str(row["county_fips"])) != 5 or not str(row["county_fips"]).isdigit():

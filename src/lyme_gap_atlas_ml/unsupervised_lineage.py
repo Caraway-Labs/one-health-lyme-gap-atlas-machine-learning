@@ -39,13 +39,24 @@ def validate_tier1_lineage(value: Any) -> dict[str, Any]:
     from lyme_gap_atlas_ml import tier1_features, tier1_selection
     from lyme_gap_atlas_ml.tier1_persisted import EVALUATION_VERSION, LIMITATION_REF, batch_id
 
+    snapshot = next(
+        (
+            candidate
+            for candidate in tier1_features.SNAPSHOTS.values()
+            if (value["feature_set_version"], value["release_id"], value["bundle_sha256"])
+            == (candidate.feature_version, candidate.release_id, candidate.bundle_sha256)
+        ),
+        None,
+    )
+    if snapshot is None:
+        raise ContractError("unsupervised lineage: unapproved feature snapshot")
     expected = {
         "model_version": tier1_selection.SELECTED_MODEL_VERSION,
-        "feature_set_version": tier1_features.VERSION,
+        "feature_set_version": snapshot.feature_version,
         "evaluation_version": EVALUATION_VERSION,
         "tier_policy_version": tier1_selection.TIER_POLICY_VERSION,
-        "release_id": tier1_features.RELEASE_ID,
-        "bundle_sha256": tier1_features.BUNDLE_SHA256,
+        "release_id": snapshot.release_id,
+        "bundle_sha256": snapshot.bundle_sha256,
         "intended_use_ref": LIMITATION_REF,
         "row_count": 3144,
     }
@@ -53,7 +64,7 @@ def validate_tier1_lineage(value: Any) -> dict[str, Any]:
         raise ContractError("unsupervised lineage: incompatible selected identity")
     if not isinstance(value["source_commit"], str) or not SHA.fullmatch(value["source_commit"]):
         raise ContractError("unsupervised lineage: invalid source commit")
-    if value["prediction_batch_version"] != batch_id(value["source_commit"]):
+    if value["prediction_batch_version"] != batch_id(value["source_commit"], snapshot):
         raise ContractError("unsupervised lineage: batch identity mismatch")
     if not isinstance(value["output_sha256"], str) or not re.fullmatch(
         r"[0-9a-f]{64}", value["output_sha256"]
