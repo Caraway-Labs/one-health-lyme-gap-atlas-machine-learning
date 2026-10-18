@@ -1,6 +1,6 @@
 {
   "algorithm": "in-repository categorical latent class EM",
-  "approval_state": "not_yet_approved",
+  "approval_state": "approved_for_data_handoff",
   "batch_id": "surveillance-situation-batch",
   "batch_schema": "docs/contracts/138-surveillance-situation-batch-v1.schema.json",
   "batch_version": "v1",

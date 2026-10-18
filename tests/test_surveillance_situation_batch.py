@@ -66,7 +66,7 @@ def test_replay_reproduces_the_pinned_class_counts() -> None:
             assert abs(sum(values) - 1.0) <= 1e-6
         seen.append(set(fips))
     assert seen[0] == seen[1]
-    assert batch.manifest["approval_state"] == "not_yet_approved"
+    assert batch.manifest["approval_state"] == "approved_for_data_handoff"
     assert batch.manifest["snowflake_objects_written"] == []
     assert batch.manifest["git_sha"] == "cd936fe345664e606c916b137dd642caa0d6d73b"
     assert batch.manifest["result_commit"] == "a2f9bad41f1ddb793e364399afbdd5fbad008b7a"

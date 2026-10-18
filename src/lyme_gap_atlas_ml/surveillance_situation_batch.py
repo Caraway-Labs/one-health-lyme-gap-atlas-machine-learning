@@ -37,7 +37,7 @@ from lyme_gap_atlas_ml.surveillance_situation_contract import (
 
 BATCH_ID = "surveillance-situation-batch"
 BATCH_VERSION = "v1"
-APPROVAL_STATE = "not_yet_approved"
+APPROVAL_STATE = "approved_for_data_handoff"
 PROBABILITY_SUM_TOLERANCE = 1e-6
 NATIONAL_POPULATION = 331_097_593
 FIT_RESULT_SCHEMA = "atlas-ml-latent-class-result/119-v1"

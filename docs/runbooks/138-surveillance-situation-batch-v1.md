@@ -5,7 +5,7 @@
 **Compatibility:** carry forward, dated 2026-10-18, in [143-release-compatibility.md](../eda/143-release-compatibility.md).
 **Owner of this procedure:** Atlas ML, [task #144](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/issues/144).
 
-This procedure applies only to `surveillance-situation-batch` version `v1`. That batch is pinned to release `governed-2026-10-15-january-climate-prod` and bundle SHA-256 `53e50aa37c701635e96c48cd4931c4c4a9e7e695c146263fb9bb335e541ae74d`. Its approval state is `not_yet_approved`. This procedure writes no production Snowflake object.
+This procedure applies only to `surveillance-situation-batch` version `v1`. That batch is pinned to release `governed-2026-10-15-january-climate-prod` and bundle SHA-256 `53e50aa37c701635e96c48cd4931c4c4a9e7e695c146263fb9bb335e541ae74d`. Matthew Caraway approved it for the Data handoff at `2026-10-18T11:37:14-06:00`. The approval record is [138-surveillance-situation-batch-v1-approval.json](../../config/models/138-surveillance-situation-batch-v1-approval.json). This procedure writes no production Snowflake object.
 
 A later run must not edit this batch in place. A failure must not look like a surveillance class.
 
@@ -43,9 +43,9 @@ The command rewrites only the gitignored county file and checks it against the c
 
 **Owner:** Atlas ML names the batch a consumer may return to. Data moves the consumer pointer. API and Web display that pointer and do not choose a substitute class.
 
-**Previous batch:** v1 is not yet approved, so there is no approved batch to restore. Until [task #145](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/issues/145) approves one compatible batch, consumers stay unavailable. After an approval, rollback may point only at an earlier approved batch whose own compatibility note still matches the live release id and bundle SHA-256.
+**Previous batch:** Matthew Caraway approved v1 for the Data handoff at `2026-10-18T11:37:14-06:00`. [Data #702](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-data/issues/702) is the publisher. Until that publication, there is no consumer pointer to move. After publication, rollback may point at this approved batch only while its compatibility note still matches the live release id and bundle SHA-256.
 
-**Stop:** stop when no approved batch is compatible with the live release. Leave the consumer in an explicit unavailable state. Do not point at v1 while it is unapproved, and do not edit v1 rows so they resemble another batch.
+**Stop:** stop when no approved batch is compatible with the live release. Leave the consumer in an explicit unavailable state. Do not point at v1 when the live release differs from the approval, and do not edit v1 rows so they resemble another batch.
 
 ## Interpretation
 

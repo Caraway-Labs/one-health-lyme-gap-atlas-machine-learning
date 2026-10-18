@@ -151,7 +151,7 @@
         "schema": {"const": "atlas-ml-surveillance-situation-batch-manifest/138-v1"},
         "batch_id": {"const": "surveillance-situation-batch"},
         "batch_version": {"const": "v1"},
-        "approval_state": {"const": "not_yet_approved"},
+        "approval_state": {"const": "approved_for_data_handoff"},
         "algorithm": {"const": "in-repository categorical latent class EM"},
         "stored_estimator": {"const": "in-repository categorical latent class EM"},
         "config": {"const": "config/experiments/119-latent-class-v1.json"},
