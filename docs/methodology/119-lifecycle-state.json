@@ -41,8 +41,12 @@
       }
     },
     "evaluate": {
-      "status": "not_started",
-      "evidence": {}
+      "status": "complete",
+      "evidence": {
+        "frozen_evaluation_plan": "docs/methodology/119-evaluation-plan.md",
+        "evaluation_result": "config/experiments/119-latent-class-v1-result.json",
+        "eda_note": "docs/eda/119-surveillance-latent-classes.md"
+      }
     },
     "decide": {
       "status": "not_started",

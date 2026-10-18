@@ -34,10 +34,14 @@
 
 The live production release is now `governed-2026-10-15-january-climate-prod`, bundle SHA-256 `53e50aa37c701635e96c48cd4931c4c4a9e7e695c146263fb9bb335e541ae74d`, schema `2.0.0`, method `semantic-2.0.0`. The October 6 release named above is the earlier catalog snapshot, not the current one. [ML #136](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/issues/136) found the same 3,144 counties, the same allowed levels, the same blank categories, and the same population total. This amendment changes the source identity only. The question, both estimands, the class-count range, the selection rule, and the missingness rule stay as written. The refreshed cross-tab was not used to choose K.
 
+## Amendment v1.2 — evaluation recorded, 2026-10-17
+
+The fit and the class descriptions now exist. The sentence above that no model had been fit describes this spec before the fit. The class names, population totals, Alaska and Hawaii check, and the 228-county comparison are in [119-surveillance-latent-classes.md](119-surveillance-latent-classes.md). That comparison did not change the class count.
+
 - **Reproduction / evidence:** This file and the lifecycle state are the frame evidence. Confirm the frame gate with:
 
   ```text
-  uv run python -c "from pathlib import Path; from lyme_gap_atlas_ml.lifecycle import load_state, resume; state = load_state(Path('docs/methodology/119-lifecycle-state.json')); decision = resume(state); assert decision.completed == ('frame', 'data', 'baseline'); assert decision.current_stage == 'evaluate'; print(decision.current_stage)"
+  uv run python -c "from pathlib import Path; from lyme_gap_atlas_ml.lifecycle import load_state, resume; state = load_state(Path('docs/methodology/119-lifecycle-state.json')); decision = resume(state); assert decision.completed == ('frame', 'data', 'baseline', 'evaluate'); assert decision.current_stage == 'decide'; print(decision.current_stage)"
   ```
 
   Repository verification remains `uv run python scripts/verify.py`. No Snowflake query is run for this frame. No transient extract is produced.
