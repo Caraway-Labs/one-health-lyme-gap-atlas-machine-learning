@@ -1,0 +1,42 @@
+{
+  "schema": "atlas-ml-lifecycle/v2",
+  "project_id": "119-surveillance-latent-class",
+  "references": {},
+  "stages": {
+    "frame": {
+      "status": "complete",
+      "evidence": {
+        "decision_contract": "docs/eda/119-analysis-spec.md"
+      }
+    },
+    "data": {
+      "status": "not_started",
+      "evidence": {}
+    },
+    "baseline": {
+      "status": "not_started",
+      "evidence": {}
+    },
+    "evaluate": {
+      "status": "not_started",
+      "evidence": {}
+    },
+    "decide": {
+      "status": "not_started",
+      "evidence": {}
+    }
+  },
+  "holdout_history": [],
+  "assumptions": [
+    "Exploratory latent class analysis of one governed county snapshot, dispatched by the user on 2026-10-17 for story 119.",
+    "Estimand A uses HUMAN_STATUS, SCAPULARIS_STATUS, PACIFICUS_STATUS, and BURGDORFERI_STATUS. Estimand B omits HUMAN_STATUS.",
+    "Class counts 2 through 6 are selected by the stability and BIC rule in docs/eda/119-analysis-spec.md before any follow-up list is inspected.",
+    "No records and Unknown remain categories. The human blank is no_county_linked_record and is not recoded."
+  ],
+  "limitations": [
+    "Classes describe surveillance situations. They are not disease risk, incidence, or a production score.",
+    "The October catalog and docs/eda/prod-exhaustive-eda.md already published the surveillance cross-tab, so this run is exploratory relative to that description.",
+    "County rows are state-dependent. Fit statistics are descriptive summaries, not independent-sample tests.",
+    "API serving and production publication are outside story 119."
+  ]
+}
