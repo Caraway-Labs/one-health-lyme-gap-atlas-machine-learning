@@ -44,7 +44,7 @@ class FitConfig:
     minimum_median_ari: float = 0.90
     minimum_class_counties: int = 30
     bic_margin: float = 6.0
-    max_iterations: int = 200
+    max_iterations: int = 2000
     tolerance: float = 1e-8
 
 

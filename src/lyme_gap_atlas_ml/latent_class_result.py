@@ -70,6 +70,8 @@ def render_selection_note(document: Mapping[str, object], *, code_revision: str)
         "The estimator is the categorical latent class EM in "
         "`lyme_gap_atlas_ml.latent_class_fit`. "
         "scikit-learn supplied the adjusted Rand index only. "
+        "Each start keeps the best of 20 random initializations and stops at 2,000 "
+        "EM iterations or when the log-likelihood change is within 1e-8. "
         "Training ran on the local machine. "
         "No Snowflake object was written. "
         "The read context was user MATTHEWCARAWAY, role OH_LYME_PROD_READ, "
@@ -187,10 +189,13 @@ def _as_float(value: object) -> float:
 def _estimand_section(name: str, payload: Mapping[str, object]) -> list[str]:
     selected = payload["selected_classes"]
     reason = payload["blocked_reason"]
+    model = payload.get("model")
+    converged = model["converged"] if isinstance(model, Mapping) else None
     lines = [
         f"## {name}",
         "",
         f"Selected class count: `{selected}`.",
+        f"Primary-seed model converged: `{converged}`.",
     ]
     if reason:
         lines.append(f"Blocked reason: {reason}.")
