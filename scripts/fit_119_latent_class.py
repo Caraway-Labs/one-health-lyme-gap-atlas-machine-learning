@@ -51,7 +51,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     payload = json.loads(args.counties.read_text(encoding="utf-8"))
     if not isinstance(payload, list):
         raise SystemExit("county extract must be a JSON list")
-    counties = require_national_cohort(build_counties(payload), args.release_id, args.bundle_sha256)
+    counties = require_national_cohort(
+        build_counties(payload),
+        release_id=args.release_id,
+        bundle_sha256=args.bundle_sha256,
+    )
     assert_baseline_cross_tab(counties)
     config = frozen_config(json.loads(args.experiment.read_text(encoding="utf-8")))
     selections = {
