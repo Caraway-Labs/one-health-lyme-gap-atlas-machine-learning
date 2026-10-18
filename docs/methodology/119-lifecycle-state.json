@@ -1,7 +1,16 @@
 {
   "schema": "atlas-ml-lifecycle/v2",
   "project_id": "119-surveillance-latent-class",
-  "references": {},
+  "references": {
+    "dataset": {
+      "id": "surveillance-latent-class-counties",
+      "version": "v1"
+    },
+    "feature": {
+      "id": "surveillance-latent-class-indicators",
+      "version": "v1"
+    }
+  },
   "stages": {
     "frame": {
       "status": "complete",
@@ -10,8 +19,11 @@
       }
     },
     "data": {
-      "status": "not_started",
-      "evidence": {}
+      "status": "complete",
+      "evidence": {
+        "dataset_contract": "docs/contracts/119-surveillance-latent-class-dataset-v1.md",
+        "leakage_review": "docs/methodology/119-leakage-review.md"
+      }
     },
     "baseline": {
       "status": "not_started",
@@ -31,7 +43,8 @@
     "Exploratory latent class analysis of one governed county snapshot, dispatched by the user on 2026-10-17 for story 119.",
     "Estimand A uses HUMAN_STATUS, SCAPULARIS_STATUS, PACIFICUS_STATUS, and BURGDORFERI_STATUS. Estimand B omits HUMAN_STATUS.",
     "Class counts 2 through 6 are selected by the stability and BIC rule in docs/eda/119-analysis-spec.md before any follow-up list is inspected.",
-    "No records and Unknown remain categories. The human blank is no_county_linked_record and is not recoded."
+    "No records and Unknown remain categories. The human blank is no_county_linked_record and is not recoded.",
+    "Dataset surveillance-latent-class-counties v1 admits only FIPS, STATE, the four statuses, and POPULATION as a denominator."
   ],
   "limitations": [
     "Classes describe surveillance situations. They are not disease risk, incidence, or a production score.",
