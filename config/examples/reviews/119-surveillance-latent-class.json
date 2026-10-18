@@ -1,0 +1,38 @@
+{
+  "schema": "atlas-ml-scientific-review/v1",
+  "experiment_ref": "surveillance-latent-class-experiment@v1",
+  "reviewer": "story-119-artifact-inspection",
+  "disposition": "PASS",
+  "checks": {
+    "problem_target": "PASS",
+    "point_in_time": "PASS",
+    "leakage": "PASS",
+    "holdout": "PASS",
+    "baseline": "PASS",
+    "metrics": "PASS",
+    "limitations": "PASS",
+    "reproducibility": "PASS",
+    "interpretation": "PASS"
+  },
+  "evidence": [
+    "config/experiments/119-latent-class-v1-result.json",
+    "config/experiments/119-latent-class-v1.json",
+    "docs/contracts/119-surveillance-latent-class-dataset-v1.md",
+    "docs/eda/119-analysis-spec.md",
+    "docs/eda/119-surveillance-latent-classes.md",
+    "docs/methodology/119-baseline-comparison.md",
+    "docs/methodology/119-class-count-selection.md",
+    "docs/methodology/119-evaluation-plan.md",
+    "docs/methodology/119-leakage-review.md",
+    "docs/methodology/119-validation-design.md"
+  ],
+  "findings": [
+    "The question is a description of one county snapshot. A class is a surveillance situation, and the evaluation note refuses a risk, incidence, or production-score reading.",
+    "The fit is pinned to release governed-2026-10-15-january-climate-prod and bundle SHA-256 53e50aa37c701635e96c48cd4931c4c4a9e7e695c146263fb9bb335e541ae74d.",
+    "Case floor, incidence floor, evidence completeness, the September review tier, land cover, and earlier model output stay out of the indicators. Population is a denominator.",
+    "There is no outcome label. holdout_history is empty. The 228-county comparison was made after the class count was fixed.",
+    "The baseline is the observed cross-classification. The selected four-class summaries are coarser than that table, and the stability rule is the one frozen before the fit.",
+    "The tick-and-pathogen probabilities are a stable grouping. They do not separate pathogen present from pathogen not recorded inside the established-blacklegged class."
+  ],
+  "remediation": ""
+}

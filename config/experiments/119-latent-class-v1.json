@@ -1,0 +1,29 @@
+{
+  "schema": "atlas-ml-experiment-config/119-v1",
+  "id": "surveillance-latent-class-experiment",
+  "version": "v1",
+  "dataset": {
+    "id": "surveillance-latent-class-counties",
+    "version": "v1.1"
+  },
+  "feature_set": {
+    "id": "surveillance-latent-class-indicators",
+    "version": "v1.1"
+  },
+  "split": {
+    "id": "surveillance-latent-class-stability",
+    "version": "v1",
+    "meaning": "All 3144 counties are described. Stability uses five seeds. There is no outcome holdout."
+  },
+  "estimands": ["four-state", "tick-pathogen"],
+  "class_counts": [2, 3, 4, 5, 6],
+  "primary_seed": 1192026,
+  "alternate_seeds": [1192027, 1192028, 1192029, 1192030],
+  "random_starts_per_seed": 20,
+  "minimum_median_adjusted_rand_index": 0.9,
+  "minimum_class_counties": 30,
+  "bic_margin": 6,
+  "fit_status": "selected",
+  "result": "config/experiments/119-latent-class-v1-result.json",
+  "selection_note": "docs/methodology/119-class-count-selection.md"
+}

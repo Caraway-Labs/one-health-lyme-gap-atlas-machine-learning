@@ -1,0 +1,47 @@
+# ML #119 latent class analysis: registered specification v1
+
+- **Spec/version and owning issue:** `119-surveillance-latent-class/v1`, [ML #119](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/issues/119), frame task [ML #130](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/issues/130). Follows [analysis-spec v1](../methodology/analysis-spec-v1.md). Lifecycle state: [119-lifecycle-state.json](../methodology/119-lifecycle-state.json).
+- **Question / decision / allowed interpretation:** Which surveillance situations does the current national county release contain, how many counties and people sit in each, and which situations are large enough to justify a distinct follow-up playbook? The user dispatched the exploratory lifecycle on 2026-10-17, through a trained assignment for every county in the release. A class is a surveillance situation. It is not disease risk, incidence, biological absence, causation, individual risk, or a production score. API serving is out of scope.
+- **Estimand A — surveillance situations:** For every county, a hard class assignment and a set of class-membership probabilities from a latent class model of four categorical indicators. Reported scale, after the class count is chosen: county count, county share, and population share of each class. Population is a reporting denominator, not an indicator.
+- **Estimand B — tick-and-pathogen class:** The same model family on the two tick-species indicators and the pathogen indicator only. Its membership probabilities are a separate candidate for a later linear model and a separate candidate grouping key for the isolation-forest story. They are not mixed into Estimand A, and Estimand A is not a substitute for them.
+- **Unit / cohort / geography / time:** One row per five-digit county FIPS in release `governed-2026-10-15-january-climate-prod`, all 3,144 counties and county equivalents, including the District of Columbia, Connecticut planning regions, Alaska, and Hawaii. Human status is calendar year 2023. Tick and pathogen status are cumulative through 2025-12-31. Population is the 2022 county layer. This is one snapshot, not a forecast and not a change contrast. The lower 48 are where a class may justify a field playbook. Alaska and Hawaii stay in the assignment.
+- **Variables / source / version:** Consumer view `PRESENTATION.CURRENT_COUNTY_ATLAS_V` on `ONE_HEALTH_LYME_GAP_ATLAS_PROD`. Bundle SHA-256 `53e50aa37c701635e96c48cd4931c4c4a9e7e695c146263fb9bb335e541ae74d`, re-verified in [136-production-refresh.md](136-production-refresh.md). Join key is `FIPS`.
+
+  | Role | Column | Allowed levels |
+  | --- | --- | --- |
+  | Estimand A indicator | `HUMAN_STATUS` | `published_count_floor`, `no_county_linked_record` |
+  | Estimand A and B indicator | `SCAPULARIS_STATUS` | `Established`, `Reported`, `No records`, `Unknown` |
+  | Estimand A and B indicator | `PACIFICUS_STATUS` | `Established`, `Reported`, `No records`, `Unknown` |
+  | Estimand A and B indicator | `BURGDORFERI_STATUS` | `Present`, `No records`, `Unknown` |
+  | Reporting denominator only | `POPULATION` | positive integer on every county |
+
+- **Missingness rule:** Keep each allowed level as its own category. The human blank on this release is `no_county_linked_record`. Do not invent a human `Unknown` or `No records` level. `No records` and `Unknown` stay as their own levels on the tick and pathogen indicators. Do not impute, standardize, one-hot into a numeric model, or replace a blank with zero, Established, or Present. A null status or a level outside the table blocks the fit. Do not drop counties to finish the table. Leave out `CASE_COUNT_FLOOR_2023`, `INCIDENCE_FLOOR_2023`, `EVIDENCE_COMPLETENESS`, the September review tier, land cover, social vulnerability, rurality, insurance, and any earlier model output.
+- **Exploratory or confirmatory:** Exploratory. [Epic #118](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/issues/118) and [prod-exhaustive-eda.md](prod-exhaustive-eda.md) already published the human-by-tick-by-pathogen cross-tab, including the 228-county cell where ticks and pathogen are documented and the human floor is blank. No latent class model has been fit. That prior description means this run cannot claim the margins were unseen. It does not authorize using the 228-county cell, a preferred playbook, or a class name to choose the class count.
+- **Method / assumption rationale:** Latent class analysis. Within a class, the indicators are treated as independent. That local-independence model is the smallest model that turns the four categorical states into a few membership probabilities without imputing blanks or adding land cover. Estimands A and B are fit separately. The implementation library is chosen in the fit task; it must estimate this model and expose class probabilities.
+- **Class-count range:** Fit K = 2, 3, 4, 5, and 6 for each estimand. One class is not a typology. Six is the top of a small playbook range. The range was set from that purpose and from the number of indicators. It was not set by counting the 228-county cell as a required class.
+- **Selection rule:** Apply this rule independently to each estimand, and finish it before opening the 228-county list, naming a class, or writing a playbook.
+  1. Primary seed `1192026`. Alternate seeds `1192027`, `1192028`, `1192029`, and `1192030`. Twenty random starts at each seed. Keep the best log-likelihood start at that seed.
+  2. A K is stable when the median adjusted Rand index of the four alternate-seed hard assignments against the primary-seed assignment is at least 0.90.
+  3. A K is eligible when it is stable and every class has at least 30 counties.
+  4. Among eligible K, choose the smallest K whose BIC is no more than 6 above the lowest BIC in the eligible set. Lower BIC is the better descriptive fit. BIC is a parsimony summary for this census, not an independent-sample test.
+  5. If the eligible set is empty, stop. Do not widen K, do not inspect the 228-county list, and do not name classes in that same run. A wider range requires a dated amendment written before any new fit.
+- **Spatial / temporal dependence:** The release is a county census. Counties in the same state are dependent, and there is no second time period. Do not report a p-value, a confidence interval that assumes independent counties, or a random K-fold as the generalization check. The predeclared check is stability across the class-count range and the listed seeds. The baseline task writes the comparison with the observed cross-classification.
+- **Effect-size / uncertainty output:** Hard assignment, class probabilities, county count, county share, and population total and share. No risk, rate, or incidence estimate. The Alaska and Hawaii check, the dominant pattern inside each class, and the 228-county comparison are evaluation questions. They are not selection inputs.
+- **Key caveat / stop conditions:** Stop if the release or bundle SHA does not match the identity above, if any county is missing or duplicated, if a status level is outside the allowed set, or if a fit uses a forbidden column. Stop if class-count selection cites the 228-county list. A failed stability rule is a blocked fit, not evidence that a preferred situation is absent.
+- **Result disposition:** **PLANNED.** No model is fit by this spec. The next stage is the dataset contract in [ML #131](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/issues/131).
+
+## Amendment v1.1 — release identity, 2026-10-17
+
+The live production release is now `governed-2026-10-15-january-climate-prod`, bundle SHA-256 `53e50aa37c701635e96c48cd4931c4c4a9e7e695c146263fb9bb335e541ae74d`, schema `2.0.0`, method `semantic-2.0.0`. The October 6 release named above is the earlier catalog snapshot, not the current one. [ML #136](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/issues/136) found the same 3,144 counties, the same allowed levels, the same blank categories, and the same population total. This amendment changes the source identity only. The question, both estimands, the class-count range, the selection rule, and the missingness rule stay as written. The refreshed cross-tab was not used to choose K.
+
+## Amendment v1.2 — evaluation recorded, 2026-10-17
+
+The fit and the class descriptions now exist. The sentence above that no model had been fit describes this spec before the fit. The class names, population totals, Alaska and Hawaii check, and the 228-county comparison are in [119-surveillance-latent-classes.md](119-surveillance-latent-classes.md). That comparison did not change the class count.
+
+- **Reproduction / evidence:** This file and the lifecycle state are the frame evidence. Confirm the frame gate with:
+
+  ```text
+  uv run python -c "from pathlib import Path; from lyme_gap_atlas_ml.lifecycle import load_state, resume; state = load_state(Path('docs/methodology/119-lifecycle-state.json')); decision = resume(state); assert decision.completed == ('frame', 'data', 'baseline', 'evaluate', 'decide'); assert decision.current_stage is None; assert decision.allowed_action == 'await_new_reviewed_scope'; print(decision.allowed_action)"
+  ```
+
+  Repository verification remains `uv run python scripts/verify.py`. No Snowflake query is run for this frame. No transient extract is produced.

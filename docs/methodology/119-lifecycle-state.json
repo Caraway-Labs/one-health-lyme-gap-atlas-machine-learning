@@ -1,0 +1,79 @@
+{
+  "schema": "atlas-ml-lifecycle/v2",
+  "project_id": "119-surveillance-latent-class",
+  "references": {
+    "dataset": {
+      "id": "surveillance-latent-class-counties",
+      "version": "v1.1"
+    },
+    "feature": {
+      "id": "surveillance-latent-class-indicators",
+      "version": "v1.1"
+    },
+    "split": {
+      "id": "surveillance-latent-class-stability",
+      "version": "v1"
+    },
+    "experiment": {
+      "id": "surveillance-latent-class-experiment",
+      "version": "v1"
+    }
+  },
+  "stages": {
+    "frame": {
+      "status": "complete",
+      "evidence": {
+        "decision_contract": "docs/eda/119-analysis-spec.md"
+      }
+    },
+    "data": {
+      "status": "complete",
+      "evidence": {
+        "dataset_contract": "docs/contracts/119-surveillance-latent-class-dataset-v1.md",
+        "leakage_review": "docs/methodology/119-leakage-review.md"
+      }
+    },
+    "baseline": {
+      "status": "complete",
+      "evidence": {
+        "baseline_comparison": "docs/methodology/119-baseline-comparison.md",
+        "validation_design": "docs/methodology/119-validation-design.md"
+      }
+    },
+    "evaluate": {
+      "status": "complete",
+      "evidence": {
+        "frozen_evaluation_plan": "docs/methodology/119-evaluation-plan.md",
+        "evaluation_result": "config/experiments/119-latent-class-v1-result.json",
+        "eda_note": "docs/eda/119-surveillance-latent-classes.md"
+      }
+    },
+    "decide": {
+      "status": "complete",
+      "disposition": "SELECT",
+      "evidence": {
+        "review_decision": "config/examples/reviews/119-surveillance-latent-class.json",
+        "decision_note": "docs/methodology/119-decision.md"
+      },
+      "review": {
+        "state": "approved",
+        "decision_ref": "https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/issues/135"
+      }
+    }
+  },
+  "holdout_history": [],
+  "assumptions": [
+    "Exploratory latent class analysis of one governed county snapshot, dispatched by the user on 2026-10-17 for story 119.",
+    "Estimand A uses HUMAN_STATUS, SCAPULARIS_STATUS, PACIFICUS_STATUS, and BURGDORFERI_STATUS. Estimand B omits HUMAN_STATUS.",
+    "Class counts 2 through 6 are selected by the stability and BIC rule in docs/eda/119-analysis-spec.md before any follow-up list is inspected.",
+    "No records and Unknown remain categories. The human blank is no_county_linked_record and is not recoded.",
+    "Dataset surveillance-latent-class-counties v1.1 admits only FIPS, STATE, the four statuses, and POPULATION as a denominator.",
+    "The admitted release was amended on 2026-10-17 from governed-2026-10-06-nlcd-demo-cohort to governed-2026-10-15-january-climate-prod after the refresh EDA. The question, class-count rule, and missingness rule did not change."
+  ],
+  "limitations": [
+    "Classes describe surveillance situations. They are not disease risk, incidence, or a production score.",
+    "The October catalog and docs/eda/prod-exhaustive-eda.md already published the surveillance cross-tab, so this run is exploratory relative to that description.",
+    "County rows are state-dependent. Fit statistics are descriptive summaries, not independent-sample tests.",
+    "API serving and production publication are outside story 119."
+  ]
+}
