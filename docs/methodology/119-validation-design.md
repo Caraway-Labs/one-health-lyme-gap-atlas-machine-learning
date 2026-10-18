@@ -20,7 +20,7 @@ Stability across the predeclared class counts and seeds, using the rule already 
 4. Among eligible K, choose the smallest K whose BIC is no more than 6 above the lowest BIC in the eligible set.
 5. If no K is eligible, stop. Do not widen the range, do not open the 228-county list, and do not name classes in that run.
 
-The versioned record of those settings is [119-latent-class-v1.json](../../config/experiments/119-latent-class-v1.json). Split reference `surveillance-latent-class-stability` `v1` means the full 3,144-county release plus these five stability seeds. Experiment reference `surveillance-latent-class-experiment` `v1` is that configuration. No fit has been run.
+The versioned record of those settings is [119-latent-class-v1.json](../../config/experiments/119-latent-class-v1.json). Split reference `surveillance-latent-class-stability` `v1` means the full 3,144-county release plus these five stability seeds. Experiment reference `surveillance-latent-class-experiment` `v1` is that configuration. The fit is recorded in [119-class-count-selection.md](119-class-count-selection.md). Class names and the follow-up comparison stay with the later evaluation task.
 
 ## Nondeterminism
 

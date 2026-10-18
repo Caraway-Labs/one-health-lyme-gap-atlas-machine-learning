@@ -23,5 +23,7 @@
   "minimum_median_adjusted_rand_index": 0.9,
   "minimum_class_counties": 30,
   "bic_margin": 6,
-  "fit_status": "not_run"
+  "fit_status": "selected",
+  "result": "config/experiments/119-latent-class-v1-result.json",
+  "selection_note": "docs/methodology/119-class-count-selection.md"
 }
