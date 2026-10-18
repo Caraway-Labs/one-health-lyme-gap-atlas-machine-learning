@@ -4,11 +4,11 @@
   "references": {
     "dataset": {
       "id": "surveillance-latent-class-counties",
-      "version": "v1"
+      "version": "v1.1"
     },
     "feature": {
       "id": "surveillance-latent-class-indicators",
-      "version": "v1"
+      "version": "v1.1"
     }
   },
   "stages": {
@@ -44,7 +44,8 @@
     "Estimand A uses HUMAN_STATUS, SCAPULARIS_STATUS, PACIFICUS_STATUS, and BURGDORFERI_STATUS. Estimand B omits HUMAN_STATUS.",
     "Class counts 2 through 6 are selected by the stability and BIC rule in docs/eda/119-analysis-spec.md before any follow-up list is inspected.",
     "No records and Unknown remain categories. The human blank is no_county_linked_record and is not recoded.",
-    "Dataset surveillance-latent-class-counties v1 admits only FIPS, STATE, the four statuses, and POPULATION as a denominator."
+    "Dataset surveillance-latent-class-counties v1.1 admits only FIPS, STATE, the four statuses, and POPULATION as a denominator.",
+    "The admitted release was amended on 2026-10-17 from governed-2026-10-06-nlcd-demo-cohort to governed-2026-10-15-january-climate-prod after the refresh EDA. The question, class-count rule, and missingness rule did not change."
   ],
   "limitations": [
     "Classes describe surveillance situations. They are not disease risk, incidence, or a production score.",

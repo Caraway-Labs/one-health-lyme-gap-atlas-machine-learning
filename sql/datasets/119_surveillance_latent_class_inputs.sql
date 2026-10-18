@@ -3,8 +3,8 @@
 -- Environment: ONE_HEALTH_LYME_GAP_ATLAS_PROD, schema PRESENTATION.
 -- Role: OH_LYME_PROD_READ. Warehouse: COMPUTE_WH.
 -- Source: PRESENTATION.CURRENT_COUNTY_ATLAS_V.
--- Release: governed-2026-10-06-nlcd-demo-cohort.
--- Bundle SHA-256: 603afb135a1a5c958d1d56d48d580d9942c67eb38986caf8b4b3acf69fcde2c9.
+-- Release: governed-2026-10-15-january-climate-prod.
+-- Bundle SHA-256: 53e50aa37c701635e96c48cd4931c4c4a9e7e695c146263fb9bb335e541ae74d.
 -- Bound: one row per county. The admitted cohort has 3,144 rows.
 -- Confirm that release identity with sql/validation/119_release_identity.sql
 -- before using the rows. This file is not itself permission to run.

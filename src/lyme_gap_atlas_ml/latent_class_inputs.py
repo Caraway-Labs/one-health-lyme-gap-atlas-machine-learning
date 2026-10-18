@@ -9,12 +9,12 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
-RELEASE_ID = "governed-2026-10-06-nlcd-demo-cohort"
-BUNDLE_SHA256 = "603afb135a1a5c958d1d56d48d580d9942c67eb38986caf8b4b3acf69fcde2c9"
+RELEASE_ID = "governed-2026-10-15-january-climate-prod"
+BUNDLE_SHA256 = "53e50aa37c701635e96c48cd4931c4c4a9e7e695c146263fb9bb335e541ae74d"
 DATASET_ID = "surveillance-latent-class-counties"
-DATASET_VERSION = "v1"
+DATASET_VERSION = "v1.1"
 FEATURE_SET_ID = "surveillance-latent-class-indicators"
-FEATURE_SET_VERSION = "v1"
+FEATURE_SET_VERSION = "v1.1"
 NATIONAL_COUNTY_COUNT = 3144
 
 IDENTITY_COLUMNS = ("FIPS", "STATE")

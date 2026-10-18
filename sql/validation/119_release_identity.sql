@@ -3,8 +3,8 @@
 -- Environment: ONE_HEALTH_LYME_GAP_ATLAS_PROD, schema PRESENTATION.
 -- Role: OH_LYME_PROD_READ. Warehouse: COMPUTE_WH.
 -- Source: PRESENTATION.CURRENT_RELEASE_V. Bound: one release row.
--- Expected release: governed-2026-10-06-nlcd-demo-cohort.
--- Expected bundle SHA-256: 603afb135a1a5c958d1d56d48d580d9942c67eb38986caf8b4b3acf69fcde2c9.
+-- Expected release: governed-2026-10-15-january-climate-prod.
+-- Expected bundle SHA-256: 53e50aa37c701635e96c48cd4931c4c4a9e7e695c146263fb9bb335e541ae74d.
 -- This file is not itself permission to run.
 
 SELECT

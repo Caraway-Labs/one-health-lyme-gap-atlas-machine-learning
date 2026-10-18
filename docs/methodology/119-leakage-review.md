@@ -1,6 +1,6 @@
 # ML #119 leakage review
 
-Dataset `surveillance-latent-class-counties` `v1`. Feature set `surveillance-latent-class-indicators` `v1`. Owning task: [ML #131](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/issues/131).
+Dataset `surveillance-latent-class-counties` `v1.1`. Feature set `surveillance-latent-class-indicators` `v1.1`. Owning task: [ML #131](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/issues/131). Release identity amended by [ML #136](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/issues/136).
 
 ## Decision
 
@@ -18,7 +18,7 @@ The four categorical statuses are the only indicators. The builder fails when an
 
 ## Time and availability
 
-The model describes one published snapshot. It does not predict a later outcome, so there is no label from after the release to leak. Human status is the 2023 surveillance year. Tick and pathogen status are cumulative through 2025-12-31. Those vintages differ, and the class names must keep that difference visible. The fit still has to match release `governed-2026-10-06-nlcd-demo-cohort` and bundle SHA-256 `603afb135a1a5c958d1d56d48d580d9942c67eb38986caf8b4b3acf69fcde2c9` before it reads counties.
+The model describes one published snapshot. It does not predict a later outcome, so there is no label from after the release to leak. Human status is the 2023 surveillance year. Tick and pathogen status are cumulative through 2025-12-31. Those vintages differ, and the class names must keep that difference visible. The fit still has to match release `governed-2026-10-15-january-climate-prod` and bundle SHA-256 `53e50aa37c701635e96c48cd4931c4c4a9e7e695c146263fb9bb335e541ae74d` before it reads counties.
 
 There is no outcome holdout in this dataset. Class-count selection remains the stability rule in the analysis spec. A random county split would not be a leakage control for a census of one snapshot.
 
