@@ -37,7 +37,7 @@ The live production release is now `governed-2026-10-15-january-climate-prod`, b
 - **Reproduction / evidence:** This file and the lifecycle state are the frame evidence. Confirm the frame gate with:
 
   ```text
-  uv run python -c "from pathlib import Path; from lyme_gap_atlas_ml.lifecycle import load_state, resume; state = load_state(Path('docs/methodology/119-lifecycle-state.json')); decision = resume(state); assert decision.completed == ('frame', 'data'); assert decision.current_stage == 'baseline'; print(decision.current_stage)"
+  uv run python -c "from pathlib import Path; from lyme_gap_atlas_ml.lifecycle import load_state, resume; state = load_state(Path('docs/methodology/119-lifecycle-state.json')); decision = resume(state); assert decision.completed == ('frame', 'data', 'baseline'); assert decision.current_stage == 'evaluate'; print(decision.current_stage)"
   ```
 
   Repository verification remains `uv run python scripts/verify.py`. No Snowflake query is run for this frame. No transient extract is produced.

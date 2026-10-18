@@ -9,6 +9,14 @@
     "feature": {
       "id": "surveillance-latent-class-indicators",
       "version": "v1.1"
+    },
+    "split": {
+      "id": "surveillance-latent-class-stability",
+      "version": "v1"
+    },
+    "experiment": {
+      "id": "surveillance-latent-class-experiment",
+      "version": "v1"
     }
   },
   "stages": {
@@ -26,8 +34,11 @@
       }
     },
     "baseline": {
-      "status": "not_started",
-      "evidence": {}
+      "status": "complete",
+      "evidence": {
+        "baseline_comparison": "docs/methodology/119-baseline-comparison.md",
+        "validation_design": "docs/methodology/119-validation-design.md"
+      }
     },
     "evaluate": {
       "status": "not_started",
