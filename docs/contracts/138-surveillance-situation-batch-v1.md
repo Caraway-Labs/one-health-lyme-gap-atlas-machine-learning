@@ -5,7 +5,7 @@
 **Model contract:** [138-surveillance-situation-models-v1.json](../../config/models/138-surveillance-situation-models-v1.json).
 **Schema:** [138-surveillance-situation-batch-v1.schema.json](138-surveillance-situation-batch-v1.schema.json).
 
-This is the handoff a Data consumer can checksum. It does not approve publication, decide release compatibility, or write Snowflake. Approval state is `not_yet_approved`.
+This is the handoff a Data consumer can checksum. It does not approve publication or write Snowflake. Release compatibility for the current Atlas release is recorded in [143-release-compatibility.md](../eda/143-release-compatibility.md). Approval state is `not_yet_approved`.
 
 ## Artifacts
 
