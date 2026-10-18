@@ -1,0 +1,167 @@
+{
+  "schema": "atlas-ml-surveillance-situation-contract/138-v1",
+  "id": "surveillance-situation-models",
+  "version": "v1",
+  "label_review": {
+    "task": 140,
+    "confirmed_on": "2026-10-18",
+    "decision": "confirm_all_eight_names"
+  },
+  "research": {
+    "pull_request": 137,
+    "merged_commit": "a2f9bad41f1ddb793e364399afbdd5fbad008b7a",
+    "fit_code_revision": "cd936fe345664e606c916b137dd642caa0d6d73b",
+    "result": "config/experiments/119-latent-class-v1-result.json",
+    "evaluation": "docs/eda/119-surveillance-latent-classes.md"
+  },
+  "input": {
+    "release_id": "governed-2026-10-15-january-climate-prod",
+    "bundle_sha256": "53e50aa37c701635e96c48cd4931c4c4a9e7e695c146263fb9bb335e541ae74d",
+    "primary_seed": 1192026,
+    "county_count": 3144
+  },
+  "inheritance_rule": "A later Atlas release does not silently inherit these assignments. Carry-forward, a new batch version, or a block requires a dated decision.",
+  "missingness": {
+    "no_records": "category",
+    "unknown": "real_class_not_missing_assignment",
+    "imputation": "forbidden",
+    "unavailable_is_not_zero": true
+  },
+  "prohibited_readings": [
+    "disease risk",
+    "incidence",
+    "pathogen absence",
+    "tier 1 priority"
+  ],
+  "models": [
+    {
+      "id": "surveillance-situation-four-state",
+      "version": "v1",
+      "role": "primary_descriptive_classification",
+      "indicators": [
+        "HUMAN_STATUS",
+        "SCAPULARIS_STATUS",
+        "PACIFICUS_STATUS",
+        "BURGDORFERI_STATUS"
+      ],
+      "classes": [
+        {
+          "id": "surveillance-situation-four-state.v1.class-0",
+          "fit_class_index": 0,
+          "name": "Established blacklegged tick",
+          "county_count": 801,
+          "description": "Counties where the blacklegged tick is established or reported and the western blacklegged tick has no records. A published human floor or a pathogen record is common in this class and is not required for every county.",
+          "must_not_be_read_as": [
+            "disease risk",
+            "incidence",
+            "pathogen absence",
+            "tier 1 priority"
+          ]
+        },
+        {
+          "id": "surveillance-situation-four-state.v1.class-1",
+          "fit_class_index": 1,
+          "name": "Unknown tick and pathogen status",
+          "county_count": 35,
+          "description": "The Alaska and Hawaii counties whose tick and pathogen status is Unknown and whose human floor has no county-linked record. Unknown is a surveillance class, not a missing assignment.",
+          "must_not_be_read_as": [
+            "disease risk",
+            "incidence",
+            "pathogen absence",
+            "tier 1 priority"
+          ]
+        },
+        {
+          "id": "surveillance-situation-four-state.v1.class-2",
+          "fit_class_index": 2,
+          "name": "Western blacklegged tick recorded",
+          "county_count": 112,
+          "description": "Counties where the western blacklegged tick is established or reported and the blacklegged tick has no records.",
+          "must_not_be_read_as": [
+            "disease risk",
+            "incidence",
+            "pathogen absence",
+            "tier 1 priority"
+          ]
+        },
+        {
+          "id": "surveillance-situation-four-state.v1.class-3",
+          "fit_class_index": 3,
+          "name": "Pathogen not recorded",
+          "county_count": 2196,
+          "description": "Counties whose pathogen status has no record and whose western blacklegged tick has no records. Blacklegged tick status inside this class is mixed: no records, established, or reported.",
+          "must_not_be_read_as": [
+            "disease risk",
+            "incidence",
+            "pathogen absence",
+            "tier 1 priority"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "surveillance-situation-tick-pathogen",
+      "version": "v1",
+      "role": "secondary_tick_pathogen_grouping",
+      "indicators": [
+        "SCAPULARIS_STATUS",
+        "PACIFICUS_STATUS",
+        "BURGDORFERI_STATUS"
+      ],
+      "classes": [
+        {
+          "id": "surveillance-situation-tick-pathogen.v1.class-0",
+          "fit_class_index": 0,
+          "name": "Established blacklegged tick",
+          "county_count": 1325,
+          "description": "Counties where the blacklegged tick is established or reported and the western blacklegged tick has no records. Counties with pathogen present and counties with no pathogen record are both in this class. The class probability does not measure pathogen presence.",
+          "must_not_be_read_as": [
+            "disease risk",
+            "incidence",
+            "pathogen absence",
+            "tier 1 priority"
+          ]
+        },
+        {
+          "id": "surveillance-situation-tick-pathogen.v1.class-1",
+          "fit_class_index": 1,
+          "name": "Blacklegged tick not established, pathogen not recorded",
+          "county_count": 1687,
+          "description": "Counties whose pathogen status has no record and whose blacklegged tick is not established. Some counties in this class have a reported tick.",
+          "must_not_be_read_as": [
+            "disease risk",
+            "incidence",
+            "pathogen absence",
+            "tier 1 priority"
+          ]
+        },
+        {
+          "id": "surveillance-situation-tick-pathogen.v1.class-2",
+          "fit_class_index": 2,
+          "name": "Western blacklegged tick established",
+          "county_count": 97,
+          "description": "Counties with an established western blacklegged tick and no blacklegged-tick record. Pathogen status is mixed.",
+          "must_not_be_read_as": [
+            "disease risk",
+            "incidence",
+            "pathogen absence",
+            "tier 1 priority"
+          ]
+        },
+        {
+          "id": "surveillance-situation-tick-pathogen.v1.class-3",
+          "fit_class_index": 3,
+          "name": "Unknown tick and pathogen status",
+          "county_count": 35,
+          "description": "The Alaska and Hawaii counties whose tick and pathogen status is Unknown. Human status was not an input to this fit. Unknown is a surveillance class, not a missing assignment.",
+          "must_not_be_read_as": [
+            "disease risk",
+            "incidence",
+            "pathogen absence",
+            "tier 1 priority"
+          ]
+        }
+      ]
+    }
+  ]
+}
