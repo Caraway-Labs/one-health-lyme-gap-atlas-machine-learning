@@ -41,7 +41,7 @@ The fit and the class descriptions now exist. The sentence above that no model h
 - **Reproduction / evidence:** This file and the lifecycle state are the frame evidence. Confirm the frame gate with:
 
   ```text
-  uv run python -c "from pathlib import Path; from lyme_gap_atlas_ml.lifecycle import load_state, resume; state = load_state(Path('docs/methodology/119-lifecycle-state.json')); decision = resume(state); assert decision.completed == ('frame', 'data', 'baseline', 'evaluate'); assert decision.current_stage == 'decide'; print(decision.current_stage)"
+  uv run python -c "from pathlib import Path; from lyme_gap_atlas_ml.lifecycle import load_state, resume; state = load_state(Path('docs/methodology/119-lifecycle-state.json')); decision = resume(state); assert decision.completed == ('frame', 'data', 'baseline', 'evaluate', 'decide'); assert decision.current_stage is None; assert decision.allowed_action == 'await_new_reviewed_scope'; print(decision.allowed_action)"
   ```
 
   Repository verification remains `uv run python scripts/verify.py`. No Snowflake query is run for this frame. No transient extract is produced.

@@ -49,8 +49,16 @@
       }
     },
     "decide": {
-      "status": "not_started",
-      "evidence": {}
+      "status": "complete",
+      "disposition": "SELECT",
+      "evidence": {
+        "review_decision": "config/examples/reviews/119-surveillance-latent-class.json",
+        "decision_note": "docs/methodology/119-decision.md"
+      },
+      "review": {
+        "state": "approved",
+        "decision_ref": "https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/issues/135"
+      }
     }
   },
   "holdout_history": [],
