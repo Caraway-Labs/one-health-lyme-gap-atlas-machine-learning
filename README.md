@@ -38,6 +38,15 @@ defines the role mapping. Never commit or log the local connection name,
 credentials, PATs, API keys, or `.env` values. No connection is required for
 local documentation or unit-test work.
 
+## Cursor Cloud Agents
+
+Committed bootstrap lives in [`.cursor/environment.json`](.cursor/environment.json)
+and [`scripts/cloud_agent_bootstrap.sh`](scripts/cloud_agent_bootstrap.sh).
+Follow the [Cursor Cloud Agent runbook](docs/runbooks/cursor-cloud-agent.md) to
+create a Dashboard environment and run a green Build. Mandatory offline checks
+match CI: `uv run python scripts/verify.py`. Optional DEV Snowflake for cloud
+agents is documented in the runbook Level B section when enabled.
+
 The [repository rules](AGENTS.md) and [structure guide](docs/repository-structure.md)
 describe ownership, reproducibility, and intended package boundaries.
 The [shared ML skills catalog](docs/skills.md) describes the canonical
