@@ -62,14 +62,96 @@ Document a optional `.cursor/Dockerfile` layer in a follow-up change. Level A
 assumes the Cloud base image provides `uv` (same assumption as CI via
 `astral-sh/setup-uv`). See Cursor [environment setup](https://cursor.com/docs/cloud-agent/setup.md).
 
-## Level B — Optional DEV Snowflake
+## Level B — Optional DEV Snowflake (read-only)
 
-Story #151 adds read-only DEV Snowflake bootstrap via Dashboard **Runtime
-secrets** and `scripts/bootstrap_cloud_snowflake_connection.sh`. Until that
-story is merged, treat Snowflake in Cloud Agents as unsupported.
+Level B is **opt-in**. Most agent tasks should stay on Level A. Enable Level B
+only when a GitHub issue explicitly requires live DEV warehouse reads and your
+Snowflake admin has approved a dedicated cloud-agent service user.
 
-When Level B is available, see the **Level B** section in this runbook and
-[Snowflake integration](../snowflake-integration.md).
+Policy matches [Snowflake integration](../snowflake-integration.md) and
+`AGENTS.md`: read-only by default, context query before data, no browser
+authentication fallback, no production writes.
+
+### Dashboard Runtime secrets (names are the contract)
+
+Configure values in **Cursor Dashboard → Cloud Agents → Secrets** as **Runtime
+secrets** (never commit values to git).
+
+| Secret name | Purpose |
+| --- | --- |
+| `SNOWFLAKE_CONNECTION_NAME` | Alias used by `snow sql -c` (admin-chosen; not personal) |
+| `SNOWFLAKE_ACCOUNT` | Snowflake account identifier for CLI |
+| `SNOWFLAKE_USER` | Service user for cloud agents |
+| `SNOWFLAKE_PAT` | Programmatic access token (**preferred**) |
+| `SNOWFLAKE_PASSWORD` | Password auth only if PAT is unavailable |
+| `SNOWFLAKE_ROLE` | Least-privilege DEV read role (e.g. `OH_LYME_DEV_READ`) |
+| `SNOWFLAKE_DATABASE` | DEV database (e.g. `ONE_HEALTH_LYME_GAP_ATLAS_DEV`) |
+| `SNOWFLAKE_SCHEMA` | e.g. `PRESENTATION` |
+| `SNOWFLAKE_WAREHOUSE` | DEV warehouse |
+
+Optional **live proof** variables (expected context — not secrets):
+
+| Variable | Purpose |
+| --- | --- |
+| `ATLAS_RUN_SNOWFLAKE_DEV_TEST` | Set to `1` to opt into live integration test |
+| `ATLAS_EXPECTED_SNOWFLAKE_DEV_ROLE` | Expected `CURRENT_ROLE()` |
+| `ATLAS_EXPECTED_SNOWFLAKE_DEV_DATABASE` | Expected database |
+| `ATLAS_EXPECTED_SNOWFLAKE_DEV_SCHEMA` | Expected schema |
+| `ATLAS_EXPECTED_SNOWFLAKE_DEV_WAREHOUSE` | Expected warehouse |
+
+Live proof command (after Level B secrets are injected at agent start):
+
+```bash
+uv sync --locked --extra dev --extra snowflake
+bash scripts/bootstrap_cloud_snowflake_connection.sh
+uv run python scripts/verify.py --integration snowflake
+```
+
+### Bootstrap scripts
+
+| Script | When it runs |
+| --- | --- |
+| `scripts/bootstrap_cloud_snowflake_connection.sh` | Writes `connections.toml` under `~/.snowflake` from Runtime secrets |
+| `scripts/cloud_agent_bootstrap.sh` | Calls Snowflake bootstrap when `SNOWFLAKE_ACCOUNT` is set; otherwise Level A only |
+
+During Cloud **Build**, secrets are usually absent — Build remains Level A.
+When an **agent starts**, Dashboard injects secrets; if `SNOWFLAKE_ACCOUNT` is
+present, `cloud_agent_bootstrap.sh` configures Snowflake before `verify.py`.
+
+Set `SNOWFLAKE_BOOTSTRAP_SKIP_CONTEXT_CHECK=1` to skip the context query during
+install (default during bootstrap). Remove it (or set to `0`) when you want the
+script to run the read-only context query immediately after writing the
+connection.
+
+### Snowflake CLI on the Cloud VM
+
+Level B requires the [Snowflake CLI](https://docs.snowflake.com/en/developer-guide/snowflake-cli/index) (`snow` 3.x) on the agent VM. If the
+default Cloud image lacks it, add a `.cursor/Dockerfile` (example only — adapt
+versions):
+
+```dockerfile
+FROM cursor/default
+RUN curl -fsSL https://github.com/snowflakedb/snowflake-cli/releases/latest/download/snowflake-cli-linux-x86_64.tar.gz \
+  | tar -xz -C /usr/local/bin snow
+```
+
+Reference Cursor [environment setup](https://cursor.com/docs/cloud-agent/setup.md)
+to attach the Dockerfile to the saved environment.
+
+### Agent workflow (Level B)
+
+1. Confirm issue authorization and DEV read-only scope.
+2. Ensure Runtime secrets from the table above are configured.
+3. Run `bash scripts/bootstrap_cloud_snowflake_connection.sh` (or rely on
+   `cloud_agent_bootstrap.sh` when `SNOWFLAKE_ACCOUNT` is set).
+4. Verify `CURRENT_USER`, `CURRENT_ROLE`, `CURRENT_DATABASE`, `CURRENT_SCHEMA`,
+   and `CURRENT_WAREHOUSE()` match the approved task.
+5. Run only reviewed SQL under `sql/` within approved bounds.
+
+### Network
+
+Allow outbound `*.snowflakecomputing.com` if your Cursor environment uses an
+egress allowlist. See [Secrets and network](https://cursor.com/docs/cloud-agent/security-network.md).
 
 ## Security reminders
 

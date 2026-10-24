@@ -37,6 +37,12 @@ Never commit or log credentials, PATs, API keys, local `SNOWFLAKE_CONNECTION_NAM
 selectors, or `.env` values. Cloud configuration belongs in the Cursor Dashboard,
 not in git.
 
+Optional DEV Snowflake for Cloud Agents uses Dashboard Runtime secrets and
+`scripts/bootstrap_cloud_snowflake_connection.sh` (Level B in
+[cursor-cloud-agent runbook](docs/runbooks/cursor-cloud-agent.md)). Default
+posture remains read-only DEV; no production access or warehouse writes unless
+a recorded issue explicitly authorizes them.
+
 ## Durable EDA and analysis evidence
 
 For material EDA, statistical analysis, feature investigation, or ML experimentation,
