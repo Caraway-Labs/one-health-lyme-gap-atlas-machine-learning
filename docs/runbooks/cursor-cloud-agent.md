@@ -19,7 +19,7 @@ credentials, no API keys, no `.env` in the repository.
 | Artifact | Purpose |
 | --- | --- |
 | `.cursor/environment.json` | Tells Cloud Agent how to install and verify |
-| `scripts/cloud_agent_bootstrap.sh` | `uv sync --locked --extra dev` then `scripts/verify.py` |
+| `scripts/cloud_agent_bootstrap.sh` | Install pinned `uv` when it is missing, then `uv sync --locked --extra dev` and `scripts/verify.py` |
 
 ### PM checklist (Cursor Dashboard)
 
@@ -34,7 +34,7 @@ credentials, no API keys, no `.env` in the repository.
 
 ### Engineering verification
 
-From a clean Linux checkout with `uv` installed:
+From a clean Linux checkout (`uv` is installed by the script when it is absent):
 
 ```bash
 bash scripts/cloud_agent_bootstrap.sh
@@ -56,11 +56,14 @@ After Build succeeds, start an agent with:
 
 > Run `uv run python scripts/verify.py` and report pass or fail.
 
-### If Build fails because `uv` is missing
+### If `uv` is missing on the base image
 
-Document a optional `.cursor/Dockerfile` layer in a follow-up change. Level A
-assumes the Cloud base image provides `uv` (same assumption as CI via
-`astral-sh/setup-uv`). See Cursor [environment setup](https://cursor.com/docs/cloud-agent/setup.md).
+Level A does not assume the Cloud base image provides `uv`. When `command -v uv`
+fails, `scripts/cloud_agent_bootstrap.sh` installs pinned uv `0.13.5` with the
+standalone installer (`UV_UNMANAGED_INSTALL=$HOME/.local/bin`) and copies `uv`
+and `uvx` into `/usr/local/bin`. That directory is on the default `PATH` for
+later agent shells. CI still installs uv with `astral-sh/setup-uv`. See Cursor
+[environment setup](https://cursor.com/docs/cloud-agent/setup.md).
 
 ## Level B — Optional DEV Snowflake (read-only)
 
