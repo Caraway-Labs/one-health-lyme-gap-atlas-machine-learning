@@ -20,6 +20,23 @@ Before declaring completion, review the diff against every issue criterion; run 
 
 Keep task-specific procedures in versioned docs or future shared skills. See [repository structure](docs/repository-structure.md) for intended boundaries and test layers.
 
+## Cursor Cloud Agent
+
+Cursor Cloud Agents must treat this repository like CI: after `uv sync --extra dev`
+(or the locked bootstrap in `.cursor/environment.json`), run
+`uv run python scripts/verify.py` before declaring work complete unless the
+issue explicitly requires additional integration proofs.
+
+Live Snowflake access is **opt-in** only (Dashboard Runtime secrets and the
+Level B bootstrap in [cursor-cloud-agent runbook](docs/runbooks/cursor-cloud-agent.md)).
+Documentation, contracts, and unit tests do not require a warehouse connection.
+Follow [Snowflake integration](docs/snowflake-integration.md) for read-only DEV
+context checks before any query.
+
+Never commit or log credentials, PATs, API keys, local `SNOWFLAKE_CONNECTION_NAME`
+selectors, or `.env` values. Cloud configuration belongs in the Cursor Dashboard,
+not in git.
+
 ## Durable EDA and analysis evidence
 
 For material EDA, statistical analysis, feature investigation, or ML experimentation,
