@@ -251,22 +251,30 @@ returned id and link.
    - `disableConversionToGoogleType`: `true`, so Drive stores the PNG bytes
 4. Read the returned Drive JSON. Pass its file `id` and link (`webViewLink`
    when present) to `register_artifact(run_id, issue, file_name, drive_file_id,
-   drive_link, sha256)`. Keep only that id and link. Do not commit the upload
-   response or the chart bytes.
+   drive_link, sha256)`. Pass `byte_size` when the PNG size is known, and
+   `caption` only for a short aggregate description. Keep only that id and
+   link. Do not commit the upload response or the chart bytes.
 5. `register_artifact` reads `SNOWFLAKE_ACCOUNT`, `SNOWFLAKE_USER`,
    `SNOWFLAKE_ROLE`, `SNOWFLAKE_WAREHOUSE`, `SNOWFLAKE_DATABASE`, and
    `SNOWFLAKE_PAT` through the ML agent connection in
    `src/lyme_gap_atlas_ml/snowflake/ml_agent_access.py`. It opens that session,
    checks `CURRENT_ROLE()` and `CURRENT_DATABASE()`, and inserts exactly one
-   row into `REGISTRY.ARTIFACTS` (`RUN_ID`, `ISSUE`, `FILE_NAME`,
-   `DRIVE_FILE_ID`, `DRIVE_LINK`, `SHA256`, `CREATED_AT`). A second call with
-   the same run id and file name is rejected and does not insert another row.
-   The role must be `OH_LYME_ML_AGENT` and the database must be
-   `ONE_HEALTH_LYME_GAP_ATLAS_ML_LAB`.
+   row into `REGISTRY.ARTIFACTS`. The inserted columns are `ARTIFACT_ID` (a
+   uuid4 string generated in code), `RUN_ID`, `KIND` (`chart`), `TITLE` (the
+   file name), `CAPTION` (optional), `DRIVE_FILE_ID`, `DRIVE_URL` (the Drive
+   link), `SHA256`, `MIME_TYPE` (`image/png`), `BYTES` (the file size, null
+   when the size is unknown), and `CREATED_AT` (UTC, with an explicit
+   `+0000` offset). A second call with the same
+   run id and file name is rejected after a `SELECT` on `RUN_ID` and `TITLE`
+   and does not insert another row. The issue number is not an artifact
+   column; it stays on `REGISTRY.RUNS.ISSUE_NUMBER`. The role must be
+   `OH_LYME_ML_AGENT` and the database must be
+   `ONE_HEALTH_LYME_GAP_ATLAS_ML_LAB`. Parameters are bound. The helper does
+   not run DDL.
 
-Column names match the row described in #161. The provisioning DDL lives
-outside this repository. A live smoke test (#163) is the check that those
-columns match the table.
+The live column list was verified on
+[#163](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/issues/163).
+The provisioning DDL lives outside this repository.
 
 ## Security reminders
 
