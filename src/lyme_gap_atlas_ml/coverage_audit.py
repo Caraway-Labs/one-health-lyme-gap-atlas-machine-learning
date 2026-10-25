@@ -276,9 +276,7 @@ def assemble_coverage(fetched: FetchedCoverage) -> CoverageAssembly:
     published = _level_count(levels, "HUMAN_STATUS", "published_count_floor")
     unpublished = _level_count(levels, "HUMAN_STATUS", "no_county_linked_record")
     case_null = fetched.row_n - _required_int(fetched.numeric, "CASE_COUNT_FLOOR_2023_NON_NULL")
-    incidence_null = fetched.row_n - _required_int(
-        fetched.numeric, "INCIDENCE_FLOOR_2023_NON_NULL"
-    )
+    incidence_null = fetched.row_n - _required_int(fetched.numeric, "INCIDENCE_FLOOR_2023_NON_NULL")
     if _sum_regions(fetched, "HUMAN_UNDOC_N") != unpublished:
         raise CoverageAuditError("region human gap does not match the status count")
     if _sum_regions(fetched, "CASE_NULL_N") != case_null:
@@ -871,6 +869,13 @@ def _level_count(
     level: str,
 ) -> int:
     return levels[column].get(level, 0)
+
+
+def heatmap_cell_label(share: float | None) -> str:
+    """Label a heatmap cell. A suppressed share is marked, not drawn as zero."""
+    if share is None:
+        return "<11"
+    return f"{share * 100:.0f}"
 
 
 def _publishable_share(missing: int, total: int) -> float | None:

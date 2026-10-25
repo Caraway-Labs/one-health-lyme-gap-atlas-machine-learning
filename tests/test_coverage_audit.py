@@ -16,12 +16,19 @@ from lyme_gap_atlas_ml.coverage_audit import (
     RegionRow,
     assemble_coverage,
     headline_disposition,
+    heatmap_cell_label,
     load_queries,
 )
 from lyme_gap_atlas_ml.snowflake.eda_lab_writers import prepare_column_profile, prepare_missingness
 
 ROOT = Path(__file__).resolve().parents[1]
 SQL = ROOT / "sql" / "validation" / "109_county_signal_coverage.sql"
+
+
+def test_suppressed_heatmap_cells_are_labeled_rather_than_blank() -> None:
+    assert heatmap_cell_label(None) == "<11"
+    assert heatmap_cell_label(0.0) == "0"
+    assert heatmap_cell_label(0.7929) == "79"
 
 
 def test_registered_sql_matches_the_region_map_and_rejects_nothing_safe() -> None:
@@ -163,9 +170,7 @@ def _fetched() -> FetchedCoverage:
 def test_assembly_hides_small_joint_cells_and_small_land_cover() -> None:
     assembled = assemble_coverage(_fetched())
     assert assembled.disposition == "revise"
-    joints = [
-        metric for metric in assembled.metrics if metric.metric_name == "joint_county_count"
-    ]
+    joints = [metric for metric in assembled.metrics if metric.metric_name == "joint_county_count"]
     assert {metric.n_underlying for metric in joints} == {4, 36}
     finding = next(item for item in assembled.findings if item.topic == "joint_partition")
     evidence = finding.evidence

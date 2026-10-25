@@ -5,13 +5,18 @@ Reads pinned PROD presentation aggregates, writes ML Lab rows, and saves three
 PNG charts under artifacts/charts/109. Charts are git-ignored. Drive upload is
 a separate step. The command is:
 
-    uv run --with matplotlib --with seaborn python scripts/eda_109_coverage.py
+    MPLBACKEND=Agg uv run --with matplotlib --with seaborn python scripts/eda_109_coverage.py
+
+``--redraw-charts`` rebuilds the three PNGs from ML Lab metrics for the
+existing run. It does not read PROD or insert another run.
 """
 
 from __future__ import annotations
 
+import json
 import os
 import subprocess
+import sys
 import time
 from collections.abc import Mapping
 from datetime import UTC, date, datetime
@@ -25,6 +30,8 @@ import numpy as np
 import seaborn as sns
 
 from lyme_gap_atlas_ml.coverage_audit import (
+    HEATMAP_REGIONS,
+    HEATMAP_SIGNALS,
     PINNED_RELEASE_ID,
     REFERENCE_COUNTIES,
     REFERENCE_NO_COUNTY_LINKED_RECORD,
@@ -38,6 +45,7 @@ from lyme_gap_atlas_ml.coverage_audit import (
     RegionRow,
     assemble_coverage,
     check_integrity,
+    heatmap_cell_label,
     load_queries,
 )
 from lyme_gap_atlas_ml.registry.artifacts import save_chart
@@ -78,7 +86,22 @@ HEATMAP_KEYS = (
 )
 
 
+CHART_RUN_ID = "109-coverage-missingness-20261025T2105Z"
+_BAR_SIGNALS = ("HUMAN_STATUS", "TICK_STATUS", "BURGDORFERI_STATUS")
+_BAR_STATUS_ORDER = (
+    "published_count_floor",
+    "no_county_linked_record",
+    "Established",
+    "Reported",
+    "Present",
+    "No records",
+    "Unknown",
+)
+
+
 def main() -> int:
+    if "--redraw-charts" in sys.argv:
+        return redraw_charts()
     settings, _config = load_ml_agent_request(os.environ)
     if settings.role.upper() != ML_AGENT_ROLE or settings.database != ML_LAB_DATABASE:
         print("stopped: ML agent context is not the lab role and database")
@@ -325,11 +348,11 @@ def _heatmap(charts: ChartFrames) -> bytes:
     )
     annot = np.array(
         [
-            ["" if value is None else f"{value * 100:.0f}" for value in row]
+            ["" if value is None else heatmap_cell_label(value) for value in row]
             for row in charts.heatmap_shares
         ]
     )
-    fig, ax = plt.subplots(figsize=(10, 8))
+    fig, ax = plt.subplots(figsize=(5.6, 4.0))
     sns.heatmap(
         matrix,
         ax=ax,
@@ -339,26 +362,54 @@ def _heatmap(charts: ChartFrames) -> bytes:
         mask=np.isnan(matrix),
         annot=annot,
         fmt="",
+        annot_kws={"size": 7},
         xticklabels=list(charts.heatmap_regions),
         yticklabels=[signal.replace("_", " ") for signal in charts.heatmap_signals],
-        cbar_kws={"label": "Share of counties"},
+        cbar_kws={"label": "Share", "shrink": 0.7},
+        linewidths=0.3,
+        linecolor="white",
     )
+    for row_index, row in enumerate(charts.heatmap_shares):
+        for column_index, value in enumerate(row):
+            if value is not None:
+                continue
+            ax.add_patch(
+                plt.Rectangle(
+                    (column_index, row_index),
+                    1,
+                    1,
+                    facecolor="#d9d9d9",
+                    edgecolor="white",
+                    linewidth=0.4,
+                    zorder=2,
+                )
+            )
+            ax.text(
+                column_index + 0.5,
+                row_index + 0.5,
+                heatmap_cell_label(None),
+                ha="center",
+                va="center",
+                color="#222222",
+                fontsize=7,
+                zorder=3,
+            )
     ax.set_title("Counties without a positive documented signal")
     ax.set_xlabel("Census region")
     ax.set_ylabel("Signal")
     fig.text(
         0.01,
         0.01,
-        "Unknown and No records are not negatives. "
+        "Cells marked <11 are suppressed. Unknown and No records are not negatives. "
         "A high western-blacklegged share is the species range.",
         fontsize=8,
     )
-    fig.tight_layout(rect=(0, 0.04, 1, 1))
-    return _png(fig)
+    fig.tight_layout(rect=(0, 0.06, 1, 1))
+    return _png(fig, dpi=52)
 
 
 def _vintage(charts: ChartFrames) -> bytes:
-    fig, ax = plt.subplots(figsize=(10, 5))
+    fig, ax = plt.subplots(figsize=(6.4, 3.2))
     for index, (_label, start, end) in enumerate(charts.vintages):
         end_day = date.fromisoformat(end)
         start_day = end_day if start is None else date.fromisoformat(start)
@@ -376,11 +427,20 @@ def _vintage(charts: ChartFrames) -> bytes:
 
 
 def _bars(charts: ChartFrames) -> bytes:
-    signals = [signal.replace("_", " ") for signal, _status, _count in charts.bars]
-    statuses = [status for _signal, status, _count in charts.bars]
+    signals = [_signal_caption(signal) for signal, _status, _count in charts.bars]
+    statuses = [_status_caption(status) for _signal, status, _count in charts.bars]
     counts = [count for _signal, _status, count in charts.bars]
-    fig, ax = plt.subplots(figsize=(11, 6))
+    fig, ax = plt.subplots(figsize=(6.6, 3.8))
     sns.barplot(x=signals, y=counts, hue=statuses, ax=ax)
+    ax.legend(
+        title="Status",
+        bbox_to_anchor=(1.02, 1),
+        loc="upper left",
+        borderaxespad=0,
+        fontsize=7,
+        title_fontsize=8,
+        frameon=False,
+    )
     ax.set_title("National county counts by surveillance status")
     ax.set_xlabel("Signal")
     ax.set_ylabel("Counties")
@@ -390,13 +450,170 @@ def _bars(charts: ChartFrames) -> bytes:
         "Levels below 11 counties are omitted. Human floors are lower bounds.",
         fontsize=8,
     )
-    fig.tight_layout(rect=(0, 0.04, 1, 1))
+    fig.tight_layout(rect=(0, 0.05, 0.74, 1))
     return _png(fig)
 
 
-def _png(fig: plt.Figure) -> bytes:
+def _signal_caption(signal: str) -> str:
+    captions = {
+        "HUMAN_STATUS": "Human",
+        "TICK_STATUS": "Tick",
+        "BURGDORFERI_STATUS": "Pathogen",
+    }
+    return captions.get(signal, signal.replace("_", " "))
+
+
+def _status_caption(status: str) -> str:
+    captions = {
+        "published_count_floor": "published floor",
+        "no_county_linked_record": "no county-linked record",
+    }
+    return captions.get(status, status)
+
+
+def redraw_charts() -> int:
+    """Rebuild the three PNGs from lab metrics. Does not query PROD."""
+    settings, _config = load_ml_agent_request(os.environ)
+    if settings.role.upper() != ML_AGENT_ROLE or settings.database != ML_LAB_DATABASE:
+        print("stopped: ML agent context is not the lab role and database")
+        return 2
+    token = os.environ.get("SNOWFLAKE_PAT", "")
+    connection = open_ml_agent_connection(settings)
+    try:
+        charts = _charts_from_lab(connection)
+        rendered = _render(charts)
+        for name, content in rendered.items():
+            saved = save_chart(109, name, content)
+            print(f"chart: {name} bytes {len(content)} sha256 {saved.sha256}")
+    except CoverageAuditError as error:
+        print(f"stopped: {error}")
+        return 2
+    except Exception as error:
+        print("stopped: " + redact_text(str(error), [token])[:400])
+        return 2
+    finally:
+        close = getattr(connection, "close", None)
+        if callable(close):
+            close()
+    return 0
+
+
+def _charts_from_lab(connection: object) -> ChartFrames:
+    rows, _query_id = _fetch(
+        connection,
+        f"""
+        SELECT METRIC_NAME, GEOGRAPHY_ID, DIMENSIONS::VARCHAR AS DIMENSIONS,
+               METRIC_VALUE, IS_SUPPRESSED
+        FROM {ML_LAB_DATABASE}.EDA.METRICS_LONG
+        WHERE RUN_ID = '{CHART_RUN_ID}'
+          AND (
+            (METRIC_NAME = 'undocumented_share' AND GEOGRAPHY_TYPE = 'census_region')
+            OR (
+              METRIC_NAME = 'status_county_count'
+              AND GEOGRAPHY_TYPE = 'national'
+              AND GEOGRAPHY_ID = 'US'
+            )
+          )
+        """,
+    )
+    shares: dict[tuple[str, str], float | None] = {}
+    bars: list[tuple[str, str, int]] = []
+    for row in rows:
+        dimensions = _dimensions(row["DIMENSIONS"])
+        if row["METRIC_NAME"] == "undocumented_share":
+            signal = _text(dimensions["signal"])
+            region = _text(row["GEOGRAPHY_ID"])
+            value = row["METRIC_VALUE"]
+            shares[(signal, region)] = (
+                None if _flag(row["IS_SUPPRESSED"]) or value is None else float(value)
+            )
+            continue
+        if _flag(row["IS_SUPPRESSED"]):
+            continue
+        signal = _text(dimensions["signal"])
+        status = _text(dimensions["status"])
+        count = _metric_count(row["METRIC_VALUE"])
+        if signal in _BAR_SIGNALS and (count == 0 or count >= 11):
+            bars.append((signal, status, count))
+    try:
+        heatmap = tuple(
+            tuple(shares[(signal, region)] for region in HEATMAP_REGIONS)
+            for signal, _key in HEATMAP_SIGNALS
+        )
+    except KeyError as error:
+        raise CoverageAuditError("heatmap metrics are incomplete") from error
+    if any(len(row) != len(HEATMAP_REGIONS) for row in heatmap):
+        raise CoverageAuditError("heatmap metrics are incomplete")
+    if len(shares) != len(HEATMAP_SIGNALS) * len(HEATMAP_REGIONS):
+        raise CoverageAuditError("heatmap metrics are incomplete")
+    ordered = tuple(
+        sorted(
+            bars,
+            key=lambda item: (
+                _BAR_SIGNALS.index(item[0]),
+                _BAR_STATUS_ORDER.index(item[1])
+                if item[1] in _BAR_STATUS_ORDER
+                else len(_BAR_STATUS_ORDER),
+            ),
+        )
+    )
+    return ChartFrames(
+        heatmap_signals=tuple(signal for signal, _key in HEATMAP_SIGNALS),
+        heatmap_regions=HEATMAP_REGIONS,
+        heatmap_shares=heatmap,
+        bars=ordered,
+        vintages=_vintages(),
+    )
+
+
+def _vintages() -> tuple[tuple[str, str | None, str], ...]:
+    return (
+        ("Human surveillance", "2023-01-01", "2023-12-31"),
+        ("Population, 2022 county layer", "2018-01-01", "2022-12-31"),
+        ("Social vulnerability", "2018-01-01", "2022-12-31"),
+        ("Rural-urban code", "2023-01-01", "2023-12-31"),
+        ("Tick status, cumulative", None, "2025-12-31"),
+        ("Pathogen status, cumulative", None, "2025-12-31"),
+        ("Land cover vintage", "2025-01-01", "2025-12-31"),
+        ("Climate county-day window", "2025-01-01", "2025-01-31"),
+    )
+
+
+def _dimensions(value: object) -> dict[str, object]:
+    if isinstance(value, dict):
+        return value
+    if isinstance(value, str):
+        parsed = json.loads(value)
+        if isinstance(parsed, dict):
+            return parsed
+    raise CoverageAuditError("metric dimensions are missing")
+
+
+def _flag(value: object) -> bool:
+    if isinstance(value, bool):
+        return value
+    if value in (0, 1):
+        return bool(value)
+    if isinstance(value, str) and value.lower() in {"true", "false"}:
+        return value.lower() == "true"
+    raise CoverageAuditError("suppression flag is missing")
+
+
+def _metric_count(value: object) -> int:
+    if isinstance(value, bool) or value is None:
+        raise CoverageAuditError("metric count is missing")
+    if isinstance(value, int):
+        return value
+    if isinstance(value, float) and value.is_integer():
+        return int(value)
+    if isinstance(value, Decimal) and value == value.to_integral_value():
+        return int(value)
+    raise CoverageAuditError("metric count is missing")
+
+
+def _png(fig: plt.Figure, *, dpi: int = 80) -> bytes:
     buffer = BytesIO()
-    fig.savefig(buffer, format="png", dpi=140)
+    fig.savefig(buffer, format="png", dpi=dpi, pil_kwargs={"optimize": True})
     plt.close(fig)
     return buffer.getvalue()
 
