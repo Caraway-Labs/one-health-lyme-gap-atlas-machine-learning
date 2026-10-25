@@ -234,6 +234,22 @@ class CursorStatementExecutor:
             raise StatementError(permission_denied=is_permission_error(error)) from None
         return [tuple(row) for row in fetched]
 
+    def execute(self, sql: str, params: Sequence[object] = ()) -> None:
+        """Run one bound statement. Parameter values stay out of the SQL text."""
+        cursor_factory = getattr(self._connection, "cursor", None)
+        if not callable(cursor_factory):
+            raise StatementError(permission_denied=False)
+        try:
+            with cursor_factory() as cursor:
+                if params:
+                    cursor.execute(sql, tuple(params))
+                else:
+                    cursor.execute(sql)
+        except StatementError:
+            raise
+        except Exception as error:
+            raise StatementError(permission_denied=is_permission_error(error)) from None
+
 
 def default_table_name() -> str:
     return "CTX_" + uuid4().hex.upper()
