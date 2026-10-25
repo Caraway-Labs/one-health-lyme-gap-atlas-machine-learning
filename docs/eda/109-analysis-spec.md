@@ -47,3 +47,14 @@
   uv run python scripts/check_ml_agent_context.py
   uv run python scripts/verify.py
   ```
+
+## Amendment v1.1 — alignment checks, before execution
+
+These checks do not change the estimands. They were written before any coverage statistic. The disposition is **revise** rather than **keep** when any of them fails:
+
+- SQL nulls of `CASE_COUNT_FLOOR_2023` equal the `no_county_linked_record` count.
+- SQL nulls of `INCIDENCE_FLOOR_2023` equal that same count.
+- `TICK_STATUS = Established` equals the sum of the two species `Established` counts.
+- Census-region totals partition the county rows, and no bucket is `UNMAPPED`.
+
+A release-pin or FIPS-grain failure remains **stop**. `GEOMETRY_JSON` may appear only in an `IS NULL` count. The geometry text is not selected.
