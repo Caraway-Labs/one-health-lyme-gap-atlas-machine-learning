@@ -18,6 +18,8 @@ outputs/
 data/local/
 # Transient exploratory exports; explicitly required curated fixtures need review.
 *.csv
+# Local EDA chart copies (#161). Drive holds the uploaded charts.
+artifacts/charts/
 *.parquet
 *.arrow
 *.feather

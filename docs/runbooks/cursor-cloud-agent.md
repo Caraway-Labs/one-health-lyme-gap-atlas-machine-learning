@@ -213,6 +213,61 @@ Cursor Dashboard secret names only, never values:
 
 Store values only in the Cursor Dashboard. Do not print, log, or commit them.
 
+## EDA charts in Google Drive
+
+Issue [#161](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/issues/161)
+stores chart bytes in Google Drive and one row per chart in
+`ONE_HEALTH_LYME_GAP_ATLAS_ML_LAB.REGISTRY.ARTIFACTS`.
+There is no Google service account and no Drive credential in this
+repository or in Cursor secrets. The folder id is not a secret.
+
+Shared folder: `1b8dkHIpE8cxSi17FJP9nmTSDn1TBYvhM` ("Atlas Lyme ML EDA
+Artifacts").
+
+Upload only charts and aggregate outputs. Never upload record-level data, row
+extracts, CSV extracts, or free-text fields such as `PART_TEXT` and
+`CONTEXT_LIMITATIONS`. Aggregates still follow the small-cell rule: suppress
+`n < 11`. This repository does not contain Drive upload code. A future cloud
+agent uploads with the Google Drive MCP `create_file` tool, then registers the
+returned id and link.
+
+1. Save the chart from the repository root with
+   `lyme_gap_atlas_ml.registry.artifacts.save_chart`. That writes
+   `artifacts/charts/<issue>/<name>.png` and `artifacts/charts/<issue>/index.json`.
+   The index lists file names and sha256 only. `artifacts/charts/` is
+   git-ignored. Do not commit the PNG, the index, or any CSV.
+2. Create one Drive subfolder per issue when it does not already exist. Call
+   `create_file` with `title` `issue-<number>`, `parentId`
+   `1b8dkHIpE8cxSi17FJP9nmTSDn1TBYvhM`, and `contentMimeType`
+   `application/vnd.google-apps.folder`. Omit `textContent` and
+   `base64Content`. Keep the returned folder `id` and reuse it for later
+   charts from the same issue.
+3. Upload the PNG with `create_file`:
+   - `title`: the chart file name, ending in `.png`
+   - `parentId`: the issue subfolder id from the previous step
+   - `contentMimeType`: `image/png`
+   - `base64Content`: the base64 encoding of the PNG bytes (the tool accepts
+     at most 1,000,000 characters, about 750,000 bytes)
+   - `disableConversionToGoogleType`: `true`, so Drive stores the PNG bytes
+4. Read the returned Drive JSON. Pass its file `id` and link (`webViewLink`
+   when present) to `register_artifact(run_id, issue, file_name, drive_file_id,
+   drive_link, sha256)`. Keep only that id and link. Do not commit the upload
+   response or the chart bytes.
+5. `register_artifact` reads `SNOWFLAKE_ACCOUNT`, `SNOWFLAKE_USER`,
+   `SNOWFLAKE_ROLE`, `SNOWFLAKE_WAREHOUSE`, `SNOWFLAKE_DATABASE`, and
+   `SNOWFLAKE_PAT` through the ML agent connection in
+   `src/lyme_gap_atlas_ml/snowflake/ml_agent_access.py`. It opens that session,
+   checks `CURRENT_ROLE()` and `CURRENT_DATABASE()`, and inserts exactly one
+   row into `REGISTRY.ARTIFACTS` (`RUN_ID`, `ISSUE`, `FILE_NAME`,
+   `DRIVE_FILE_ID`, `DRIVE_LINK`, `SHA256`, `CREATED_AT`). A second call with
+   the same run id and file name is rejected and does not insert another row.
+   The role must be `OH_LYME_ML_AGENT` and the database must be
+   `ONE_HEALTH_LYME_GAP_ATLAS_ML_LAB`.
+
+Column names match the row described in #161. The provisioning DDL lives
+outside this repository. A live smoke test (#163) is the check that those
+columns match the table.
+
 ## Security reminders
 
 - Never commit credentials, PATs, API keys, secret values, or personal connection names.

@@ -11,8 +11,8 @@ This guide describes where approved future work belongs. Directories are added w
 | `src/lyme_gap_atlas_ml/snowflake/`, `data/` | Snowflake transport and dataset access adapters; explicit I/O and provenance. |
 | `src/lyme_gap_atlas_ml/features/`, `models/`, `evaluation/`, `experiments/` | Testable feature, model, split/evaluation, and experiment logic. Keep transport out of these modules. |
 | `src/lyme_gap_atlas_ml/observability/` | Approved telemetry values, protocol, and Arize adapter. Arize calls stay behind this boundary. |
-| `src/lyme_gap_atlas_ml/registry/`, `jobs/` | Future approved registry and execution adapters; add packages only when their stories require working code. |
+| `src/lyme_gap_atlas_ml/registry/`, `jobs/` | ML Lab artifact registration (#161). Snowflake Model Registry and job adapters still wait for their own stories. |
 | `tests/unit/`, `tests/integration/`, `tests/contract/` | Pure deterministic behavior; bounded external-system interactions; versioned interface and artifact contracts, respectively. |
 | `.agents/skills/` | Canonical shared task procedures for agent harnesses; see [skills catalog](skills.md). |
 
-The lifecycle state and Arize adapter are implemented under Stories #39 and #42. Model targets, training, and Snowflake jobs/registry still require their own approved stories. Keep `uv`, Ruff, mypy, and pytest as the local gates shown in the README. A real integration test must identify its environment and permissions; an offline unit test must not open a Snowflake connection.
+The lifecycle state and Arize adapter are implemented under Stories #39 and #42. Story #161 adds ML Lab `REGISTRY.ARTIFACTS` registration. Model targets, training, and Snowflake ML jobs still require their own approved stories. Keep `uv`, Ruff, mypy, and pytest as the local gates shown in the README. A real integration test must identify its environment and permissions; an offline unit test must not open a Snowflake connection.
