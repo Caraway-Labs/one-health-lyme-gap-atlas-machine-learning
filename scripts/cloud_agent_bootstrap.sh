@@ -52,6 +52,9 @@ SNOWFLAKE_ENABLED=0
 if [[ -n "${SNOWFLAKE_ACCOUNT:-}" ]]; then
   SNOWFLAKE_ENABLED=1
   echo "cloud_agent_bootstrap: configuring Snowflake CLI connection from Runtime secrets"
+  # Writes the named connection only. Skip the identity query here so install
+  # never opens a live session. The ML agent access-boundary check is a
+  # separate command and is not invoked from this script.
   export SNOWFLAKE_BOOTSTRAP_SKIP_CONTEXT_CHECK="${SNOWFLAKE_BOOTSTRAP_SKIP_CONTEXT_CHECK:-1}"
   bash scripts/bootstrap_cloud_snowflake_connection.sh
 fi
