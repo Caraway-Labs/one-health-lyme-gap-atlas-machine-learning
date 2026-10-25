@@ -1,7 +1,9 @@
 # Cursor Cloud Agent runbook (Atlas ML repository)
 
-This runbook supports [Epic #149](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/issues/149).
-It separates what belongs in **Git** from what belongs in the **Cursor Dashboard**.
+This runbook supports [Epic #149](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/issues/149)
+(Level A and Level B) and [Epic #155](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/issues/155)
+(ML agent PROD read and ML Lab write). It separates what belongs in **Git**
+from what belongs in the **Cursor Dashboard**.
 
 Official Cursor references:
 
@@ -72,8 +74,11 @@ only when a GitHub issue explicitly requires live DEV warehouse reads and your
 Snowflake admin has approved a dedicated cloud-agent service user.
 
 Policy matches [Snowflake integration](../snowflake-integration.md) and
-`AGENTS.md`: read-only by default, context query before data, no browser
-authentication fallback, no production writes.
+`AGENTS.md`. Level B is read-only DEV: context query before data, no browser
+authentication fallback, and no writes. PROD read and ML Lab writes use the
+ML agent identity below. PROD stays read-only on every path. One Cursor
+environment has one value per secret name; do not point the shared
+`SNOWFLAKE_*` names at a DEV user and the ML agent user at the same time.
 
 ### Dashboard Runtime secrets (names are the contract)
 
@@ -156,10 +161,63 @@ to attach the Dockerfile to the saved environment.
 Allow outbound `*.snowflakecomputing.com` if your Cursor environment uses an
 egress allowlist. See [Secrets and network](https://cursor.com/docs/cloud-agent/security-network.md).
 
+## ML agent PROD read and ML Lab write
+
+Epic [#155](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/issues/155)
+authorizes one cloud agent identity. The same rules are in
+[`AGENTS.md`](../../AGENTS.md) and
+[Snowflake integration](../snowflake-integration.md). This section records the
+boundary. Documentation-only work does not connect to Snowflake. A live
+session still needs an issue that authorizes it, a context check, and that
+issue's bootstrap. Level A and Level B above do not grant this identity.
+
+- PROD is read-only. Writes go only to the ML Lab database
+  `ONE_HEALTH_LYME_GAP_ATLAS_ML_LAB`, schemas `REGISTRY`, `EDA`, `FEATURES`,
+  `EXPERIMENTS`, and `SCRATCH`.
+- No access to `GOVERNANCE` (personal data), `RAW`, `STAGING`,
+  `KNOWLEDGE_GRAPH`, or `RESTRICTED_CDC_*`.
+- PROD read is limited to an allow-list of `CONFORMED`, `FEATURE_STORE`, and
+  `PRESENTATION` objects granted to role `OH_LYME_PROD_ML_EDA_READ`. A new
+  PROD table is invisible until explicitly granted.
+- Aggregates only. No record-level extracts leave Snowflake.
+- Small-cell rule: suppress `n < 11`.
+- Free-text columns (for example `PART_TEXT`, `CONTEXT_LIMITATIONS`) must not
+  be exported or quoted at record level.
+- EDA conclusions go in `docs/eda/<issue>-<topic>.md`. Extracts stay out of
+  git. Charts go to Google Drive.
+
+Identity:
+
+- Snowflake user `OH_LYME_ML_AGENT_SVC`.
+- Role `OH_LYME_ML_AGENT`.
+- Warehouse `OH_LYME_ML_LAB_XS_WH` (X-Small, 60 s auto-suspend, 20 credits per
+  month resource monitor).
+- Authentication is a programmatic access token restricted to role
+  `OH_LYME_ML_AGENT`, with a 30 day life (rotate before expiry). The ML agent
+  path does not use password authentication.
+- No network policy. The per-user authentication policy on
+  `OH_LYME_ML_AGENT_SVC` sets
+  `NETWORK_POLICY_EVALUATION = ENFORCED_NOT_REQUIRED`, by owner decision on
+  [#157](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/issues/157#issuecomment-6391048205).
+
+Cursor Dashboard secret names only, never values:
+
+| Secret name | Purpose |
+| --- | --- |
+| `SNOWFLAKE_PAT` | Programmatic access token. Runtime Secret. |
+| `SNOWFLAKE_ACCOUNT` | Account identifier for this user. |
+| `SNOWFLAKE_USER` | Service user name. |
+| `SNOWFLAKE_ROLE` | Role name. |
+| `SNOWFLAKE_WAREHOUSE` | Warehouse name. |
+| `SNOWFLAKE_DATABASE` | ML Lab database name. |
+
+Store values only in the Cursor Dashboard. Do not print, log, or commit them.
+
 ## Security reminders
 
-- Never commit credentials, PATs, API keys, or personal connection names.
-- Agents inherit repository `AGENTS.md` rules: read-only Snowflake by default,
-  context query before data access, no browser authentication fallback.
-- Production Snowflake mutation and model promotion remain out of scope for
-  Cloud Agent bootstrap work.
+- Never commit credentials, PATs, API keys, secret values, or personal connection names.
+- PROD is read-only. Writes go only to `ONE_HEALTH_LYME_GAP_ATLAS_ML_LAB`.
+- Agents inherit repository `AGENTS.md`: context query before data access, no
+  browser authentication fallback, aggregates only, suppress `n < 11`, and no
+  record-level extracts.
+- Production Snowflake mutation and model promotion remain out of scope.

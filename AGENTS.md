@@ -30,8 +30,9 @@ issue explicitly requires additional integration proofs.
 Live Snowflake access is **opt-in** only (Dashboard Runtime secrets and the
 Level B bootstrap in [cursor-cloud-agent runbook](docs/runbooks/cursor-cloud-agent.md)).
 Documentation, contracts, and unit tests do not require a warehouse connection.
-Follow [Snowflake integration](docs/snowflake-integration.md) for read-only DEV
-context checks before any query.
+Follow [Snowflake integration](docs/snowflake-integration.md) for the context
+check before any query. DEV reads use the read-only DEV path. The ML agent
+identity uses the PROD read and ML Lab write rules below.
 
 Never commit or log credentials, PATs, API keys, local `SNOWFLAKE_CONNECTION_NAME`
 selectors, or `.env` values. Cloud configuration belongs in the Cursor Dashboard,
@@ -39,24 +40,71 @@ not in git.
 
 Optional DEV Snowflake for Cloud Agents uses Dashboard Runtime secrets and
 `scripts/bootstrap_cloud_snowflake_connection.sh` (Level B in
-[cursor-cloud-agent runbook](docs/runbooks/cursor-cloud-agent.md)). Default
-posture remains read-only DEV; no production access or warehouse writes unless
-a recorded issue explicitly authorizes them.
+[cursor-cloud-agent runbook](docs/runbooks/cursor-cloud-agent.md)). That path
+stays read-only DEV. PROD reads and ML Lab writes use only the identity in
+the next section.
+
+## PROD read and ML Lab write
+
+Epic [#155](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/issues/155)
+authorizes one cloud agent identity. The same rules are in the
+[cursor-cloud-agent runbook](docs/runbooks/cursor-cloud-agent.md) and
+[Snowflake integration](docs/snowflake-integration.md). This is the explicit
+authorization for that identity. It does not authorize an administrative
+connection, a PROD write, or PROD access for any other user.
+
+- PROD is read-only. Writes go only to the ML Lab database
+  `ONE_HEALTH_LYME_GAP_ATLAS_ML_LAB`, schemas `REGISTRY`, `EDA`, `FEATURES`,
+  `EXPERIMENTS`, and `SCRATCH`.
+- No access to `GOVERNANCE` (personal data), `RAW`, `STAGING`,
+  `KNOWLEDGE_GRAPH`, or `RESTRICTED_CDC_*`.
+- PROD read is limited to an allow-list of `CONFORMED`, `FEATURE_STORE`, and
+  `PRESENTATION` objects granted to role `OH_LYME_PROD_ML_EDA_READ`. A new
+  PROD table is invisible until explicitly granted.
+- Aggregates only. No record-level extracts leave Snowflake.
+- Small-cell rule: suppress `n < 11`.
+- Free-text columns (for example `PART_TEXT`, `CONTEXT_LIMITATIONS`) must not
+  be exported or quoted at record level.
+- EDA conclusions go in `docs/eda/<issue>-<topic>.md`. Extracts stay out of
+  git. Charts go to Google Drive.
+
+Identity:
+
+- Snowflake user `OH_LYME_ML_AGENT_SVC`.
+- Role `OH_LYME_ML_AGENT`.
+- Warehouse `OH_LYME_ML_LAB_XS_WH` (X-Small, 60 s auto-suspend, 20 credits per
+  month resource monitor).
+- Authentication is a programmatic access token restricted to role
+  `OH_LYME_ML_AGENT`, with a 30 day life (rotate before expiry).
+- No network policy. The per-user authentication policy on
+  `OH_LYME_ML_AGENT_SVC` sets
+  `NETWORK_POLICY_EVALUATION = ENFORCED_NOT_REQUIRED`, by owner decision on
+  [#157](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/issues/157#issuecomment-6391048205).
+
+Cursor Dashboard secret names only, never values: `SNOWFLAKE_PAT` (Runtime
+Secret), `SNOWFLAKE_ACCOUNT`, `SNOWFLAKE_USER`, `SNOWFLAKE_ROLE`,
+`SNOWFLAKE_WAREHOUSE`, `SNOWFLAKE_DATABASE`. Documentation-only work does not
+connect to Snowflake.
 
 ## Durable EDA and analysis evidence
 
 For material EDA, statistical analysis, feature investigation, or ML experimentation,
-persist decision-oriented conclusions in `docs/eda/<issue-number>-<short-topic>.md`.
+persist decision-oriented conclusions in `docs/eda/<issue>-<topic>.md`
+(issue number plus a short topic, the same pattern as the EDA guide).
 Follow the [EDA guide and template](docs/eda/README.md): record the question,
 governed source/release/version, cohort/geography/time window, method/assumptions,
 findings and uncertainty, missingness/quality limits, disposition, and exact
 reproduction commands. Check in reusable SQL/code/config in the appropriate
 source location and reference it; do not depend on notebook-only state.
 
-Snowflake extracts, generated CSVs, temporary query results, notebook outputs,
-caches, and bulky exploratory plots are transient by default. Keep them in ignored
-`outputs/` or `data/local/`; do not commit them unless the story explicitly requires
-a small fixture or curated governed artifact. Never commit credentials, local
+EDA conclusions go in `docs/eda/<issue>-<topic>.md`. Extracts stay out of git.
+Charts go to Google Drive. Published conclusions follow the PROD read and ML
+Lab write rules above: aggregates only, suppress `n < 11`, and do not quote
+free-text columns at record level. Snowflake extracts, generated CSVs,
+temporary query results, notebook outputs, and caches stay out of git. Local
+working files, when a story still needs them, stay in ignored `outputs/` or
+`data/local/`. A story may still require a small fixture or curated governed
+artifact that is not a record-level extract. Never commit credentials, local
 machine paths, raw sensitive data, or uncontrolled warehouse exports. Clear notebook
 outputs before committing a reusable notebook. Keep durable findings concise.
 

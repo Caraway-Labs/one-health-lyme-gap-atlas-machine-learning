@@ -38,14 +38,59 @@ registry, or Feature Store.
 
 ## Execution policy
 
-Agent work begins read-only. A write needs explicit story/task authorization,
-an approved DEV target schema, and a separately verified appropriate role.
+Agent work begins read-only. PROD is read-only on every path. A write needs
+explicit story authorization and a verified role whose target is an approved
+DEV schema or the ML Lab schemas in the next section.
 `ExecutionPolicy` records this prerequisite at an adapter call site; it is not
 a SQL parser or a guarantee of query safety. No default production writes,
 DROP/TRUNCATE/destructive ALTER against shared or production objects,
 role/grant administration, or mutation of data-repository governed ingestion
 and canonical schemas. Stop and escalate when a write or stronger access is
 needed. Repeatable SQL belongs under [sql/](../sql/README.md).
+
+## PROD read and ML Lab write
+
+Epic [#155](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/issues/155)
+authorizes one cloud agent identity. The same rules are in
+[`AGENTS.md`](../AGENTS.md) and the
+[cursor-cloud-agent runbook](runbooks/cursor-cloud-agent.md). Local DEV
+inspection still uses a named connection selected by `SNOWFLAKE_CONNECTION_NAME`.
+That selector is local, is not committed, and is not one of the Dashboard
+secret names below. Documentation-only work does not connect to Snowflake.
+
+- PROD is read-only. Writes go only to the ML Lab database
+  `ONE_HEALTH_LYME_GAP_ATLAS_ML_LAB`, schemas `REGISTRY`, `EDA`, `FEATURES`,
+  `EXPERIMENTS`, and `SCRATCH`.
+- No access to `GOVERNANCE` (personal data), `RAW`, `STAGING`,
+  `KNOWLEDGE_GRAPH`, or `RESTRICTED_CDC_*`.
+- PROD read is limited to an allow-list of `CONFORMED`, `FEATURE_STORE`, and
+  `PRESENTATION` objects granted to role `OH_LYME_PROD_ML_EDA_READ`. A new
+  PROD table is invisible until explicitly granted.
+- Aggregates only. No record-level extracts leave Snowflake. The fixed DEV
+  smoke later in this guide stays inside the session and must not print or
+  export row values.
+- Small-cell rule: suppress `n < 11`.
+- Free-text columns (for example `PART_TEXT`, `CONTEXT_LIMITATIONS`) must not
+  be exported or quoted at record level.
+- EDA conclusions go in `docs/eda/<issue>-<topic>.md`. Extracts stay out of
+  git. Charts go to Google Drive.
+
+Identity:
+
+- Snowflake user `OH_LYME_ML_AGENT_SVC`.
+- Role `OH_LYME_ML_AGENT`.
+- Warehouse `OH_LYME_ML_LAB_XS_WH` (X-Small, 60 s auto-suspend, 20 credits per
+  month resource monitor).
+- Authentication is a programmatic access token restricted to role
+  `OH_LYME_ML_AGENT`, with a 30 day life (rotate before expiry).
+- No network policy. The per-user authentication policy on
+  `OH_LYME_ML_AGENT_SVC` sets
+  `NETWORK_POLICY_EVALUATION = ENFORCED_NOT_REQUIRED`, by owner decision on
+  [#157](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/issues/157#issuecomment-6391048205).
+
+Cursor Dashboard secret names only, never values: `SNOWFLAKE_PAT` (Runtime
+Secret), `SNOWFLAKE_ACCOUNT`, `SNOWFLAKE_USER`, `SNOWFLAKE_ROLE`,
+`SNOWFLAKE_WAREHOUSE`, `SNOWFLAKE_DATABASE`.
 
 ## One governed DEV dataset path
 
