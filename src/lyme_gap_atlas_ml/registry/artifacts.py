@@ -288,7 +288,8 @@ def _created_at(clock: Callable[[], datetime] | None) -> str:
     moment = datetime.now(UTC) if clock is None else clock()
     if moment.tzinfo is None:
         raise ArtifactRegistrationError("created at requires a timezone")
-    return moment.astimezone(UTC).strftime("%Y-%m-%d %H:%M:%S")
+    # The offset keeps TIMESTAMP_LTZ from reading the clock in the session time zone.
+    return moment.astimezone(UTC).strftime("%Y-%m-%d %H:%M:%S +0000")
 
 
 def _caption(value: str | None) -> str | None:

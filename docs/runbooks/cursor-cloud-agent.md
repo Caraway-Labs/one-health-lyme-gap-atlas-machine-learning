@@ -263,7 +263,8 @@ returned id and link.
    uuid4 string generated in code), `RUN_ID`, `KIND` (`chart`), `TITLE` (the
    file name), `CAPTION` (optional), `DRIVE_FILE_ID`, `DRIVE_URL` (the Drive
    link), `SHA256`, `MIME_TYPE` (`image/png`), `BYTES` (the file size, null
-   when the size is unknown), and `CREATED_AT`. A second call with the same
+   when the size is unknown), and `CREATED_AT` (UTC, with an explicit
+   `+0000` offset). A second call with the same
    run id and file name is rejected after a `SELECT` on `RUN_ID` and `TITLE`
    and does not insert another row. The issue number is not an artifact
    column; it stays on `REGISTRY.RUNS.ISSUE_NUMBER`. The role must be

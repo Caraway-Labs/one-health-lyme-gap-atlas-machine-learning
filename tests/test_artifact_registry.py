@@ -177,7 +177,7 @@ def _row(
 def test_one_call_inserts_one_row_and_a_duplicate_does_not() -> None:
     connection = FakeConnection()
     registered = _register(connection)
-    assert registered.created_at == "2026-10-25 01:02:03"
+    assert registered.created_at == "2026-10-25 01:02:03 +0000"
     assert registered.issue == "161"
     assert registered.kind == CHART_KIND
     assert registered.mime_type == CHART_MIME_TYPE
