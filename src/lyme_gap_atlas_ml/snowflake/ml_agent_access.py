@@ -217,13 +217,16 @@ class CursorStatementExecutor:
     def __init__(self, connection: object) -> None:
         self._connection = connection
 
-    def query(self, sql: str) -> list[tuple[object, ...]]:
+    def query(self, sql: str, params: Sequence[object] | None = None) -> list[tuple[object, ...]]:
         cursor_factory = getattr(self._connection, "cursor", None)
         if not callable(cursor_factory):
             raise StatementError(permission_denied=False)
         try:
             with cursor_factory() as cursor:
-                cursor.execute(sql)
+                if params is None:
+                    cursor.execute(sql)
+                else:
+                    cursor.execute(sql, params)
                 description = cursor.description
                 if description is None:
                     return []
