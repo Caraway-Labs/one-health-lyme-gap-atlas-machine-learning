@@ -85,7 +85,7 @@ Smallest next step, as a later story: a multi-year human panel, a national land-
 - Release: `governed-2026-10-15-january-climate-prod`. Reference release, not re-queried: `governed-2026-10-06-nlcd-demo-cohort`. Seed `1092026`, unused.
 - Entry points: `sql/validation/109_county_signal_coverage.sql`, `scripts/eda_109_coverage.py`, `src/lyme_gap_atlas_ml/coverage_audit.py`, `src/lyme_gap_atlas_ml/snowflake/eda_lab_writers.py`.
 - ML Lab rows for this run: `REGISTRY.RUNS` 1; `EDA.METRICS_LONG` 375 (84 suppressed); `EDA.MISSINGNESS` 95 (12 suppressed); `EDA.COLUMN_PROFILES` 15 (0 suppressed); `EDA.FINDINGS` 5; `REGISTRY.QUERIES` 14; `EDA.CORRELATIONS` 0. `EVIDENCE_COMPLETENESS` and `RUCC_2023` each have a duplicate national SQL-null missingness row from the categorical and numeric loops. Both stored missing counts are 0.
-- Charts are git-ignored under `artifacts/charts/109/`. Drive file links are added on `REGISTRY.ARTIFACTS` only after a successful upload of each PNG.
+- Charts are git-ignored under `artifacts/charts/109/`. `REGISTRY.ARTIFACTS` has no row for this run. Two Drive uploads of `coverage-bar.png` were discarded: one was not the PNG, and the other came back 24,262 bytes against the local 24,261. `vintage-timeline.png` and `missingness-heatmap-signal-by-region.png` were not uploaded after that mismatch.
 - The climate coverage aggregate finished in about 398 seconds, under the 10-minute stop. No county-level extract, free-text column, or chart of named counties left Snowflake.
 
 ```text
