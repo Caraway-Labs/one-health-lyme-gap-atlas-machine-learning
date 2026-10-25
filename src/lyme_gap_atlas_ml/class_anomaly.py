@@ -16,8 +16,6 @@ from importlib.metadata import version
 from typing import Any
 
 import numpy as np
-
-Vector = np.ndarray[Any, Any]
 from sklearn.covariance import MinCovDet  # type: ignore[import-untyped]
 from sklearn.ensemble import IsolationForest  # type: ignore[import-untyped]
 
@@ -32,6 +30,8 @@ from lyme_gap_atlas_ml.snowflake.eda_lab_writers import (
     prepare_query,
 )
 from lyme_gap_atlas_ml.snowflake.eda_writer import SMALL_CELL_MINIMUM, EdaMetric
+
+Vector = np.ndarray[Any, Any]
 
 SPEC_ID = "122-established-class-anomaly/v1.1"
 EXPECTED_CLASS_N = 1404

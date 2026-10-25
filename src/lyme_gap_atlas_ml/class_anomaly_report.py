@@ -166,7 +166,7 @@ def _findings(result: FitResult) -> str:
     )
     lines = [
         (
-            f"Epic #22 section 4.1 recorded  {REFERENCE_COUNTIES} counties, "
+            f"Epic #22 section 4.1 recorded {REFERENCE_COUNTIES} counties, "
             f"{REFERENCE_PUBLISHED_HUMAN_FLOOR} with a published 2023 human floor, and "
             f"{REFERENCE_NO_COUNTY_LINKED_RECORD} with no county-linked human record. "
             "It did not record an isolation-forest flag count, so there is no October 13 "
