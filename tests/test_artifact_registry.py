@@ -12,6 +12,8 @@ from pathlib import Path
 import pytest
 
 from lyme_gap_atlas_ml.registry.artifacts import (
+    CHART_KIND,
+    CHART_MIME_TYPE,
     DRIVE_SHARED_FOLDER_ID,
     DUPLICATE_SQL,
     INSERT_SQL,
@@ -78,21 +80,21 @@ class FakeCursor:
             self._rows = [self._connection.identity]
             return
         if sql == DUPLICATE_SQL:
-            run_id, file_name = _pair(params)
-            self.description = ("RUN_ID", "FILE_NAME")
+            run_id, title = _pair(params)
+            self.description = ("RUN_ID", "TITLE")
             self._rows = [
-                (row[0], row[2])
+                (row[1], row[3])
                 for row in self._connection.rows
-                if row[0] == run_id and row[2] == file_name
+                if row[1] == run_id and row[3] == title
             ]
             return
         if sql == INSERT_SQL:
             if self._connection.fail_insert:
                 raise RuntimeError(f"insert failed token={TOKEN}")
             bound = tuple(params or ())
-            if len(bound) != 7:
+            if len(bound) != 11:
                 raise AssertionError(bound)
-            if any(row[0] == bound[0] and row[2] == bound[2] for row in self._connection.rows):
+            if any(row[1] == bound[1] and row[3] == bound[3] for row in self._connection.rows):
                 raise AssertionError("second row inserted")
             self._connection.rows.append(bound)
             self.description = None
@@ -136,6 +138,8 @@ def _register(
     file_name: str = "counties.png",
     run_id: str = "run-161",
     issue: str | int = 161,
+    caption: str | None = None,
+    byte_size: int | None = None,
 ) -> ArtifactRegistration:
     return register_artifact(
         run_id,
@@ -144,9 +148,29 @@ def _register(
         FILE_ID,
         _link(),
         SHA256,
+        caption=caption,
+        byte_size=byte_size,
         connection=connection,
         environ=_env() if environ is None else environ,
         clock=lambda: WHEN,
+    )
+
+
+def _row(
+    registration: ArtifactRegistration,
+) -> tuple[object, ...]:
+    return (
+        registration.artifact_id,
+        registration.run_id,
+        CHART_KIND,
+        registration.file_name,
+        registration.caption,
+        registration.drive_file_id,
+        registration.drive_link,
+        registration.sha256,
+        CHART_MIME_TYPE,
+        registration.byte_size,
+        registration.created_at,
     )
 
 
@@ -154,33 +178,46 @@ def test_one_call_inserts_one_row_and_a_duplicate_does_not() -> None:
     connection = FakeConnection()
     registered = _register(connection)
     assert registered.created_at == "2026-10-25 01:02:03"
-    assert connection.rows == [
-        ("run-161", "161", "counties.png", FILE_ID, _link(), SHA256, "2026-10-25 01:02:03")
-    ]
+    assert registered.issue == "161"
+    assert registered.kind == CHART_KIND
+    assert registered.mime_type == CHART_MIME_TYPE
+    assert registered.caption is None
+    assert registered.byte_size is None
+    assert len(registered.artifact_id) == 36
+    expected = _row(registered)
+    assert connection.rows == [expected]
     insert_calls = [call for call in connection.calls if call[0] == INSERT_SQL]
-    assert insert_calls == [
-        (
-            INSERT_SQL,
-            ("run-161", "161", "counties.png", FILE_ID, _link(), SHA256, "2026-10-25 01:02:03"),
-        )
-    ]
+    assert insert_calls == [(INSERT_SQL, expected)]
     assert [call[0] for call in connection.calls] == [IDENTITY_SQL, DUPLICATE_SQL, INSERT_SQL]
+    assert connection.calls[1][1] == ("run-161", "counties.png")
     assert ML_LAB_DATABASE in INSERT_SQL
+    assert "ARTIFACT_ID" in INSERT_SQL
+    assert "DRIVE_URL" in INSERT_SQL
+    assert "TITLE" in INSERT_SQL
+    for absent in ("ISSUE", "FILE_NAME", "DRIVE_LINK"):
+        assert absent not in INSERT_SQL
+        assert absent not in DUPLICATE_SQL
     assert "PROD" not in INSERT_SQL
     assert TOKEN not in INSERT_SQL
 
     with pytest.raises(DuplicateArtifactError, match="already registered"):
-        _register(connection)
-    assert len(connection.rows) == 1
+        _register(connection, caption="different caption", byte_size=12)
+    assert connection.rows == [expected]
     assert [call[0] for call in connection.calls].count(INSERT_SQL) == 1
     assert connection.calls[-1][0] == DUPLICATE_SQL
+    assert connection.calls[-1][1] == ("run-161", "counties.png")
 
 
 def test_same_run_can_register_a_different_file() -> None:
     connection = FakeConnection()
-    _register(connection, file_name="alpha.png")
-    _register(connection, file_name="beta.png")
-    assert [row[2] for row in connection.rows] == ["alpha.png", "beta.png"]
+    first = _register(connection, file_name="alpha.png", byte_size=20, caption="alpha")
+    second = _register(connection, file_name="beta.png", byte_size=30)
+    assert [row[3] for row in connection.rows] == ["alpha.png", "beta.png"]
+    assert first.artifact_id != second.artifact_id
+    assert connection.rows[0][4] == "alpha"
+    assert connection.rows[0][9] == 20
+    assert connection.rows[1][4] is None
+    assert connection.rows[1][9] == 30
 
 
 def test_registration_reads_environment_and_closes_the_connection(
@@ -294,6 +331,10 @@ def test_invalid_chart_metadata_is_rejected_before_a_query() -> None:
             environ=_env(),
             clock=lambda: WHEN,
         )
+    with pytest.raises(ArtifactRegistrationError, match="byte size"):
+        _register(connection, byte_size=-1)
+    with pytest.raises(ArtifactRegistrationError, match="byte size"):
+        _register(connection, byte_size=True)  # type: ignore[arg-type]
     assert connection.calls == []
 
 
@@ -365,6 +406,11 @@ def test_runbook_documents_the_drive_mcp_upload() -> None:
         "index.json",
         "sha256",
         "REGISTRY.ARTIFACTS",
+        "ARTIFACT_ID",
+        "DRIVE_URL",
+        "TITLE",
+        "BYTES",
+        "REGISTRY.RUNS.ISSUE_NUMBER",
         "record-level",
         "aggregate outputs",
         "no Google service account",

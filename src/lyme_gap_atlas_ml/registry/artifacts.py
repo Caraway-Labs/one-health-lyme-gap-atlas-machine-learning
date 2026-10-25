@@ -1,11 +1,11 @@
 """Register one Drive chart in the ML Lab artifact table.
 
-Issue #161 describes the ``REGISTRY.ARTIFACTS`` row: run id, issue, file name,
-Drive file id, Drive link, checksum, and created at. The admin DDL is not in
-this repository. These statements use those fields as
-``RUN_ID``, ``ISSUE``, ``FILE_NAME``, ``DRIVE_FILE_ID``, ``DRIVE_LINK``,
-``SHA256``, and ``CREATED_AT`` on
-``ONE_HEALTH_LYME_GAP_ATLAS_ML_LAB.REGISTRY.ARTIFACTS``.
+The live ``ONE_HEALTH_LYME_GAP_ATLAS_ML_LAB.REGISTRY.ARTIFACTS`` columns are
+``ARTIFACT_ID``, ``RUN_ID``, ``KIND``, ``TITLE``, ``CAPTION``, ``DRIVE_FILE_ID``,
+``DRIVE_URL``, ``SHA256``, ``MIME_TYPE``, ``BYTES``, and ``CREATED_AT``.
+``ARTIFACT_ID`` is generated here because the column has no default. The issue
+number stays on ``REGISTRY.RUNS.ISSUE_NUMBER``; this table has no issue column.
+The admin DDL is not in this repository.
 
 The Google Drive upload is not in this package. A cloud agent uploads with the
 Drive MCP ``create_file`` tool, then passes the returned id and link here.
@@ -23,6 +23,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from urllib.parse import urlsplit
+from uuid import uuid4
 
 from lyme_gap_atlas_ml.snowflake.ml_agent_access import (
     IDENTITY_SQL,
@@ -49,14 +50,17 @@ _ISSUE = re.compile(r"[1-9][0-9]{0,5}")
 _PNG_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,120}\.png")
 _SHA256 = re.compile(r"[0-9a-f]{64}")
 _DRIVE_FILE_ID = re.compile(r"[A-Za-z0-9_-]{10,128}")
+_ARTIFACT_ID = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
 _DRIVE_HOSTS = frozenset({"drive.google.com", "docs.google.com"})
-DUPLICATE_SQL = (
-    f"SELECT RUN_ID, FILE_NAME FROM {ARTIFACTS_RELATION} WHERE RUN_ID = %s AND FILE_NAME = %s"
-)
+CHART_KIND = "chart"
+CHART_MIME_TYPE = "image/png"
+_MAX_CAPTION_CHARS = 2000
+DUPLICATE_SQL = f"SELECT RUN_ID, TITLE FROM {ARTIFACTS_RELATION} WHERE RUN_ID = %s AND TITLE = %s"
 INSERT_SQL = (
     f"INSERT INTO {ARTIFACTS_RELATION} ("
-    "RUN_ID, ISSUE, FILE_NAME, DRIVE_FILE_ID, DRIVE_LINK, SHA256, CREATED_AT"
-    ") VALUES (%s, %s, %s, %s, %s, %s, %s)"
+    "ARTIFACT_ID, RUN_ID, KIND, TITLE, CAPTION, DRIVE_FILE_ID, DRIVE_URL, "
+    "SHA256, MIME_TYPE, BYTES, CREATED_AT"
+    ") VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
 )
 
 
@@ -74,6 +78,7 @@ class ChartSaveError(ValueError):
 
 @dataclass(frozen=True)
 class ArtifactRegistration:
+    artifact_id: str
     run_id: str
     issue: str
     file_name: str
@@ -81,6 +86,10 @@ class ArtifactRegistration:
     drive_link: str
     sha256: str
     created_at: str
+    kind: str
+    caption: str | None
+    mime_type: str
+    byte_size: int | None
 
 
 @dataclass(frozen=True)
@@ -99,11 +108,19 @@ def register_artifact(
     drive_link: str,
     sha256: str,
     *,
+    caption: str | None = None,
+    byte_size: int | None = None,
     connection: object | None = None,
     environ: Mapping[str, str] | None = None,
     clock: Callable[[], datetime] | None = None,
 ) -> ArtifactRegistration:
-    """Insert one artifact row. Reject a duplicate run id and file name."""
+    """Insert one artifact row. Reject a duplicate run id and file name.
+
+    ``issue`` is validated and returned. It is not inserted: ``REGISTRY.ARTIFACTS``
+    has no issue column. ``file_name`` is stored as ``TITLE``. ``drive_link`` is
+    stored as ``DRIVE_URL``. ``byte_size`` is stored as ``BYTES`` and may be null
+    when the file size is unknown.
+    """
     settings = _ml_lab_settings(os.environ if environ is None else environ)
     registration = _registration(
         run_id,
@@ -113,6 +130,9 @@ def register_artifact(
         drive_link,
         sha256,
         _created_at(clock),
+        caption,
+        byte_size,
+        str(uuid4()),
     )
     opened = connection is None
     session = open_ml_agent_connection(settings) if opened else connection
@@ -210,9 +230,13 @@ def _registration(
     drive_link: str,
     sha256: str,
     created_at: str,
+    caption: str | None,
+    byte_size: int | None,
+    artifact_id: str,
 ) -> ArtifactRegistration:
     file_id = _drive_file_id(drive_file_id)
     return ArtifactRegistration(
+        artifact_id=_match(artifact_id, _ARTIFACT_ID, "artifact id"),
         run_id=_match(run_id, _RUN_ID, "run id"),
         issue=_issue(issue),
         file_name=_png_file_name(file_name),
@@ -220,6 +244,10 @@ def _registration(
         drive_link=_drive_link(drive_link, file_id),
         sha256=_match(sha256, _SHA256, "sha256"),
         created_at=created_at,
+        kind=CHART_KIND,
+        caption=_caption(caption),
+        mime_type=CHART_MIME_TYPE,
+        byte_size=_byte_size(byte_size),
     )
 
 
@@ -263,14 +291,41 @@ def _created_at(clock: Callable[[], datetime] | None) -> str:
     return moment.astimezone(UTC).strftime("%Y-%m-%d %H:%M:%S")
 
 
-def _insert_params(registration: ArtifactRegistration) -> tuple[str, str, str, str, str, str, str]:
+def _caption(value: str | None) -> str | None:
+    if value is None:
+        return None
+    if not isinstance(value, str):
+        raise ArtifactRegistrationError("invalid caption")
+    text = value.strip()
+    if not text:
+        return None
+    if len(text) > _MAX_CAPTION_CHARS or "\x00" in text:
+        raise ArtifactRegistrationError("invalid caption")
+    return text
+
+
+def _byte_size(value: int | None) -> int | None:
+    if value is None:
+        return None
+    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+        raise ArtifactRegistrationError("invalid byte size")
+    return value
+
+
+def _insert_params(
+    registration: ArtifactRegistration,
+) -> tuple[str, str, str, str, str | None, str, str, str, str, int | None, str]:
     return (
+        registration.artifact_id,
         registration.run_id,
-        registration.issue,
+        registration.kind,
         registration.file_name,
+        registration.caption,
         registration.drive_file_id,
         registration.drive_link,
         registration.sha256,
+        registration.mime_type,
+        registration.byte_size,
         registration.created_at,
     )
 
