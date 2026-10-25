@@ -180,7 +180,11 @@ issue's bootstrap. Level A and Level B above do not grant this identity.
   `PRESENTATION` objects granted to role `OH_LYME_PROD_ML_EDA_READ`. A new
   PROD table is invisible until explicitly granted.
 - Aggregates only. No record-level extracts leave Snowflake.
-- Small-cell rule: suppress `n < 11`.
+- Small-cell rule: suppress `n < 11` in Lab aggregate tables, files and charts.
+- Comments exception (Matthew Caraway, 2026-10-25): GitHub issue comments, PR
+  bodies and `docs/eda/` write-ups MAY name counties and give county-level
+  numbers, including small counts. The rules above still apply to files, git
+  extracts, Drive charts and Lab aggregate tables.
 - Free-text columns (for example `PART_TEXT`, `CONTEXT_LIMITATIONS`) must not
   be exported or quoted at record level.
 - EDA conclusions go in `docs/eda/<issue>-<topic>.md`. Extracts stay out of
@@ -283,6 +287,8 @@ The provisioning DDL lives outside this repository.
 - Never commit credentials, PATs, API keys, secret values, or personal connection names.
 - PROD is read-only. Writes go only to `ONE_HEALTH_LYME_GAP_ATLAS_ML_LAB`.
 - Agents inherit repository `AGENTS.md`: context query before data access, no
-  browser authentication fallback, aggregates only, suppress `n < 11`, and no
+  browser authentication fallback, aggregates only in files and Drive (issue
+  and PR comments and `docs/eda/` write-ups may name counties and give
+  county-level numbers), suppress `n < 11` in Lab tables and charts, and no
   record-level extracts.
 - Production Snowflake mutation and model promotion remain out of scope.
