@@ -44,6 +44,7 @@ from lyme_gap_atlas_ml.snowflake.eda_writer import ML_LAB_DATABASE, EdaRun, writ
 from lyme_gap_atlas_ml.snowflake.ml_agent_access import (
     ML_AGENT_ROLE,
     CursorStatementExecutor,
+    StatementError,
     load_ml_agent_request,
     open_ml_agent_connection,
     redact_text,
@@ -73,6 +74,9 @@ def main() -> int:
     except (ClassAnomalyError, RunAlreadyWritten) as error:
         print(f"stopped: {error}")
         return 2
+    except StatementError as error:
+        print(f"stopped: statement failed permission_denied={error.permission_denied}")
+        return 2
     except Exception as error:
         print("stopped: " + redact_text(str(error), [token])[:400])
         return 2
@@ -93,6 +97,7 @@ def _run(connection: object) -> int:
     snapshot = _timestamp(connection, captured)
     stamp = datetime.now(UTC).strftime("%Y%m%dT%H%MZ")
     run_id = f"122-established-class-anomaly-{stamp}"
+    print(f"gate_ok: {gate.ok} class_n={gate.class_n}", flush=True)
     if not gate.ok:
         _write_stop(executor, connection, run_id, gate, captured, snapshot)
         print(f"run_id: {run_id}")
@@ -113,6 +118,7 @@ def _run(connection: object) -> int:
         reference_double_gap=228,
         run_id=run_id,
     )
+    print(f"fit_done: disposition={fitted.disposition} n_fit={fitted.n_fit}", flush=True)
     charts = _render(fitted)
     for name, content in charts.items():
         save_chart(122, name, content)

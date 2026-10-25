@@ -233,6 +233,7 @@ def test_writer_inserts_scores_without_a_second_run() -> None:
     inserts = [sql for sql, _params in session.calls if sql.startswith("INSERT INTO")]
     assert any("COUNTY_ANOMALY_SCORES_122" in sql for sql in inserts)
     assert any("EXPERIMENTS.EXPERIMENTS" in sql for sql in inserts)
+    assert not any("REGISTRY.QUERIES" in sql for sql, _params in session.calls)
     session.calls.clear()
 
     def query(sql: str, params: Sequence[object] | None = None) -> list[tuple[object, ...]]:

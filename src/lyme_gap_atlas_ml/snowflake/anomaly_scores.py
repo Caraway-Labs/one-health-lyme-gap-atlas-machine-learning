@@ -103,13 +103,15 @@ INSERT INTO {ML_LAB_DATABASE}.EXPERIMENTS.MODEL_METRICS (
 VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
 """.strip()
 _RUN_COUNT = f"SELECT COUNT(*) FROM {ML_LAB_DATABASE}.REGISTRY.RUNS WHERE RUN_ID = %s"
+# REGISTRY.QUERIES is insert-only for this role. A partial query row for a
+# run id that never reached REGISTRY.RUNS is left in place. A finished run is
+# refused before this cleanup.
 _DELETE_TARGETS = (
     SCORE_TABLE,
     f"{ML_LAB_DATABASE}.EXPERIMENTS.MODEL_METRICS",
     f"{ML_LAB_DATABASE}.EXPERIMENTS.EXPERIMENTS",
     f"{ML_LAB_DATABASE}.EDA.FINDINGS",
     f"{ML_LAB_DATABASE}.EDA.METRICS_LONG",
-    f"{ML_LAB_DATABASE}.REGISTRY.QUERIES",
 )
 
 
