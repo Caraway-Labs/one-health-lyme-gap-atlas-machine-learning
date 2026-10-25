@@ -62,7 +62,11 @@ connection, a PROD write, or PROD access for any other user.
   `PRESENTATION` objects granted to role `OH_LYME_PROD_ML_EDA_READ`. A new
   PROD table is invisible until explicitly granted.
 - Aggregates only. No record-level extracts leave Snowflake.
-- Small-cell rule: suppress `n < 11`.
+- Small-cell rule: suppress `n < 11` in Lab aggregate tables, files and charts.
+- Comments exception (Matthew Caraway, 2026-10-25): GitHub issue comments, PR
+  bodies and `docs/eda/` write-ups MAY name counties and give county-level
+  numbers, including small counts. The rules above still apply to files, git
+  extracts, Drive charts and Lab aggregate tables.
 - Free-text columns (for example `PART_TEXT`, `CONTEXT_LIMITATIONS`) must not
   be exported or quoted at record level.
 - EDA conclusions go in `docs/eda/<issue>-<topic>.md`. Extracts stay out of
@@ -100,8 +104,10 @@ source location and reference it; do not depend on notebook-only state.
 
 EDA conclusions go in `docs/eda/<issue>-<topic>.md`. Extracts stay out of git.
 Charts go to Google Drive. Published conclusions follow the PROD read and ML
-Lab write rules above: aggregates only, suppress `n < 11`, and do not quote
-free-text columns at record level. Snowflake extracts, generated CSVs,
+Lab write rules above (comments and write-ups may name counties and give
+county-level numbers, including small counts; files, git and Drive stay
+aggregate, suppress `n < 11`), and do not quote free-text columns at record
+level. Snowflake extracts, generated CSVs,
 temporary query results, notebook outputs, and caches stay out of git. Local
 working files, when a story still needs them, stay in ignored `outputs/` or
 `data/local/`. A story may still require a small fixture or curated governed

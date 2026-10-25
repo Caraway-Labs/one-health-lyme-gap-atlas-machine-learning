@@ -69,7 +69,11 @@ secret names below. Documentation-only work does not connect to Snowflake.
 - Aggregates only. No record-level extracts leave Snowflake. The fixed DEV
   smoke later in this guide stays inside the session and must not print or
   export row values.
-- Small-cell rule: suppress `n < 11`.
+- Small-cell rule: suppress `n < 11` in Lab aggregate tables, files and charts.
+- Comments exception (Matthew Caraway, 2026-10-25): GitHub issue comments, PR
+  bodies and `docs/eda/` write-ups MAY name counties and give county-level
+  numbers, including small counts. The rules above still apply to files, git
+  extracts, Drive charts and Lab aggregate tables.
 - Free-text columns (for example `PART_TEXT`, `CONTEXT_LIMITATIONS`) must not
   be exported or quoted at record level.
 - EDA conclusions go in `docs/eda/<issue>-<topic>.md`. Extracts stay out of
