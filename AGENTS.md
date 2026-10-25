@@ -75,7 +75,8 @@ Identity:
 - Warehouse `OH_LYME_ML_LAB_XS_WH` (X-Small, 60 s auto-suspend, 20 credits per
   month resource monitor).
 - Authentication is a programmatic access token restricted to role
-  `OH_LYME_ML_AGENT`, with a 30 day life (rotate before expiry).
+  `OH_LYME_ML_AGENT`, with a 30 day life (rotate before expiry). Owner steps
+  are in the [ML Lab operations runbook](docs/runbooks/ml-lab-operations.md).
 - No network policy. The per-user authentication policy on
   `OH_LYME_ML_AGENT_SVC` sets
   `NETWORK_POLICY_EVALUATION = ENFORCED_NOT_REQUIRED`, by owner decision on

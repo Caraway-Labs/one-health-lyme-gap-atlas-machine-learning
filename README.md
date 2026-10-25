@@ -46,6 +46,9 @@ Follow the [Cursor Cloud Agent runbook](docs/runbooks/cursor-cloud-agent.md) to
 create a Dashboard environment and run a green Build. Mandatory offline checks
 match CI: `uv run python scripts/verify.py`. Optional DEV Snowflake for cloud
 agents is documented in the runbook Level B section when enabled.
+Owner steps for programmatic-access-token rotation, the monthly 20-credit
+monitor review, and `SCRATCH` cleanup are in the
+[ML Lab operations runbook](docs/runbooks/ml-lab-operations.md).
 
 The [repository rules](AGENTS.md) and [structure guide](docs/repository-structure.md)
 describe ownership, reproducibility, and intended package boundaries.
