@@ -382,7 +382,13 @@ def _feature_chart(result: FitResult) -> bytes:
         labels = [item.label for item in bins if item.count is not None]
         values = [item.count for item in bins if item.count is not None]
         if labels:
-            sns.barplot(x=labels, y=values, ax=axis, color="#4C78A8")
+            sns.barplot(
+                data={"label": labels, "count": values},
+                x="label",
+                y="count",
+                ax=axis,
+                color="#4C78A8",
+            )
             axis.tick_params(axis="x", labelrotation=60, labelsize=6)
         axis.set_title(title)
         axis.set_xlabel("")
@@ -402,7 +408,17 @@ def _region_chart(result: FitResult) -> bytes:
         records.append({"region": row.region, "percentile": "p75", "score": row.p75})
     fig, ax = plt.subplots(figsize=(6.2, 3.4))
     if records:
-        sns.barplot(data=records, x="region", y="score", hue="percentile", ax=ax)
+        sns.barplot(
+            data={
+                "region": [row["region"] for row in records],
+                "percentile": [row["percentile"] for row in records],
+                "score": [row["score"] for row in records],
+            },
+            x="region",
+            y="score",
+            hue="percentile",
+            ax=ax,
+        )
     ax.set_title("Primary forest score by Census region")
     ax.set_xlabel("Census region")
     ax.set_ylabel("Score")
@@ -415,7 +431,13 @@ def _rate_chart(result: FitResult) -> bytes:
     rates = [row.rate for row in result.flag_rates if row.rate is not None]
     fig, ax = plt.subplots(figsize=(6.4, 3.4))
     if labels:
-        sns.barplot(x=labels, y=rates, ax=ax, color="#F58518")
+        sns.barplot(
+            data={"label": labels, "rate": rates},
+            x="label",
+            y="rate",
+            ax=ax,
+            color="#F58518",
+        )
         ax.tick_params(axis="x", labelrotation=40, labelsize=7)
     ax.set_title("Flag rate by rule, seed, and contamination")
     ax.set_xlabel("")
@@ -432,7 +454,17 @@ def _driver_chart(result: FitResult) -> bytes:
     ]
     fig, ax = plt.subplots(figsize=(6.4, 3.4))
     if records:
-        sns.barplot(data=records, x="feature", y="share", hue="method", ax=ax)
+        sns.barplot(
+            data={
+                "method": [row["method"] for row in records],
+                "feature": [row["feature"] for row in records],
+                "share": [row["share"] for row in records],
+            },
+            x="feature",
+            y="share",
+            hue="method",
+            ax=ax,
+        )
         ax.tick_params(axis="x", labelrotation=30, labelsize=7)
     ax.set_title("Share of flags attributed to each feature")
     ax.set_xlabel("")
