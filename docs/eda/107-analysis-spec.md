@@ -71,6 +71,8 @@
 
 - **Key caveat / stop conditions:** Stop if the release pin or the 3,144-FIPS gate fails. A climate query over 10 minutes is stopped and that climate grain is not estimable. Adjacency failure is a skip, not a stop. Do not claim that a tail county has higher disease risk. Do not treat the September tier batch as a score on the October 15 release.
 
+- **Amendment before any distribution query:** If every non-null `PRIORITY_PERCENTILE` is at most 1.5, multiply by 100 before the 70 and 90 cuts and record the rescaling. Stored tier labels are not edited. This unit rule was added before those values were read.
+
 - **Result disposition:** PLANNED before execution. After execution, **keep** when the pin and the FIPS gate hold, the published-floor split is 651 / 2,493, and the stored tier counts are 315 / 628 / 2,201 with sufficiency 651 / 2,493. **Revise** when those reference counts differ and the difference is not the already named September-versus-October release gap. **Stop** when the pin or the FIPS gate fails. Keep is permission to use the descriptive profile in analyst review. It is not a change to tier policy.
 
 - **Reproduction / evidence:** `sql/validation/107_county_distributions.sql`, `src/lyme_gap_atlas_ml/county_distributions.py`, `scripts/eda_107_distributions.py`. Command: `MPLBACKEND=Agg uv run --with matplotlib --with seaborn python scripts/eda_107_distributions.py`. Durable record, after execution: `docs/eda/107-county-distributions.md`. Transient outputs not committed: `artifacts/charts/107/` and `outputs/107-run-id.txt`.
