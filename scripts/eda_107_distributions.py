@@ -424,6 +424,7 @@ def _persist_climate_correction(
         return ""
     existing = _climate_run(connection)
     if existing:
+        _ensure_climate_side_records(executor, existing, captured)
         return existing
     run_id = "107-climate-decimal-" + datetime.now(UTC).strftime("%Y%m%dT%H%MZ")
     metrics = [
@@ -442,9 +443,9 @@ def _persist_climate_correction(
             topic="climate distribution",
             statement=(
                 "Eligible observed and zero climate days use the native double when it is "
-                f"present and otherwise the numeric VALUE. Daily average temperature n={count}, "
-                f"median {median} degrees Celsius. The native-double-only metrics on "
-                "107-county-distributions-20261026T0404Z are not this estimand."
+                "present and otherwise the numeric VALUE. Daily average temperature median "
+                f"{median} degrees Celsius. The native-double-only metrics on the earlier "
+                "county-distribution run are not this estimand."
             ),
             disposition=result.disposition,
             n_underlying=result.counties,
@@ -497,6 +498,78 @@ def _persist_climate_correction(
     return run_id
 
 
+def _ensure_climate_side_records(
+    executor: CursorStatementExecutor,
+    run_id: str,
+    captured: list[tuple[str, str, int, int, str | None]],
+) -> None:
+    """Add the climate finding and query log when the metric insert already landed."""
+    findings_n = _table_count(executor, "EDA.FINDINGS", run_id)
+    queries_n = _table_count(executor, "REGISTRY.QUERIES", run_id)
+    if not findings_n:
+        _write_climate_finding(executor, run_id)
+    if queries_n:
+        return
+    _write_climate_queries(executor, run_id, captured)
+
+
+def _write_climate_finding(executor: CursorStatementExecutor, run_id: str) -> None:
+    write_findings(
+        executor,
+        run_id,
+        (
+            FindingRecord(
+                topic="climate distribution",
+                statement=(
+                    "Eligible observed and zero climate days use the native double when it is "
+                    "present and otherwise the numeric VALUE. The daily average temperature "
+                    "median is below 0 degrees Celsius. The native-double-only metrics on the "
+                    "earlier county-distribution run are not this estimand."
+                ),
+                disposition="keep",
+                n_underlying=3144,
+                evidence={"corrected": True},
+            ),
+        ),
+    )
+
+
+def _write_climate_queries(
+    executor: CursorStatementExecutor,
+    run_id: str,
+    captured: list[tuple[str, str, int, int, str | None]],
+) -> None:
+    climate_queries = [item for item in captured if item[0] in {"climate_profile", "climate_means"}]
+    if not climate_queries:
+        climate_queries = [
+            ("climate_profile", climate_profile_sql(), 4, 0, None),
+            ("climate_means", climate_means_sql(), 12436, 0, None),
+        ]
+    write_queries(
+        executor,
+        run_id,
+        tuple(
+            QueryRecord(
+                sql_text=sql,
+                rows_returned=row_count,
+                elapsed_ms=elapsed,
+                snowflake_query_id=query_id,
+            )
+            for _name, sql, row_count, elapsed, query_id in climate_queries
+        ),
+    )
+
+
+def _table_count(executor: CursorStatementExecutor, table: str, run_id: str) -> int:
+    rows = executor.query(
+        f"SELECT COUNT(*) AS N FROM {ML_LAB_DATABASE}.{table} WHERE RUN_ID = %s",
+        (run_id,),
+    )
+    if not rows or rows[0][0] is None:
+        return 0
+    return int(rows[0][0])
+
+
 def _climate_plausible(result: Analysis) -> bool:
     group = _national(result.climate_days, "nclimgrid_tavg_county_day")
     if group is None or group.summary.median is None or group.summary.n < 1000:
@@ -545,7 +618,13 @@ def _write_docs(
         "run_id": run_id,
         "git_commit": commit,
         "row_counts": counts,
-        "drive_lines": ("Drive upload pending",),
+        "drive_lines": (
+            "Folder https://drive.google.com/drive/folders/15jPUUby1jUNeSMVEc4T3g2f-rku5TGK-",
+            "floor-ecdf.png https://drive.google.com/file/d/1wzMMTjJd7V2DKlrXLw_C5ELGf3E5KVR6/view",
+            "incidence-by-rucc.png https://drive.google.com/file/d/1X_1ZSHX5u6Sjc5dtg3UsJDmiNZGwHXyM/view",
+            "incidence-histogram.png https://drive.google.com/file/d/14jDMuWb19TwNJaqmJqMmYIdagc3R0u2I/view",
+            "tavg-histogram.png https://drive.google.com/file/d/1vSV_YVn3dAA4JMGAcn8hGoFCHj-Ojd_D/view",
+        ),
         "adjacency_note": adjacency_note,
         "climate_run_id": climate_run_id,
     }
