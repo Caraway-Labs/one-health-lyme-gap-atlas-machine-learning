@@ -9,6 +9,7 @@ from __future__ import annotations
 import math
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
+from decimal import Decimal
 from typing import Any
 
 import numpy as np
@@ -345,6 +346,9 @@ def analyze(
     climate: Sequence[ClimateDay],
     *,
     nlcd_counties: int,
+    climate_day_groups: Sequence[SignalGroup] = (),
+    climate_mean_groups: Sequence[SignalGroup] = (),
+    climate_row_count: int | None = None,
 ) -> Analysis:
     """Build the prespecified summaries. County names stay on the result object."""
     if len({county.fips for county in counties}) != len(counties):
@@ -355,7 +359,11 @@ def analyze(
         _scale_county(county, svi=svi_scale, uninsured=uninsured_scale) for county in counties
     )
     signals = _signal_groups(scaled)
-    climate_days, climate_means = _climate_groups(climate, scaled)
+    if climate_day_groups or climate_mean_groups:
+        climate_days = tuple(climate_day_groups)
+        climate_means = tuple(climate_mean_groups)
+    else:
+        climate_days, climate_means = _climate_groups(climate, scaled)
     tier = _tier_profile(scaled, tiers)
     publishing = _publishing(scaled)
     incidence = _signal(signals, "incidence_floor_2023", "national", "US")
@@ -379,7 +387,7 @@ def analyze(
         incidence_examples=_incidence_examples(scaled),
         disposition=_disposition(len(scaled), scaled, tier),
         nlcd_counties=nlcd_counties,
-        climate_days_read=len(climate),
+        climate_days_read=len(climate) if climate_row_count is None else climate_row_count,
     )
 
 
@@ -1245,6 +1253,289 @@ def _signal(
         ):
             return group
     return None
+
+
+def _climate_value_sql() -> str:
+    return "IFF(VALUE_STATE = 'ZERO' AND VALUE_NATIVE_DOUBLE IS NULL, 0, VALUE_NATIVE_DOUBLE)"
+
+
+def _sql_num(value: float) -> str:
+    return format(value, ".16g")
+
+
+def _climate_bin_sql() -> tuple[str, ...]:
+    """Histogram and ECDF columns. Extra slots stay zero for the shorter edge set."""
+    max_bins = max(len(edges) - 1 for edges in CLIMATE_EDGES.values())
+    max_edges = max(len(edges) for edges in CLIMATE_EDGES.values())
+    columns = [
+        _measure_count(
+            "UNDERFLOW",
+            tuple(
+                (measure, f"VALS.VAL < {_sql_num(edges[0])}")
+                for measure, edges in CLIMATE_EDGES.items()
+            ),
+        )
+    ]
+    for index in range(max_bins):
+        columns.append(_measure_count(f"BIN_{index:02d}", _bin_clauses(index)))
+    columns.append(
+        _measure_count(
+            "OVERFLOW",
+            tuple(
+                (measure, f"VALS.VAL > {_sql_num(edges[-1])}")
+                for measure, edges in CLIMATE_EDGES.items()
+            ),
+        )
+    )
+    for index in range(max_edges):
+        columns.append(
+            _measure_count(
+                f"ECDF_{index:02d}",
+                tuple(
+                    (measure, f"VALS.VAL <= {_sql_num(edges[index])}")
+                    for measure, edges in CLIMATE_EDGES.items()
+                    if index < len(edges)
+                ),
+            )
+        )
+    return tuple(columns)
+
+
+def _bin_clauses(index: int) -> tuple[tuple[str, str], ...]:
+    clauses: list[tuple[str, str]] = []
+    for measure, edges in CLIMATE_EDGES.items():
+        predicate = _bin_test(edges, index)
+        if predicate is not None:
+            clauses.append((measure, predicate))
+    return tuple(clauses)
+
+
+def _bin_test(edges: Sequence[float], index: int) -> str | None:
+    if index >= len(edges) - 1:
+        return None
+    left = _sql_num(edges[index])
+    right = _sql_num(edges[index + 1])
+    if index == len(edges) - 2:
+        return f"VALS.VAL >= {left} AND VALS.VAL <= {right}"
+    return f"VALS.VAL >= {left} AND VALS.VAL < {right}"
+
+
+def _measure_count(alias: str, clauses: Sequence[tuple[str, str]]) -> str:
+    branches = " ".join(
+        f"WHEN VALS.MEASURE_ID = '{measure}' AND {predicate} THEN 1"
+        for measure, predicate in clauses
+    )
+    return f"SUM(CASE {branches} ELSE 0 END) AS {alias}"
+
+
+def climate_profile_sql() -> str:
+    """Aggregate eligible county-day climate values inside Snowflake. No geometry."""
+    value = _climate_value_sql()
+    measures = ", ".join(f"'{measure}'" for measure in CLIMATE_MEASURES)
+    percentile_cols = [
+        (
+            f"PERCENTILE_CONT({probability}) WITHIN GROUP (ORDER BY VALS.VAL) "
+            f"AS P{int(probability * 100):02d}"
+        )
+        for probability in QUANTILES
+    ]
+    aggregate_cols = (
+        "COUNT(*) AS N",
+        "AVG(VALS.VAL) AS MEAN_VALUE",
+        "VAR_SAMP(VALS.VAL) AS VARIANCE_VALUE",
+        "STDDEV_SAMP(VALS.VAL) AS SD_VALUE",
+        "SKEW(VALS.VAL) AS SKEW_VALUE",
+        "MIN(VALS.VAL) AS MIN_VALUE",
+        "MAX(VALS.VAL) AS MAX_VALUE",
+        *percentile_cols,
+        (f"SUM(IFF(VALS.VAL < STATS.P25 - {IQR_K} * (STATS.P75 - STATS.P25), 1, 0)) AS IQR_LOW"),
+        (f"SUM(IFF(VALS.VAL > STATS.P75 + {IQR_K} * (STATS.P75 - STATS.P25), 1, 0)) AS IQR_HIGH"),
+        "MAD_STATS.MAD_VALUE AS MAD_VALUE",
+        (
+            "SUM(IFF(MAD_STATS.MAD_VALUE > 0 AND (VALS.VAL - STATS.P50) / "
+            f"({_sql_num(MAD_SCALE)} * MAD_STATS.MAD_VALUE) < -{MAD_Z}, 1, 0)) AS MAD_LOW"
+        ),
+        (
+            "SUM(IFF(MAD_STATS.MAD_VALUE > 0 AND (VALS.VAL - STATS.P50) / "
+            f"({_sql_num(MAD_SCALE)} * MAD_STATS.MAD_VALUE) > {MAD_Z}, 1, 0)) AS MAD_HIGH"
+        ),
+        *_climate_bin_sql(),
+    )
+    return f"""
+WITH VALS AS (
+    SELECT MEASURE_ID, {value} AS VAL
+    FROM {CLIMATE}
+    WHERE VALUE_STATE IN ('OBSERVED', 'ZERO')
+      AND MEASURE_ID IN ({measures})
+      AND (VALUE_NATIVE_DOUBLE IS NOT NULL OR VALUE_STATE = 'ZERO')
+),
+STATS AS (
+    SELECT
+        MEASURE_ID,
+        PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY VAL) AS P25,
+        PERCENTILE_CONT(0.50) WITHIN GROUP (ORDER BY VAL) AS P50,
+        PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY VAL) AS P75
+    FROM VALS
+    GROUP BY MEASURE_ID
+),
+MAD_STATS AS (
+    SELECT
+        VALS.MEASURE_ID,
+        PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY ABS(VALS.VAL - STATS.P50)) AS MAD_VALUE
+    FROM VALS
+    JOIN STATS ON VALS.MEASURE_ID = STATS.MEASURE_ID
+    GROUP BY VALS.MEASURE_ID
+)
+SELECT
+    VALS.MEASURE_ID,
+    {", ".join(aggregate_cols)}
+FROM VALS
+JOIN STATS ON VALS.MEASURE_ID = STATS.MEASURE_ID
+JOIN MAD_STATS ON VALS.MEASURE_ID = MAD_STATS.MEASURE_ID
+GROUP BY VALS.MEASURE_ID, STATS.P25, STATS.P50, STATS.P75, MAD_STATS.MAD_VALUE
+""".strip()
+
+
+def climate_means_sql() -> str:
+    """County means of eligible climate days. The result is one row per county and measure."""
+    value = _climate_value_sql()
+    measures = ", ".join(f"'{measure}'" for measure in CLIMATE_MEASURES)
+    return f"""
+SELECT MEASURE_ID, COUNTY_FIPS, AVG({value}) AS MEAN_VALUE, COUNT(*) AS N
+FROM {CLIMATE}
+WHERE VALUE_STATE IN ('OBSERVED', 'ZERO')
+  AND MEASURE_ID IN ({measures})
+  AND (VALUE_NATIVE_DOUBLE IS NOT NULL OR VALUE_STATE = 'ZERO')
+GROUP BY MEASURE_ID, COUNTY_FIPS
+""".strip()
+
+
+def _summary_from_profile(row: Mapping[str, object], edges: Sequence[float]) -> Summary:
+    """Rebuild a day-level summary from one Snowflake aggregate row."""
+    count = _as_int(row["N"])
+    bins: list[tuple[str, int]] = [("underflow", _as_int(row["UNDERFLOW"]))]
+    for index in range(len(edges) - 1):
+        label = f"[{edges[index]:g}, {edges[index + 1]:g})"
+        bins.append((label, _as_int(row[f"BIN_{index:02d}"])))
+    bins.append(("overflow", _as_int(row["OVERFLOW"])))
+    covered = tuple(bins)
+    if sum(item_count for _label, item_count in covered) != count:
+        raise DistributionError("climate histogram does not cover the aggregate")
+    quantiles = {
+        f"p{int(probability * 100):02d}": _as_float(row[f"P{int(probability * 100):02d}"])
+        for probability in QUANTILES
+    }
+    ecdf = tuple(
+        (
+            f"{edge:g}",
+            0.0 if count == 0 else _as_float(row[f"ECDF_{index:02d}"]) / count,
+        )
+        for index, edge in enumerate(edges)
+    )
+    mad = _as_optional_float(row.get("MAD_VALUE"))
+    mad_ok = mad is not None and mad > 0
+    return Summary(
+        n=count,
+        mean=_as_optional_float(row.get("MEAN_VALUE")),
+        weighted_mean=None,
+        median=quantiles["p50"],
+        weighted_median=None,
+        mode=None,
+        modal_bin=_modal_bin(covered),
+        iqr=quantiles["p75"] - quantiles["p25"],
+        variance=_as_optional_float(row.get("VARIANCE_VALUE")),
+        sd=_as_optional_float(row.get("SD_VALUE")),
+        weighted_second_moment=None,
+        skewness=_as_optional_float(row.get("SKEW_VALUE")),
+        quantiles=quantiles,
+        weighted_quantiles={},
+        histogram=covered,
+        ecdf=ecdf,
+        minimum=_as_optional_float(row.get("MIN_VALUE")),
+        maximum=_as_optional_float(row.get("MAX_VALUE")),
+        iqr_low=_as_int(row["IQR_LOW"]),
+        iqr_high=_as_int(row["IQR_HIGH"]),
+        mad_low=_as_int(row["MAD_LOW"]) if mad_ok else 0,
+        mad_high=_as_int(row["MAD_HIGH"]) if mad_ok else 0,
+        mad_estimable=mad_ok,
+        peaks=_peaks(covered),
+        weight_n=0,
+    )
+
+
+def _as_float(value: object) -> float:
+    if isinstance(value, bool) or not isinstance(value, (int, float, Decimal)):
+        raise DistributionError("climate aggregate is not numeric")
+    return float(value)
+
+
+def _as_int(value: object) -> int:
+    number = _as_float(value)
+    if not number.is_integer():
+        raise DistributionError("climate count is not an integer")
+    return int(number)
+
+
+def _as_optional_float(value: object) -> float | None:
+    if value is None:
+        return None
+    return _as_float(value)
+
+
+def climate_groups_from_profile(
+    rows: Sequence[Mapping[str, object]],
+) -> tuple[SignalGroup, ...]:
+    """Turn one aggregate row per measure into national day-level summaries."""
+    groups: list[SignalGroup] = []
+    for row in rows:
+        measure = str(row["MEASURE_ID"])
+        edges = CLIMATE_EDGES[measure]
+        summary = _summary_from_profile(row, edges)
+        groups.append(
+            SignalGroup(
+                signal=measure,
+                geography_type="national",
+                geography_id=measure,
+                summary=summary,
+            )
+        )
+    return tuple(groups)
+
+
+def climate_mean_groups(
+    rows: Sequence[Mapping[str, object]],
+    counties: Sequence[AtlasCounty],
+) -> tuple[SignalGroup, ...]:
+    """Population-weighted summaries of county-mean climate. One weight per county."""
+    population = {
+        county.fips: county.population
+        for county in counties
+        if county.population is not None and county.population > 0
+    }
+    grouped: dict[str, list[tuple[float, float | None]]] = {}
+    for row in rows:
+        measure = str(row["MEASURE_ID"])
+        value = row.get("MEAN_VALUE")
+        if not isinstance(value, (int, float)) or isinstance(value, bool):
+            continue
+        weight = population.get(str(row["COUNTY_FIPS"]))
+        grouped.setdefault(measure, []).append((float(value), weight))
+    groups: list[SignalGroup] = []
+    for measure, pairs in grouped.items():
+        values = [value for value, _weight in pairs]
+        if all(weight is not None for _value, weight in pairs):
+            weights = [float(weight) for _value, weight in pairs if weight is not None]
+        else:
+            weights = None
+        groups.append(
+            SignalGroup(
+                signal=f"{measure}_county_mean",
+                geography_type="national",
+                geography_id=measure,
+                summary=summarize(values, weights, CLIMATE_EDGES[measure]),
+            )
+        )
+    return tuple(groups)
 
 
 def release_matches(row: Mapping[str, object]) -> bool:

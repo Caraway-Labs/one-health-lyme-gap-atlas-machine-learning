@@ -47,6 +47,8 @@ def render_comment(
             "",
             f"Spec [{SPEC_ID}]({_SPEC}), frozen before the distribution queries. "
             "Exact statistics use the raw values. Histogram bins use the fixed edges in the spec. "
+            "Climate day summaries are aggregated in Snowflake. "
+            "County-mean climate is summarized from those county averages. "
             "Unweighted summaries give each county one weight. Population-weighted summaries give "
             "each person one weight. The county set is the governed release, not a sample, so "
             "there is no standard error and no hypothesis test. "
@@ -280,7 +282,11 @@ def _climate_lines(result: Analysis) -> str:
             f"Climate days read: {result.climate_days_read}. "
             "No eligible climate values, so that distribution is not estimable."
         )
-    lines = [f"Eligible climate values read into memory: {result.climate_days_read}."]
+    lines = [
+        f"Eligible climate county-day values: {result.climate_days_read}. "
+        "Day-level summaries were aggregated in Snowflake. "
+        "The exact day-level mode is not estimable from that aggregate."
+    ]
     for group in result.climate_days:
         if group.geography_type != "national":
             continue

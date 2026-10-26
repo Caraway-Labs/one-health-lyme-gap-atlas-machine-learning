@@ -5,14 +5,19 @@ from __future__ import annotations
 from lyme_gap_atlas_ml.county_distribution_report import render_comment
 from lyme_gap_atlas_ml.county_distributions import (
     CASE_EDGES,
+    CLIMATE_EDGES,
     HUMAN_NONE,
     HUMAN_PUBLISHED,
+    QUANTILES,
     REFERENCE_COUNTIES,
     AtlasCounty,
     ClimateDay,
     TierCounty,
     analyze,
     chart_bins,
+    climate_groups_from_profile,
+    climate_means_sql,
+    climate_profile_sql,
     histogram,
     lab_metrics,
     linear_quantile,
@@ -102,6 +107,54 @@ def test_adjacency_insert_stays_in_the_lab_and_is_not_logged() -> None:
     except EdaWriteError:
         return
     raise AssertionError("geometry statement was accepted by the query log")
+
+
+def test_climate_profile_sql_is_an_aggregate_without_geometry() -> None:
+    profile = climate_profile_sql()
+    means = climate_means_sql()
+    assert "GEOMETRY" not in profile.upper()
+    assert "GEOMETRY" not in means.upper()
+    assert ";" not in profile
+    assert ";" not in means
+    assert "UNDERFLOW" in profile
+    assert "BIN_00" in profile
+    assert "MAD_VALUE" in profile
+    prepare_query(QueryRecord(sql_text=profile, rows_returned=4, elapsed_ms=1))
+    prepare_query(QueryRecord(sql_text=means, rows_returned=4, elapsed_ms=1))
+    edges = CLIMATE_EDGES["nclimgrid_tavg_county_day"]
+    row: dict[str, object] = {
+        "MEASURE_ID": "nclimgrid_tavg_county_day",
+        "N": 100,
+        "MEAN_VALUE": 1.5,
+        "VARIANCE_VALUE": 2.0,
+        "SD_VALUE": 1.4,
+        "SKEW_VALUE": 0.2,
+        "MIN_VALUE": -10.0,
+        "MAX_VALUE": 20.0,
+        "IQR_LOW": 2,
+        "IQR_HIGH": 3,
+        "MAD_VALUE": 1.1,
+        "MAD_LOW": 1,
+        "MAD_HIGH": 4,
+        "UNDERFLOW": 0,
+        "OVERFLOW": 0,
+    }
+    for probability in QUANTILES:
+        row[f"P{int(probability * 100):02d}"] = 0.0
+    for index in range(len(edges) - 1):
+        row[f"BIN_{index:02d}"] = 100 if index == 4 else 0
+    for index, _edge in enumerate(edges):
+        row[f"ECDF_{index:02d}"] = 0 if index < 5 else 100
+    groups = climate_groups_from_profile((row,))
+    summary = groups[0].summary
+    assert groups[0].geography_type == "national"
+    assert summary.n == 100
+    assert summary.mad_estimable
+    assert summary.mode is None
+    assert summary.histogram[0] == ("underflow", 0)
+    assert sum(count for _label, count in summary.histogram) == 100
+    assert summary.ecdf[5][1] == 1.0
+    assert summary.weighted_mean is None
 
 
 def test_suppressed_metric_drops_a_small_cell() -> None:

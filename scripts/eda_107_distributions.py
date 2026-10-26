@@ -27,20 +27,22 @@ import seaborn as sns
 from lyme_gap_atlas_ml.class_anomaly import load_marked_queries
 from lyme_gap_atlas_ml.county_distribution_report import render_comment, render_eda_record
 from lyme_gap_atlas_ml.county_distributions import (
-    CLIMATE_MEASURES,
     HUMAN_PUBLISHED,
     SEED,
     SOURCE_OBJECTS,
     SPEC_ID,
     Analysis,
     AtlasCounty,
-    ClimateDay,
     DistributionError,
     SignalGroup,
     TierCounty,
     analyze,
     box_groups,
     chart_bins,
+    climate_groups_from_profile,
+    climate_mean_groups,
+    climate_means_sql,
+    climate_profile_sql,
     column_profiles,
     findings,
     lab_metrics,
@@ -87,7 +89,6 @@ QUERY_NAMES = (
     "atlas_rows",
     "tier_rows",
     "climate_status",
-    "climate_values",
     "nlcd_counties",
 )
 
@@ -126,13 +127,22 @@ def _run(connection: object) -> int:
     atlas_rows = _capture(connection, "atlas_rows", queries, captured)
     tier_rows = _capture(connection, "tier_rows", queries, captured)
     _capture(connection, "climate_status", queries, captured)
-    climate_rows, climate_note = _climate_rows(connection, queries, captured)
+    profile_rows, mean_rows, climate_note = _climate_frames(connection, captured)
     nlcd_rows = _capture(connection, "nlcd_counties", queries, captured)
     nlcd_counties = int(nlcd_rows[0]["COUNTY_N"]) if nlcd_rows else 0
     counties = tuple(_county(row) for row in atlas_rows)
     tiers = tuple(_tier(row) for row in tier_rows)
-    climate = tuple(day for day in (_climate_day(row) for row in climate_rows) if day is not None)
-    result = analyze(counties, tiers, climate, nlcd_counties=nlcd_counties)
+    day_groups = climate_groups_from_profile(profile_rows)
+    mean_groups = climate_mean_groups(mean_rows, counties)
+    result = analyze(
+        counties,
+        tiers,
+        (),
+        nlcd_counties=nlcd_counties,
+        climate_day_groups=day_groups,
+        climate_mean_groups=mean_groups,
+        climate_row_count=sum(group.summary.n for group in day_groups),
+    )
     if len({county.fips for county in counties}) != 3144 or len(counties) != 3144:
         print("stopped: FIPS gate failed")
         return 2
@@ -372,15 +382,19 @@ def _national(groups: Sequence[SignalGroup], signal: str) -> SignalGroup | None:
     return None
 
 
-def _climate_rows(
+def _climate_frames(
     connection: object,
-    queries: Mapping[str, str],
     captured: list[tuple[str, str, int, int, str | None]],
-) -> tuple[list[dict[str, object]], str]:
+) -> tuple[list[dict[str, object]], list[dict[str, object]], str]:
     try:
-        return _capture(connection, "climate_values", queries, captured), ""
+        profile = _capture_sql(connection, "climate_profile", climate_profile_sql(), captured)
+        means = _capture_sql(connection, "climate_means", climate_means_sql(), captured)
     except Exception:
-        return [], "Climate values were not read. That distribution is not estimable from this run."
+        note = (
+            "Climate values were not aggregated. That distribution is not estimable from this run."
+        )
+        return [], [], note
+    return profile, means, ""
 
 
 def _write_docs(
@@ -438,10 +452,19 @@ def _capture(
     queries: Mapping[str, str],
     captured: list[tuple[str, str, int, int, str | None]],
 ) -> list[dict[str, object]]:
+    return _capture_sql(connection, name, queries[name], captured)
+
+
+def _capture_sql(
+    connection: object,
+    name: str,
+    sql: str,
+    captured: list[tuple[str, str, int, int, str | None]],
+) -> list[dict[str, object]]:
     started = time.perf_counter()
-    rows, query_id = _fetch(connection, queries[name])
+    rows, query_id = _fetch(connection, sql)
     elapsed = int((time.perf_counter() - started) * 1000)
-    captured.append((name, queries[name], len(rows), elapsed, query_id))
+    captured.append((name, sql, len(rows), elapsed, query_id))
     return rows
 
 
@@ -486,19 +509,6 @@ def _tier(row: Mapping[str, object]) -> TierCounty:
         sufficiency=_text(row, "EVIDENCE_SUFFICIENCY"),
         human_evidence_state=_text(row, "HUMAN_EVIDENCE_STATE"),
     )
-
-
-def _climate_day(row: Mapping[str, object]) -> ClimateDay | None:
-    state = _text(row, "VALUE_STATE")
-    native = _float(row.get("VALUE_NATIVE_DOUBLE"))
-    if state == "ZERO" and native is None:
-        native = 0.0
-    if native is None or state not in {"OBSERVED", "ZERO"}:
-        return None
-    measure = _text(row, "MEASURE_ID")
-    if measure not in CLIMATE_MEASURES:
-        return None
-    return ClimateDay(measure_id=measure, fips=_text(row, "COUNTY_FIPS"), value=native)
 
 
 def _text(row: Mapping[str, object], key: str) -> str:
@@ -566,10 +576,10 @@ def _sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def _git(command: str) -> str | None:
+def _git(*args: str) -> str | None:
     try:
         completed = subprocess.run(
-            ["git", *command.split()],
+            ["git", *args],
             check=True,
             capture_output=True,
             text=True,
