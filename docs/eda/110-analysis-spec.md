@@ -74,7 +74,7 @@ Density gate, opened only for the context-only standardized matrix, and only whe
 | --- | --- |
 | Gaussian mixture | `GaussianMixture`, 4 components, `covariance_type='diag'`, `n_init=3`, `max_iter=200`, `random_state=1102026` |
 | DBSCAN | `eps=0.9`, `min_samples=40`, Euclidean. Label `-1` is noise. No second eps is tried |
-| HDBSCAN | `min_cluster_size=80`, `min_samples=15`, `cluster_selection_method='eom'`, `random_state=1102026`. Label `-1` is noise |
+| HDBSCAN | `min_cluster_size=80`, `min_samples=15`, `cluster_selection_method='eom'`, `n_jobs=1`, `copy=True`. Label `-1` is noise. scikit-learn 1.9.1 has no `random_state` on this class |
 
 There is no county-adjacency matrix. Spatial leakage is the state holdout and the Census-region holdout. Surveillance confounding is Cramér's V and the non-publishing share, not a feature inside the context slices.
 
@@ -121,3 +121,7 @@ The text concept, drafted with the results and not built: a reviewer chooses a c
   MPLBACKEND=Agg uv run --with matplotlib --with seaborn python scripts/eda_110_peer_clusters.py
   uv run python scripts/verify.py
   ```
+
+## Amendment before the fit — HDBSCAN seed
+
+The HDBSCAN row above originally named `random_state=1102026`. scikit-learn 1.9.1 does not accept that argument. The fit, if the density gate opens, uses `n_jobs=1`, `copy=True`, and the other settings in that row. No threshold, k, or weight changed.
