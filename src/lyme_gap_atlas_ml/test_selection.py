@@ -7,6 +7,7 @@ import random
 from collections import defaultdict
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
+from typing import TypeVar
 
 from lyme_gap_atlas_ml.coverage_audit import (
     CENSUS_REGIONS,
@@ -76,6 +77,9 @@ RUCC_REFERENCE = {
 
 class SelectionError(ValueError):
     """The frozen cohort or a frozen gate cannot be applied."""
+
+
+_RowT = TypeVar("_RowT")
 
 
 @dataclass(frozen=True)
@@ -821,6 +825,39 @@ def _first(counties: Sequence[County], rule: Callable[[County], bool]) -> County
     return min(matches, key=lambda county: county.fips)
 
 
+def state_cluster_interval(
+    keys: Sequence[str],
+    statistic: Callable[[Sequence[str]], float | None],
+    seed: int,
+) -> IntervalEstimate:
+    """Percentile interval from resampling state keys. This is the #116 procedure."""
+    return _cluster_interval(keys, statistic, seed)
+
+
+def resample_interval(
+    rows: Sequence[_RowT],
+    statistic: Callable[[Sequence[_RowT]], float | None],
+    seed: int,
+) -> IntervalEstimate:
+    """Resample rows with replacement. #116 uses this only as a dependence diagnostic."""
+    if len(rows) < SMALL_CELL:
+        return _empty_interval(len(rows))
+    rng = random.Random(seed)
+    values: list[float] = []
+    total = len(rows)
+    for _ in range(REPLICATES):
+        draw = [rows[rng.randrange(total)] for _ in range(total)]
+        value = statistic(draw)
+        if value is not None and math.isfinite(value):
+            values.append(value)
+    return _interval_from_values(values, total)
+
+
+def spearman_rho(pairs: Sequence[tuple[float, float]]) -> float | None:
+    """Average-rank Spearman correlation from the #116 rank procedure."""
+    return _spearman(pairs)
+
+
 def _cluster_interval(
     keys: Sequence[str],
     statistic: Callable[[Sequence[str]], float | None],
@@ -843,17 +880,7 @@ def _naive_interval(
     statistic: Callable[[Sequence[County]], float | None],
     seed: int,
 ) -> IntervalEstimate:
-    if len(rows) < SMALL_CELL:
-        return _empty_interval(len(rows))
-    rng = random.Random(seed)
-    values: list[float] = []
-    total = len(rows)
-    for _ in range(REPLICATES):
-        draw = [rows[rng.randrange(total)] for _ in range(total)]
-        value = statistic(draw)
-        if value is not None and math.isfinite(value):
-            values.append(value)
-    return _interval_from_values(values, total)
+    return resample_interval(rows, statistic, seed)
 
 
 def _interval_from_values(values: Sequence[float], clusters: int) -> IntervalEstimate:
