@@ -89,7 +89,10 @@ _CAPTIONS = {
     "auc-comparison.png": "Leave-state-out ROC-AUC for tick geography and the regime.",
     "regime-lift.png": "Bootstrap interval for the regime ROC-AUC lift over tick geography.",
     "calibration-logistic.png": "Calibration of logistic published-floor probabilities.",
-    "state-lift-hist.png": "Distribution of per-state ROC-AUC lifts, small bins omitted.",
+    "state-lift-hist.png": (
+        "Per-state logistic ROC-AUC lift for states with n at least 11. "
+        "Bins of 1 to 10 states are omitted."
+    ),
 }
 
 
@@ -350,22 +353,29 @@ def _hist_chart(analysis: Analysis) -> bytes:
         if item.family == FAMILY_LOGISTIC and item.county_n >= 11 and item.lift is not None
     ]
     bins = histogram_bins([float(item) for item in lifts])
+    short = {
+        "<= -0.20": "<=-0.2",
+        "-0.20 to -0.10": "-0.2 to -0.1",
+        "-0.10 to 0.00": "-0.1 to 0",
+        "0.00 to 0.10": "0 to 0.1",
+        "0.10 to 0.20": "0.1 to 0.2",
+        "> 0.20": ">0.2",
+    }
+    labels = [short[label] for label, _count in bins]
     fig, ax = plt.subplots()
     if bins:
         sns.barplot(
-            x=[label for label, _count in bins],
+            x=labels,
             y=[count for _label, count in bins],
-            hue=[label for label, _count in bins],
+            hue=labels,
             ax=ax,
             palette="colorblind",
             legend=False,
         )
     ax.set_ylabel("States")
     ax.set_xlabel("ROC-AUC lift")
-    ax.set_title("Per-state logistic lift, n at least 11")
-    ax.tick_params(axis="x", labelrotation=30)
-    for label in ax.get_xticklabels():
-        label.set_ha("right")
+    ax.set_title("State logistic lift, n>=11; bins of 1-10 omitted")
+    ax.tick_params(axis="x", labelsize=7)
     return _png(fig)
 
 
