@@ -96,6 +96,14 @@
   uv run python scripts/verify.py
   ```
 
+## Amendment v1.2 — family completeness, before execution
+
+This amendment is recorded before any live read. It does not change a cut, a seed, or a target.
+
+- Holm is applied only when all four family contrasts have an estimable state-cluster interval. A smaller family is not adjusted. If any family contrast has no estimable interval, the disposition is revise, unless both share contrasts are not estimable, which remains stop.
+- Each naive interval is an independent stream started at seed `1162027`. The three reproduction associations use that same naive seed. Their state-cluster draws use seed `6501`.
+- Reproduction clusters use the county FIPS prefix, the key already used by `evidence_association_65`. The new family resamples the postal `STATE`. Those partitions name the same states on this atlas.
+
 ## Amendment v1.1 — disclosure, before execution
 
 Matthew Caraway’s ruling on 2026-10-25: GitHub issue comments, pull-request bodies, and `docs/eda` results write-ups may name counties and may include county-level numbers, including counts under 11. `EDA.METRICS_LONG`, `EDA.CORRELATIONS`, `EDA.FINDINGS`, and the PNG charts still omit a count from 1 to 10. A chart is an aggregate figure. County names do not go into chart titles, axis labels, or Drive files. `EDA.FINDINGS` statements stay aggregate because the lab writer rejects a five-digit county id in prose.
