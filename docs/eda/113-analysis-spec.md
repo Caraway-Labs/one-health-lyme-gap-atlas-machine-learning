@@ -1,0 +1,81 @@
+# ML #113 spatial neighbor outliers: registered specification v1
+
+- **Spec/version and owning issue:** `113-spatial-neighbor-outliers/v1`, [ML #113](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/issues/113), parent [ML #22](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/issues/22). Follows [analysis-spec v1](../methodology/analysis-spec-v1.md). Matthew Caraway authorized this story through the EDA orchestrator. This run does not change the Tier 1 model, the PROD batch, the tier policy, or the API contract. [#112](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/issues/112) and [#115](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/issues/115) are not authorized. [#67](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/issues/67) stays a dormant method tool: no weights bakeoff and no spatial platform.
+- **Question / decision / allowed interpretation:** Where do neighboring counties diverge beyond expected measurement and coverage variability? The decision is keep, revise, or stop for the method, and advance, investigate, or stop for product value. Counts are surveillance signals and lower bounds where a floor is published (CDC floor 5). They are not incidence, risk, or causation. A neighbor contrast is a review candidate, not a cluster of disease. `No records` and `Unknown` are not negatives. A missing floor is not zero.
+- **Estimand:** Two quantities, and one design that is not applied to live counties unless an allow-listed adjacency source exists.
+
+  1. **Neighbor divergence is the primary estimand.** For an undirected shared-border pair, the absolute difference of published incidence floors, minus the median absolute difference among eligible pairs in the same stratum (within-state or cross-state). Coverage class is separate: both unpublished, exactly one published, or both published. Only both-published pairs with both case floors above 5 enter the residual. Moran's I and LISA are defined only on the weights and assumptions below.
+  2. **Within-state published-incidence contrast, which does not need adjacency.** For each state, the robust z of the published incidence floor against that state's median and the #106 scale rule below. This is divergence from state peers, not from neighbors.
+  3. **State-grain dependence.** Eta-squared of published incidence floors across states, with a permutation tail. This is a state-label description. It is not neighbor autocorrelation.
+
+- **Adjacency source, frozen from the catalog before any contrast:** Context check on 2026-10-26 returned `prod_select` pass, `scratch_write` pass, and `prod_write_denied` pass. Role `OH_LYME_ML_AGENT`, warehouse `OH_LYME_ML_LAB_XS_WH`, database `ONE_HEALTH_LYME_GAP_ATLAS_ML_LAB`. Column names were read from `ONE_HEALTH_LYME_GAP_ATLAS_PROD.INFORMATION_SCHEMA.COLUMNS` for `PRESENTATION`, `CONFORMED`, and `FEATURE_STORE`, excluding table names that contain `HISTORICAL`, `CDC_LYME`, or start with `RESTRICTED`. No column name contains `ADJAC`, `NEIGHB`, `CENTROID`, `LATITUDE`, `LONGITUDE`, `BORDER`, `DISTANCE`, or `TOUCH`. Names that contain `GEOGRAPHY` are grain or semantics labels, not coordinates. `PRESENTATION.CURRENT_COUNTY_ATLAS_V` has 21 columns. The geometry column is not selected. Measure metadata includes `county_geometry`. That name is a geometry measure, not a FIPS-pair table, and its values are not read. `PRESENTATION.CURRENT_MEASURE_METADATA_V` has no adjacency, neighbor, or centroid measure id. `EDA.COUNTY_ADJACENCY_107` has 0 rows. It is not a governed adjacency source and is not filled from geometry. Docs checked: [Snowflake integration](../snowflake-integration.md), [107-county-distributions.md](107-county-distributions.md), and [109-analysis-spec.md](109-analysis-spec.md). No published county-adjacency or centroid-distance column is on the allow-list. No adjacency list is hardcoded from memory or from the web.
+
+  Execution repeats the column-name filter, the measure-id filter, and the lab edge count. Any adjacency-like column, any spatial measure id other than `county_geometry`, or a lab edge count other than 0 **stops** the run. Those rows are not used as weights. A stop here is not a silent method change.
+
+- **Unit / cohort / geography / time:** One county on the pinned atlas release, including the District of Columbia, Connecticut planning-region FIPS, Alaska, and Hawaii. The integrity gate is 3,144 rows, 3,144 distinct five-digit `FIPS`, and one `RELEASE_ID`. Human surveillance is calendar 2023. Population and context vintages are the ones [#107](107-county-distributions.md) recorded on this same release. This run re-reads `SOURCE_KEY` and `VINTAGE` only, and stops if they differ from human `2023`, tick `through 2025-12-31`, pathogen `through 2025-12-31`, `context_svi` `2022 (2018-2022 ACS)`, `context_rucc` `2023`, and `context_nlcd_2025` `C1V2-2025`. Seed `1132026`. The state permutation uses 2,000 draws from that seed. The spatial design uses a separate generator started at the same seed and 999 draws, and the live run does not call it.
+
+- **Variables / source / version:** Execution reads `PRESENTATION.CURRENT_RELEASE_V` first and stops unless the pin is still release `governed-2026-10-15-january-climate-prod`, schema `2.0.0`, methodology `semantic-2.0.0`, scope `US_COUNTIES`, bundle SHA-256 `53e50aa37c701635e96c48cd4931c4c4a9e7e695c146263fb9bb335e541ae74d`. That identity was read on 2026-10-26 before this spec was frozen.
+
+  County rows come from `PRESENTATION.CURRENT_COUNTY_ATLAS_V`. Columns: `FIPS`, `COUNTY`, `STATE`, `RELEASE_ID`, `POPULATION`, `HUMAN_STATUS`, `CASE_COUNT_FLOOR_2023`, `INCIDENCE_FLOOR_2023`. No other atlas column is selected. County rows may stay in memory. They are not written to a file, to git, or to Drive. The write-up may name counties.
+
+  Cited, not refit: [#106](106-state-relative-anomaly.md) state-relative context flags (113 counties; Jaccard with the national screen 0.025). Those flags use log population, SVI, uninsured percentile, and rural-urban code. They are not incidence-floor neighbor outliers. [#107](107-county-distributions.md) national published incidence floor: n=651, median 80.88, scaled-MAD high flags 37, low flags 0; 19 states and 1,437 counties with no published county floor; adjacency table 0 rows. [#122](122-established-class-anomaly.md) is the established-tick class screen and is not a spatial weights source. [#109](109-county-evidence-coverage.md) headline counts 3,144 / 651 / 2,493 are the integrity check.
+
+- **Missingness rule:** A county is published only when `HUMAN_STATUS` is `published_count_floor` and both floor columns are non-null. A `no_county_linked_record` row with a non-null floor stops the run. A published row with a null floor stops the run. Any other human status stops the run. Unpublished counties stay out of the incidence distribution. They are not zeros. A case floor equal to 5 is the CDC floor. A low-side within-state z on that floor is a floor heap, not divergence beyond measurement. A case floor below 5 is counted and not flagged.
+
+- **Exploratory or confirmatory:** The adjacency conclusion is confirmatory for this catalog: the neighbor estimand is not estimable. The within-state z rule, the eta-squared permutation, the histogram edges, and the fake-data design are prespecified. Annotated county examples are illustrations of the flags. They are not a second screen.
+
+- **Method / assumption rationale:** Neighbor weights are unavailable, so Moran's I and LISA are not estimated on live counties. [#67](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/issues/67) says to use one approved weights definition and to start with global Moran's I. There is no approved weights definition on this release. The within-state contrast reuses the #106 size bands and `shrunk_mad` for one column, the published incidence floor.
+
+  | Published counties in the state | Rule | Location and scale |
+  | --- | --- | --- |
+  | At least `STATE_NATIVE_MIN` (40) | `state_native` | State median and state MAD |
+  | `SHRINK_MIN` (15) through 39 | `shrunk` | State median. Scale is `shrunk_mad` toward the leave-state-out Census-region MAD, with the national MAD as the fallback prior. `SHRINK_PRIOR_N` is 40 |
+  | Fewer than 15 | `below_band` | No z and no flag. #106 used a region peer here. A region peer is not within-state, so this story does not flag these counties |
+
+  Census region is `coverage_audit.CENSUS_REGIONS`. The MAD is the median absolute deviation from the median. The robust z divides by `MAD_SCALE` (`1.482602218505602`) times that scale. A scale of 0 makes the z not estimable for that state (`state_native`) or uses the #106 prior (`shrunk`). A high flag is z above `Z_FLAG` (3.5). A low flag is z below -3.5 and a case floor above 5. A low z with a case floor of 5 is a floor heap.
+
+  Eta-squared is the between-state share of the sum of squared deviations of published incidence floors. State labels stay fixed. Values are permuted across published counties. The tail is one-sided for an eta-squared at least as large as observed: `(1 + count) / (1 + 2000)`. `holm` from #116 and `bh` from the #114 helper adjust that one-test family, so the adjusted tails equal the raw tail. The permutation exchanges published floors among counties that publish. It is a descriptive randomization reference for a census, not a sample from a super-population, and not a neighbor null.
+
+  National scaled-MAD high and low counts are recomputed with the same 3.5 rule and compared with #107's 37 and 0. A mismatch is reported. It does not change the within-state rule.
+
+- **Coverage-adjusted design, tested on fake edges and not run on live counties:** Edges are unordered FIPS pairs stored with the smaller FIPS first. A self-loop or a duplicate raises. Endpoints must be in the county set.
+
+  | Edge class | Rule |
+  | --- | --- |
+  | Both unpublished | Coverage agreement on a gap. No rate residual. Missing is not zero |
+  | Exactly one published | Coverage disagreement. No rate residual |
+  | Both published, either case floor equal to 5 | Floor-limited. No residual z |
+  | Both published, both case floors above 5 | Eligible. Outcome is the absolute incidence-floor difference |
+
+  The incidence floor is already per 100,000. Population is not a second denominator and not a regression covariate. [#106](106-state-relative-anomaly.md) owns the population screen. A null population does not drop an eligible pair.
+
+  The stratum is `within_state` or `cross_state`. Cross-state pairs are kept. They are the boundary stratum, not dropped. The expected gap is the median absolute incidence difference among eligible pairs in that stratum. The residual is the absolute gap minus that median. The robust z uses the stratum MAD and `MAD_SCALE`. It is estimated only when the stratum has at least 11 eligible pairs and a positive MAD. A flag is a residual z above 3.5. A smaller-than-typical gap is not a divergence flag. A county with degree 0 is an island and has no pair contrast.
+
+- **Moran's I and LISA assumptions:** These functions run only when the caller supplies edges. The live run supplies none.
+
+  1. Weights are binary shared borders, zero diagonal, made row-standardized. No geometry text is an input.
+  2. The value is the published incidence floor. Counties without one are omitted and not filled with zero.
+  3. The statistic uses the largest connected component of that subgraph. Fewer than 11 counties makes it not estimable.
+  4. A zero variance makes it not estimable.
+  5. Permutation is inside state blocks. A block of one county stays fixed. If fewer than two values can move, inference is not estimable.
+  6. Global Moran's I is `(n / S0) * (z' W z) / (z' z)` with z centered and `S0` the sum of the row-standardized weights. The tail is two-sided: `(1 + #{|I*| >= |I|}) / (1 + 999)`.
+  7. Local I is `z_i * (W z)_i / m2` with `m2 = (z' z) / n`. The family is those local two-sided tails. Holm (`test_selection.holm`) is the flag rule at 0.05. BH (`cross_domain.bh`) is reported and does not add a second flag.
+  8. Global I is not mixed into the local family.
+
+- **Spatial / temporal dependence:** Live counties are not treated as an independent sample. The reported permutation is a state-label reference. It does not cover dependence that crosses a state line. One snapshot is not a change over time. Human year 2023 and the context vintages are not one time base.
+
+- **Effect-size / uncertainty output:** Within-state robust z, eta-squared, and the permutation tail with Holm and BH. No causal interval. Neighbor residuals, Moran's I, and LISA are not estimable on this release; the fake-data tests are the evidence that the design runs. A lab cell with `n_underlying` below 11 is suppressed by the existing writer, including zero. The write-up may name counties and give small counts.
+
+- **Profile and chart rules:** No column profile and no correlation row. `EDA.METRICS_LONG` stores national counts, band counts, eta-squared, the permutation tails, and state medians of the published incidence floor where the state has at least 11 published counties. `EDA.FINDINGS` stores the adjacency follow-up and the within-state summary without a five-digit token and without free-text column names. One chart, only when at least 11 states have at least 11 published floors: a bar of how many of those states fall in each fixed incidence-median bin. Edges: 0, 1, 2, 5, 10, 20, 50, 100, 200, 500, 2000, plus an overflow bin. No county names and no state labels. Seaborn, low dpi, PNG under about 40 KB. If fewer than 11 states qualify, there is no chart.
+
+- **Small-cell and write rule:** Writers target only `ONE_HEALTH_LYME_GAP_ATLAS_ML_LAB`. Inserts are insert-only. A second invocation reuses the run id and does not insert another run, metric, finding, or query. No new lab table is created, so no new `GRANT SELECT` is issued. `REGISTRY.QUERIES` stores the non-geometry statements. County rows stay in memory.
+
+- **Key caveat / stop conditions:** Stop if the context check, the release pin, the FIPS gate, the human-status alignment, or the vintage check fails. Stop if the catalog guard finds an adjacency-like column or a non-zero lab adjacency table; do not improvise weights. A query still running at 10 minutes is cancelled. Do not claim that a high within-state z is a neighbor outlier, a higher disease risk, or a cause.
+
+- **Result disposition:** **PLANNED** before execution. After a clean pin and a 3,144 / 651 / 2,493 split: method **stop** for neighbor contrasts, Moran's I, and LISA; method **keep** for the within-state published-incidence contrast; product **investigate**. The follow-up for the orchestrator is a governed adjacency table in the release: undirected pairs `FIPS_A`, `FIPS_B` with `FIPS_A < FIPS_B`, plus `RELEASE_ID`, and no geometry text. This run does not create that table. **Revise** if the headline split differs. **Stop** for the product as well if the pin or the FIPS gate fails. Keep is permission to show state-peer review candidates beside the #106 context flags. It is not permission to ship a neighbor screen.
+
+- **Reproduction / evidence:** `sql/validation/113_spatial_neighbors.sql`, `src/lyme_gap_atlas_ml/spatial_neighbors.py`, `scripts/eda_113_spatial_neighbors.py`. Command: `MPLBACKEND=Agg uv run --with matplotlib --with seaborn python scripts/eda_113_spatial_neighbors.py`. Durable record, after execution: `docs/eda/113-spatial-neighbor-outliers.md`. Run id pattern `113-spatial-neighbors-<UTC yyyymmddThhmmZ>`. Charts, if any, go to Drive folder `issue-113` under `1b8dkHIpE8cxSi17FJP9nmTSDn1TBYvhM`. Transient outputs not committed: `artifacts/charts/113/` and `outputs/`.
+
+## Out of scope
+
+A governed adjacency table, a geometry read, a weights bakeoff, Moran's I on live counties, a new production model, an API, a pipeline, a scheduled process, and a public score. [#112](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/issues/112) and [#115](https://github.com/Caraway-Labs/one-health-lyme-gap-atlas-machine-learning/issues/115) are not part of this run.
