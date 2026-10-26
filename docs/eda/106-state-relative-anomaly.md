@@ -128,7 +128,7 @@ Proposed follow-on outlines under #22. These are not opened as issues.
 
 ## Reproduction and retained evidence
 
-The run row stores git commit `2096b7a8f5e4bd4bb24c93a1f1aa97d8ab39614c` because that was HEAD when the fit wrote `REGISTRY.RUNS`. This commit adds the fit code. Release `governed-2026-10-15-january-climate-prod`. Seeds 1062026 and 1062027. Do not rerun the script against the same run id.
+The run row stores git commit `2096b7a8f5e4bd4bb24c93a1f1aa97d8ab39614c` because that was HEAD when the fit wrote `REGISTRY.RUNS`. Fit code commit `547193ae7774944c2fc9b9428ef451cf8773f754`. Release `governed-2026-10-15-january-climate-prod`. Seeds 1062026 and 1062027. Do not rerun the script against the same run id.
 
 ```text
 uv sync --locked --extra dev --extra snowflake
