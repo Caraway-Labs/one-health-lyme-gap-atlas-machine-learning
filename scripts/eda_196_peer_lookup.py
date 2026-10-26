@@ -75,6 +75,25 @@ from lyme_gap_atlas_ml.snowflake.peer_neighbors import mark_run_finished
 SQL_PATH = Path("sql/validation/192_peer_lookup.sql")
 _MAX_PNG_BYTES = 20_000
 _TIMEOUT_SECONDS = 600
+DRIVE_NOTE = (
+    "Registered chart: stability.png, Drive file 1VQx3Xz53dIuOgS6iwF49yAv1WrCqfIdc, "
+    "https://drive.google.com/file/d/1VQx3Xz53dIuOgS6iwF49yAv1WrCqfIdc/view, "
+    "8807 bytes, sha256 "
+    "41a8c8bc2db8f187abfd94a41bc4d0dbc0acdb36261b4f3724e3f7da47a5c512. "
+    "Local size and sha256 matched and the PNG decoded before the "
+    "REGISTRY.ARTIFACTS insert. "
+    "Uploads stopped after the next create stored 8 bytes. "
+    "That object is Drive file 1EsFnLvjDtnmszx9xYi_WTudmGTgU5c4F, named "
+    "method-agreement.png. It is not the chart and it is not registered. "
+    "Trash was refused because the file is shared. "
+    "Unregistered local charts: "
+    "artifacts/charts/196/method-agreement.png, 11320 bytes, sha256 "
+    "03acb75bd41056e0e93377ebb687c6406988b9e709fad45ebbba97f5fc720c9c; "
+    "artifacts/charts/196/ablation.png, 12740 bytes, sha256 "
+    "7f0855b65dcec77c15c200959d3bea4b9f12a2a14971eb90bdc706e408e6615e; "
+    "artifacts/charts/196/neighbor-distance.png, 12432 bytes, sha256 "
+    "518b3b620b5372bd1ae7876e52a560a97b68ee565cc028230cb437b3bf43d5a7."
+)
 
 
 def main() -> int:
@@ -134,7 +153,7 @@ def _run(connection: object) -> int:
         run_id=run_id,
         commit=commit,
         counts=counts,
-        drive_note="Drive registration is pending for the aggregate charts.",
+        drive_note=DRIVE_NOTE,
         grant=grant,
         lists_unchanged=unchanged,
     )
