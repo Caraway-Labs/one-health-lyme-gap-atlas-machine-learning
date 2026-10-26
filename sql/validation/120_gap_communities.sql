@@ -1,0 +1,29 @@
+-- Issue 120 established-tick gap community inputs. One county row per FIPS.
+-- No payload, part text, geometry, case floor, or incidence floor.
+
+-- @@ release_identity
+SELECT
+    RELEASE_ID,
+    SCHEMA_VERSION,
+    METHODOLOGY_VERSION,
+    SCOPE,
+    BUNDLE_SHA256
+FROM ONE_HEALTH_LYME_GAP_ATLAS_PROD.PRESENTATION.CURRENT_RELEASE_V
+
+-- @@ county_rows
+SELECT
+    FIPS,
+    COUNTY,
+    STATE,
+    RELEASE_ID,
+    POPULATION,
+    SVI_PERCENTILE,
+    UNINSURED_PERCENTILE,
+    RUCC_2023,
+    HUMAN_STATUS,
+    TICK_STATUS,
+    SCAPULARIS_STATUS,
+    PACIFICUS_STATUS,
+    BURGDORFERI_STATUS
+FROM ONE_HEALTH_LYME_GAP_ATLAS_PROD.PRESENTATION.CURRENT_COUNTY_ATLAS_V
+ORDER BY FIPS
