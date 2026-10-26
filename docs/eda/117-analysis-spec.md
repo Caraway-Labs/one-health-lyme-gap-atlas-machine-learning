@@ -9,11 +9,11 @@
 - **Data it needs:** County means of January 2025 `nclimgrid_tavg_county_day` (degrees Celsius) and `nclimgrid_prcp_county_day` (millimeters per day). A day is eligible when `VALUE_STATE` is `OBSERVED` or `ZERO` and the #107 parsed value is non-null. The parsed value is `county_distributions._climate_value_sql`: `COALESCE(VALUE_NATIVE_DOUBLE, TRY_TO_DOUBLE(TO_VARCHAR(VALUE)))`, with a recorded `ZERO` and a null payload treated as 0. This is the #107 numeric estimand. It is not the #110 / #114 native-double rule, which found no county with 20 usable `VALUE_NATIVE_DOUBLE` days. A county enters only when both measures have at least 20 eligible days. The optional stratifier is `HUMAN_STATUS`, two panels: `published_count_floor` and `no_county_linked_record`. Any other human status is excluded from the panels and counted. Human status is a 2023 documentation label drawn beside January 2025 climate. It is not a climate effect.
 - **Baseline simpler chart:** Two marginal histograms on the same county means, using the edges below, plus one Spearman coefficient and one Pearson coefficient on the same complete pairs. Spearman is `cross_domain.spearman_arrays`, which matches `test_selection.spearman_rho`. Pearson is the linear baseline only. It is not a new discovery pair and it is not added to the #114 family.
 - **Usefulness criterion, frozen before the fit:** The hexbin is useful when any one of these holds on the eligible cohort.
-  1. The modal hex center lies outside the rectangle formed by the marginal modal temperature bin and the marginal modal precipitation bin.
+  1. The modal hex is not the cell at the pair of one-dimensional hex modes (the axial `q` with the most in-extent counties, and the axial `r` with the most). That is a joint mode the separate hex margins do not show. Ties break toward the smaller axial coordinate.
   2. The absolute difference of Spearman and Pearson is at least 0.10.
   3. The two human-status panels both have a publishable modal hex, and their centers differ by at least 2 degrees Celsius or at least 0.5 millimeters per day.
 
-  A hex with a count from 1 to 10 cannot be the mode. Ties break toward the smaller axial coordinates. Marginal bins tie toward the lower edge. The frozen extents are temperature [-20, 20] degrees Celsius and precipitation [0, 12] millimeters per day. Points outside an extent are overflow. They stay in the Spearman and Pearson pair and are omitted from the hex counts. If fewer than 500 counties have 20 days on both measures, or if more than 20 percent of that cohort falls outside either extent, (a) is not estimable. The extents are not widened after the result is seen.
+  A hex with a count from 1 to 10 cannot be the mode and does not enter a one-dimensional hex margin. Marginal histogram bins, used only as the baseline chart, tie toward the lower edge. The frozen extents are temperature [-20, 20] degrees Celsius and precipitation [0, 12] millimeters per day. Points outside an extent are overflow. They stay in the Spearman and Pearson pair and are omitted from the hex counts. If fewer than 500 counties have 20 days on both measures, or if more than 20 percent of that cohort falls outside either extent, (a) is not estimable. The extents are not widened after the result is seen.
 - **Grid:** Normalize each axis to the unit interval on those extents. Hex size is 0.12 on that square (pointy-top axial coordinates, cube rounding). Marginal temperature edges are -20, -18, ..., 20. Marginal precipitation edges are 0, 0.5, 1, 1.5, 2, 3, 4, 6, 8, 12.
 
 ## (b) Hierarchically ordered correlation heatmap
@@ -90,6 +90,10 @@
   MPLBACKEND=Agg uv run --with matplotlib --with seaborn python scripts/eda_117_visual_diagnostics.py
   uv run python scripts/verify.py
   ```
+
+## Amendment v1.2 — hex comparison scale, before execution
+
+Usefulness rule (a)(1) does not compare the hex center with the 2°C histogram rectangle. Hex size 0.12 on the unit square is about 5°C wide, so that comparison would pass because the hex is wider than the histogram bin. The histogram remains the baseline chart. The joint-versus-margin test uses the hex grid's own axial margins. No live diagnostic query had been run.
 
 ## Amendment v1.1 — disclosure, before execution
 
