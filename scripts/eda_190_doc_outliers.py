@@ -97,7 +97,7 @@ def _run(connection: object) -> int:
     existing = _existing_run(connection)
     stamp = datetime.now(UTC).strftime("%Y%m%dT%H%MZ")
     run_id = existing or f"{RUN_PREFIX}{stamp}"
-    commit = _git("rev-parse", "HEAD") or "unknown"
+    commit = _git("rev-parse HEAD") or "unknown"
     grant = "not-attempted"
     if existing is None:
         grant = _persist(connection, run_id, commit, captured, analysis)
@@ -149,7 +149,7 @@ def _persist(
     analysis: Analysis,
 ) -> str:
     executor = CursorStatementExecutor(connection)
-    branch = _git("rev-parse", "--abbrev-ref", "HEAD")
+    branch = _git("rev-parse --abbrev-ref HEAD")
     result = write_flag_tables(executor, run_id, analysis.rows, experiment_rows(analysis, run_id))
     write_eda_results(
         executor,
