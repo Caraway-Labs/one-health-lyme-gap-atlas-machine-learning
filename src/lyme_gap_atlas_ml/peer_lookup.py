@@ -150,6 +150,28 @@ class Ablation:
 
 
 @dataclass(frozen=True)
+class BootstrapStats:
+    """Raw and conditional Jaccard on one bootstrap seed.
+
+    The raw median is the issue 192 statistic. The conditional median is the
+    share of in-sample neighbors that remain neighbors when they stay in the pool.
+    """
+
+    median: float | None
+    median_k15: float | None
+    low: float | None
+    high: float | None
+    estimable: bool
+    failed: int
+    conditional_median: float | None
+    conditional_median_k15: float | None
+    conditional_low: float | None
+    conditional_high: float | None
+    conditional_estimable: bool
+    conditional_failed: int
+
+
+@dataclass(frozen=True)
 class ExperimentMetric:
     split_name: str
     metric_name: str
@@ -185,6 +207,7 @@ class Analysis:
     type_agreement_euclidean: float | None
     type_agreement_euclidean_n: int
     type_agreement_cosine: float | None
+    type_agreement_cosine_n: int
     type_agreement_baseline: float | None
     type_agreement_baseline_n: int
     type_agreement_lso: float | None
@@ -200,6 +223,13 @@ class Analysis:
     bootstrap_estimable: bool
     bootstrap_median_b: float | None
     bootstrap_failed: int
+    conditional_median: float | None
+    conditional_low: float | None
+    conditional_high: float | None
+    conditional_estimable: bool
+    conditional_median_b: float | None
+    conditional_failed: int
+    conditional_k15_median: float | None
     silhouette: float | None
     recovery: float
     situation_agreement: float | None
@@ -323,7 +353,7 @@ def score_counties(
     states = np.array([county.state for county in ordered])
     proto_labels, recovery = _prototypes(ordered, labels, raw, blocks)
     type_euclid, type_euclid_n, type_rates = _type_rates(euclid_5, labels)
-    type_cosine, _cosine_n, _cosine_rates = _type_rates(cosine_5, labels)
+    type_cosine, type_cosine_n, _cosine_rates = _type_rates(cosine_5, labels)
     baseline_n = _baseline_counts(ordered)
     type_base, type_base_n = _baseline_agreement(ordered, labels, held_out=False)
     lso_15, lso_cosine_15 = _leave_state(raw, blocks, states, K_SENSITIVITY)
@@ -337,7 +367,7 @@ def score_counties(
     cross_state = _cross_state_share(euclid_5, states)
     cosine_jaccard = _mean_jaccard(euclid_5, cosine_5)
     situation_agreement, _, _ = _type_rates(euclid_5, situations)
-    boot_5, boot_15, boot_low, boot_high, boot_ok, boot_failed = _bootstrap_pair(
+    primary = _bootstrap_pair(
         embedding,
         euclid_5,
         euclid_15,
@@ -345,7 +375,7 @@ def score_counties(
         replicates,
         min_contributing,
     )
-    boot_b, _, _, _, _, _ = _bootstrap_pair(
+    second = _bootstrap_pair(
         embedding,
         euclid_5,
         euclid_5,
@@ -363,10 +393,10 @@ def score_counties(
         type_lso=type_lso,
         lso_gap=lso_gap,
         lso_jaccard=lso_jaccard,
-        bootstrap_median=boot_5,
-        bootstrap_low=boot_low,
-        bootstrap_estimable=boot_ok,
-        bootstrap_median_b=boot_b,
+        bootstrap_median=primary.median,
+        bootstrap_low=primary.low,
+        bootstrap_estimable=primary.estimable,
+        bootstrap_median_b=second.median,
         silhouette=silhouette,
         recovery=recovery,
         ablations=ablations,
@@ -403,6 +433,7 @@ def score_counties(
         type_agreement_euclidean=type_euclid,
         type_agreement_euclidean_n=type_euclid_n,
         type_agreement_cosine=type_cosine,
+        type_agreement_cosine_n=type_cosine_n,
         type_agreement_baseline=type_base,
         type_agreement_baseline_n=type_base_n,
         type_agreement_lso=type_lso,
@@ -412,16 +443,23 @@ def score_counties(
         type_agreement_lso_baseline_n=type_lso_base_n,
         lso_jaccard=lso_jaccard,
         cross_state_share=cross_state,
-        bootstrap_median=boot_5,
-        bootstrap_low=boot_low,
-        bootstrap_high=boot_high,
-        bootstrap_estimable=boot_ok,
-        bootstrap_median_b=boot_b,
-        bootstrap_failed=boot_failed,
+        bootstrap_median=primary.median,
+        bootstrap_low=primary.low,
+        bootstrap_high=primary.high,
+        bootstrap_estimable=primary.estimable,
+        bootstrap_median_b=second.median,
+        bootstrap_failed=primary.failed,
+        conditional_median=primary.conditional_median,
+        conditional_low=primary.conditional_low,
+        conditional_high=primary.conditional_high,
+        conditional_estimable=primary.conditional_estimable,
+        conditional_median_b=second.conditional_median,
+        conditional_failed=primary.conditional_failed,
+        conditional_k15_median=primary.conditional_median_k15,
         silhouette=silhouette,
         recovery=recovery,
         situation_agreement=situation_agreement,
-        k15_bootstrap_median=boot_15,
+        k15_bootstrap_median=primary.median_k15,
         k15_lso_agreement=type_lso_k15,
         distance_deciles=_deciles(euclid_dist),
         cosine_deciles=_deciles(cosine_dist),
@@ -886,24 +924,71 @@ def _bootstrap_pair(
     seed: int,
     replicates: int,
     min_contributing: int,
-) -> tuple[float | None, float | None, float | None, float | None, bool, int]:
+) -> BootstrapStats:
     rng = np.random.Generator(np.random.PCG64(seed))
     n = embedding.shape[0]
     primary: list[float] = []
     sensitivity: list[float] = []
+    conditional: list[float] = []
+    conditional_15: list[float] = []
     for _ in range(replicates):
         pool = np.unique(rng.choice(n, size=n, replace=True))
+        in_pool = np.zeros(n, dtype=bool)
+        in_pool[pool] = True
         width = K_SENSITIVITY if base_15.shape[1] == K_SENSITIVITY else K_PRIMARY
         found, _ = _neighbors(embedding, pool, width, "euclidean")
-        _keep_stat(primary, _row_jaccard(base_5, found[:, :K_PRIMARY]), min_contributing)
+        found_5 = found[:, :K_PRIMARY]
+        _keep_stat(primary, _row_jaccard(base_5, found_5), min_contributing)
+        _keep_stat(conditional, _conditional_scores(base_5, found_5, in_pool), min_contributing)
         if width == K_SENSITIVITY:
             _keep_stat(sensitivity, _row_jaccard(base_15, found), min_contributing)
+            _keep_stat(
+                conditional_15,
+                _conditional_scores(base_15, found, in_pool),
+                min_contributing,
+            )
     low, high, estimable, failed = _interval(primary, replicates)
-    median = float(np.median(np.array(primary))) if primary else None
-    median_15 = float(np.median(np.array(sensitivity))) if sensitivity else None
-    if median_15 is not None and not math.isfinite(median_15):
-        median_15 = None
-    return median, median_15, low, high, estimable, failed
+    conditional_low, conditional_high, conditional_ok, conditional_failed = _interval(
+        conditional,
+        replicates,
+    )
+    return BootstrapStats(
+        median=_median_or_none(primary),
+        median_k15=_median_or_none(sensitivity),
+        low=low,
+        high=high,
+        estimable=estimable,
+        failed=failed,
+        conditional_median=_median_or_none(conditional),
+        conditional_median_k15=_median_or_none(conditional_15),
+        conditional_low=conditional_low,
+        conditional_high=conditional_high,
+        conditional_estimable=conditional_ok,
+        conditional_failed=conditional_failed,
+    )
+
+
+def _conditional_scores(base: Vector, found: Vector, in_pool: Vector) -> Vector:
+    """Share of in-sample neighbors that remain neighbors when they stay in the pool."""
+    scores = np.full(base.shape[0], np.nan)
+    for index in range(base.shape[0]):
+        if base[index, 0] < 0 or found[index, 0] < 0:
+            continue
+        retained = [int(item) for item in base[index] if in_pool[int(item)]]
+        if not retained:
+            continue
+        chosen = {int(item) for item in found[index]}
+        scores[index] = sum(item in chosen for item in retained) / len(retained)
+    return scores
+
+
+def _median_or_none(values: Sequence[float]) -> float | None:
+    if not values:
+        return None
+    median = float(np.median(np.array(values)))
+    if not math.isfinite(median):
+        return None
+    return median
 
 
 def _keep_stat(bucket: list[float], scores: Vector, min_contributing: int) -> None:
