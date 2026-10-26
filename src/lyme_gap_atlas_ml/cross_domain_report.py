@@ -7,6 +7,7 @@ from lyme_gap_atlas_ml.cross_domain import (
     SPEC_ID,
     Analysis,
     PairResult,
+    PcaFit,
 )
 
 _TEMPLATE_NOTE = (
@@ -220,6 +221,8 @@ def _numbers(analysis: Analysis) -> str:
                 f"Cross-domain condition number {_fmt(cross.condition_number)}."
             ),
             f"Signed BH family complete: {analysis.family_complete}.",
+            f"Context VIFs: {_vif_text(analysis.context_pca)}.",
+            f"Leave-one-Census-region two-component shares: {_region_text(analysis.context_pca)}.",
             (
                 "Climate fields not estimable: average temperature "
                 "(usable native-double days 0 to 1), precipitation (0 to 6), "
@@ -294,13 +297,49 @@ def _plain_recommendation(analysis: Analysis) -> str:
             f"The highest gated row is {top.spec.pair_id} ({top.spec.label}), "
             f"estimate {_fmt(top.estimate)}, partial {_fmt(top.partial)}."
         )
+    context = analysis.context_pca
+    share = _fmt(context.two_component)
+    inside = (
+        context.two_component is not None
+        and abs(context.two_component - OCT13_TWO_COMPONENT) <= 0.005
+    )
+    if analysis.representation == "keep":
+        opening = (
+            f"The three-feature block keeps the October 13 description. "
+            f"The share {share} is inside 0.880 to 0.890."
+        )
+    elif analysis.representation == "stop":
+        opening = "The three-feature block stops. The PCA is not estimable under the frozen rule."
+    elif inside:
+        opening = (
+            f"The full-sample share {share} is inside 0.880 to 0.890, "
+            "so the October 13 description still fits that sample. "
+            "The representation call is revise because a leave-one-Census-region share "
+            "moves by at least 0.02 or a three-feature VIF reaches 5."
+        )
+    else:
+        opening = (
+            f"The three-feature block revises the October 13 description. "
+            f"The share {share} is outside 0.880 to 0.890."
+        )
     return (
-        f"The three-feature block {analysis.representation}s the October 13 description "
-        f"under the frozen 0.880 to 0.890 band. {top_text} "
+        f"{opening} {top_text} "
         "January climate stays out of the feature matrix. "
         "Use the keep and drop lines as a representation note for a later design story, "
         "not as a training decision."
     )
+
+
+def _vif_text(fit: PcaFit) -> str:
+    if not fit.vifs:
+        return "not estimable"
+    return ", ".join(f"{name} {_fmt(value)}" for name, value in fit.vifs.items())
+
+
+def _region_text(fit: PcaFit) -> str:
+    if not fit.region_shares:
+        return "not estimable"
+    return ", ".join(f"{name} {_fmt(share)}" for name, share in fit.region_shares.items())
 
 
 def _interval(item: PairResult) -> str:
