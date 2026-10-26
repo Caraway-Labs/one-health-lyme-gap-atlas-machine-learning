@@ -119,6 +119,9 @@ def test_climate_profile_sql_is_an_aggregate_without_geometry() -> None:
     assert "UNDERFLOW" in profile
     assert "BIN_00" in profile
     assert "MAD_VALUE" in profile
+    assert "TRY_TO_DOUBLE(TO_VARCHAR(VALUE))" in profile
+    assert "TRY_TO_DOUBLE(TO_VARCHAR(VALUE))" in means
+    assert "LIMITATIONS" not in profile.upper()
     prepare_query(QueryRecord(sql_text=profile, rows_returned=4, elapsed_ms=1))
     prepare_query(QueryRecord(sql_text=means, rows_returned=4, elapsed_ms=1))
     edges = CLIMATE_EDGES["nclimgrid_tavg_county_day"]

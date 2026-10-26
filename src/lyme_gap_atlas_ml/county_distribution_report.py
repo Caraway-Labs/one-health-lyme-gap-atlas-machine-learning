@@ -32,6 +32,7 @@ def render_comment(
     row_counts: Mapping[str, int],
     drive_lines: Sequence[str],
     adjacency_note: str,
+    climate_run_id: str = "",
 ) -> str:
     """Issue comment and pull-request body."""
     rows = "\n".join(f"- `{name}` {count}" for name, count in row_counts.items())
@@ -84,6 +85,7 @@ def render_comment(
             "- Snowflake, ML Lab only:",
             rows,
             f"- Adjacency: {adjacency_note}",
+            _climate_run_line(climate_run_id),
             drives,
             "- Doc: `docs/eda/107-county-distributions.md`",
             "",
@@ -114,6 +116,7 @@ def render_eda_record(
     row_counts: Mapping[str, int],
     drive_lines: Sequence[str],
     adjacency_note: str,
+    climate_run_id: str = "",
 ) -> str:
     """Durable EDA record. The comment below it carries the same numbers."""
     counts = ", ".join(f"`{name}` {count}" for name, count in row_counts.items())
@@ -157,6 +160,7 @@ def render_eda_record(
             "then `uv run python scripts/verify.py`.",
             f"- Lab row counts: {counts}.",
             f"- Adjacency: {adjacency_note}.",
+            _climate_run_line(climate_run_id),
             f"- Drive: {drives}.",
             "- Transient artifacts intentionally not committed: PNG files under "
             "`artifacts/charts/107/`, `outputs/107-run-id.txt`, and in-memory county rows. "
@@ -276,11 +280,27 @@ def _tier_lines(result: Analysis) -> str:
     )
 
 
+def _climate_run_line(climate_run_id: str) -> str:
+    if not climate_run_id:
+        return "- Corrected climate run: pending"
+    return (
+        f"- Corrected climate run: `{climate_run_id}`. "
+        "Climate metrics on the atlas run used `VALUE_NATIVE_DOUBLE` only and are not "
+        "the estimand. "
+        "Decimal and integer values are parsed from `VALUE` inside Snowflake on the corrected run."
+    )
+
+
 def _climate_lines(result: Analysis) -> str:
-    if not result.climate_days:
+    temperature = None
+    for group in result.climate_days:
+        if group.signal == "nclimgrid_tavg_county_day" and group.geography_type == "national":
+            temperature = group
+    if temperature is None or temperature.summary.n < 1000:
         return (
-            f"Climate days read: {result.climate_days_read}. "
-            "No eligible climate values, so that distribution is not estimable."
+            f"Eligible climate county-day values: {result.climate_days_read}. "
+            "Temperature rows were not usable after numeric coercion, so that "
+            "distribution is not estimable."
         )
     lines = [
         f"Eligible climate county-day values: {result.climate_days_read}. "

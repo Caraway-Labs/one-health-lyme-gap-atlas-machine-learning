@@ -27,6 +27,7 @@ import seaborn as sns
 from lyme_gap_atlas_ml.class_anomaly import load_marked_queries
 from lyme_gap_atlas_ml.county_distribution_report import render_comment, render_eda_record
 from lyme_gap_atlas_ml.county_distributions import (
+    CLIMATE,
     HUMAN_PUBLISHED,
     SEED,
     SOURCE_OBJECTS,
@@ -159,11 +160,23 @@ def _run(connection: object) -> int:
     branch = _git("rev-parse", "--abbrev-ref", "HEAD")
     if existing is None:
         _persist(executor, run_id, branch, commit, captured, result, metrics, profiles, found)
-    adjacency_note = _adjacency(connection, run_id)
+        adjacency_note = _adjacency(connection, run_id)
+    else:
+        adjacency_note = _adjacency_status(connection, run_id)
     if climate_note:
         adjacency_note = f"{adjacency_note}. {climate_note}"
     counts = _row_counts(connection, run_id)
-    _write_docs(result, run_id, commit or "unknown", counts, adjacency_note)
+    climate_run_id = _persist_climate_correction(
+        connection, executor, result, captured, branch, commit
+    )
+    _write_docs(
+        result,
+        run_id,
+        commit or "unknown",
+        counts,
+        adjacency_note,
+        climate_run_id,
+    )
     print(f"run_id={run_id}")
     print(f"disposition={result.disposition}")
     print(f"reused_run={existing is not None}")
@@ -171,6 +184,7 @@ def _run(connection: object) -> int:
     print(f"published={result.published}")
     print(f"tiers={result.tier.high},{result.tier.medium},{result.tier.low}")
     print(f"adjacency={adjacency_note}")
+    print(f"climate_run_id={climate_run_id or 'none'}")
     for name in charts:
         path = ROOT / "artifacts" / "charts" / "107" / f"{name}.png"
         print(f"chart={name} bytes={path.stat().st_size} sha256={_sha(path)}")
@@ -397,12 +411,135 @@ def _climate_frames(
     return profile, means, ""
 
 
+def _persist_climate_correction(
+    connection: object,
+    executor: CursorStatementExecutor,
+    result: Analysis,
+    captured: list[tuple[str, str, int, int, str | None]],
+    branch: str | None,
+    commit: str | None,
+) -> str:
+    """Store the decimal-coerced climate grain on its own run. Atlas rows stay put."""
+    if not _climate_plausible(result):
+        return ""
+    existing = _climate_run(connection)
+    if existing:
+        return existing
+    run_id = "107-climate-decimal-" + datetime.now(UTC).strftime("%Y%m%dT%H%MZ")
+    metrics = [
+        metric
+        for metric in lab_metrics(result)
+        if str((metric.dimensions or {}).get("signal", "")).startswith("nclimgrid_")
+    ]
+    profiles = [profile for profile in column_profiles(result) if profile.source_object == CLIMATE]
+    temperature = _national(result.climate_days, "nclimgrid_tavg_county_day")
+    median = "not estimable"
+    if temperature is not None and temperature.summary.median is not None:
+        median = f"{temperature.summary.median:.2f}"
+    count = 0 if temperature is None else temperature.summary.n
+    found = (
+        FindingRecord(
+            topic="climate distribution",
+            statement=(
+                "Eligible observed and zero climate days use the native double when it is "
+                f"present and otherwise the numeric VALUE. Daily average temperature n={count}, "
+                f"median {median} degrees Celsius. The native-double-only metrics on "
+                "107-county-distributions-20261026T0404Z are not this estimand."
+            ),
+            disposition=result.disposition,
+            n_underlying=result.counties,
+            evidence={"temperature_n": count},
+        ),
+    )
+    write_eda_results(
+        executor,
+        EdaRun(
+            run_id=run_id,
+            purpose="Corrected climate distributions for issue 107",
+            issue_number=107,
+            agent_id="OH_LYME_ML_AGENT_SVC",
+            git_repo="Caraway-Labs/one-health-lyme-gap-atlas-machine-learning",
+            git_branch=branch,
+            git_commit=commit,
+            source_environment="ONE_HEALTH_LYME_GAP_ATLAS_PROD",
+            source_release_id="governed-2026-10-15-january-climate-prod",
+            source_objects=(CLIMATE,),
+            input_snapshot_ts=datetime.now(UTC),
+            parameters={
+                "spec": SPEC_ID,
+                "seed": SEED,
+                "value": "coalesce native double with numeric VALUE",
+                "atlas_run_id": "107-county-distributions-20261026T0404Z",
+                "temperature_n": count,
+            },
+            random_seed=SEED,
+            status="succeeded" if result.disposition != "stop" else "inconclusive",
+            notes="Decimal and integer climate values are parsed inside Snowflake.",
+        ),
+        metrics,
+    )
+    write_column_profiles(executor, run_id, profiles)
+    write_findings(executor, run_id, found)
+    climate_queries = [item for item in captured if item[0] in {"climate_profile", "climate_means"}]
+    write_queries(
+        executor,
+        run_id,
+        tuple(
+            QueryRecord(
+                sql_text=sql,
+                rows_returned=row_count,
+                elapsed_ms=elapsed,
+                snowflake_query_id=query_id,
+            )
+            for _name, sql, row_count, elapsed, query_id in climate_queries
+        ),
+    )
+    return run_id
+
+
+def _climate_plausible(result: Analysis) -> bool:
+    group = _national(result.climate_days, "nclimgrid_tavg_county_day")
+    if group is None or group.summary.median is None or group.summary.n < 1000:
+        return False
+    return -40.0 <= group.summary.median <= 40.0
+
+
+def _climate_run(connection: object) -> str | None:
+    sql = (
+        f"SELECT RUN_ID FROM {ML_LAB_DATABASE}.REGISTRY.RUNS "
+        "WHERE ISSUE_NUMBER = %s AND STARTSWITH(RUN_ID, %s)"
+    )
+    cursor_factory = getattr(connection, "cursor", None)
+    if not callable(cursor_factory):
+        return None
+    with cursor_factory() as cursor:
+        cursor.execute(sql, (107, "107-climate-decimal-"))
+        found = [str(row[0]) for row in cursor.fetchall() if row and row[0]]
+    if not found:
+        return None
+    return max(found)
+
+
+def _adjacency_status(connection: object, run_id: str) -> str:
+    cursor_factory = getattr(connection, "cursor", None)
+    if not callable(cursor_factory):
+        return "skipped: the spatial join did not finish inside the warehouse limit"
+    with cursor_factory() as cursor:
+        cursor.execute(COUNT_ADJACENCY_SQL, (run_id,))
+        row = cursor.fetchone()
+    edges = int(row[0]) if row and row[0] is not None else 0
+    if edges == 0:
+        return "skipped: the spatial join did not finish inside the warehouse limit"
+    return f"{ADJACENCY_TABLE} edges {edges}"
+
+
 def _write_docs(
     result: Analysis,
     run_id: str,
     commit: str,
     counts: Mapping[str, int],
     adjacency_note: str,
+    climate_run_id: str,
 ) -> None:
     kwargs = {
         "run_id": run_id,
@@ -410,6 +547,7 @@ def _write_docs(
         "row_counts": counts,
         "drive_lines": ("Drive upload pending",),
         "adjacency_note": adjacency_note,
+        "climate_run_id": climate_run_id,
     }
     record = render_eda_record(result, **kwargs)
     comment = render_comment(result, **kwargs)

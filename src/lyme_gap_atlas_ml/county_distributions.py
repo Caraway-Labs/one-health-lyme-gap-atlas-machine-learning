@@ -1256,7 +1256,18 @@ def _signal(
 
 
 def _climate_value_sql() -> str:
-    return "IFF(VALUE_STATE = 'ZERO' AND VALUE_NATIVE_DOUBLE IS NULL, 0, VALUE_NATIVE_DOUBLE)"
+    """Numeric climate value. Decimal and integer payloads live in VALUE, not the double column."""
+    parsed = _climate_parsed_sql()
+    return f"IFF(VALUE_STATE = 'ZERO' AND {parsed} IS NULL, 0, {parsed})"
+
+
+def _climate_parsed_sql() -> str:
+    return "COALESCE(VALUE_NATIVE_DOUBLE, TRY_TO_DOUBLE(TO_VARCHAR(VALUE)))"
+
+
+def _climate_eligible_sql() -> str:
+    parsed = _climate_parsed_sql()
+    return f"({parsed} IS NOT NULL OR VALUE_STATE = 'ZERO')"
 
 
 def _sql_num(value: float) -> str:
@@ -1367,7 +1378,7 @@ WITH VALS AS (
     FROM {CLIMATE}
     WHERE VALUE_STATE IN ('OBSERVED', 'ZERO')
       AND MEASURE_ID IN ({measures})
-      AND (VALUE_NATIVE_DOUBLE IS NOT NULL OR VALUE_STATE = 'ZERO')
+      AND {_climate_eligible_sql()}
 ),
 STATS AS (
     SELECT
@@ -1405,7 +1416,7 @@ SELECT MEASURE_ID, COUNTY_FIPS, AVG({value}) AS MEAN_VALUE, COUNT(*) AS N
 FROM {CLIMATE}
 WHERE VALUE_STATE IN ('OBSERVED', 'ZERO')
   AND MEASURE_ID IN ({measures})
-  AND (VALUE_NATIVE_DOUBLE IS NOT NULL OR VALUE_STATE = 'ZERO')
+  AND {_climate_eligible_sql()}
 GROUP BY MEASURE_ID, COUNTY_FIPS
 """.strip()
 
