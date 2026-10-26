@@ -208,7 +208,10 @@ def _summary(analysis: Analysis) -> str:
 def _grid(analysis: Analysis) -> str:
     if not analysis.candidates:
         return "No candidate k was fit."
-    lines = ["| k | Converged | Seed ARI | Silhouette | Bootstrap low | Bootstrap high | Min size |", "| ---: | --- | ---: | ---: | ---: | ---: | ---: |"]  # noqa: E501
+    lines = [
+        "| k | Converged | Seed ARI | Silhouette | Bootstrap low | Bootstrap high | Min size |",
+        "| ---: | --- | ---: | ---: | ---: | ---: | ---: |",
+    ]  # noqa: E501
     for candidate in analysis.candidates:
         lines.append(
             "| {k} | {conv} | {ari} | {sil} | {low} | {high} | {size} |".format(
@@ -225,7 +228,13 @@ def _grid(analysis: Analysis) -> str:
 
 
 def _distributions(analysis: Analysis) -> str:
-    lines = ["Pre-clustering frequencies inside the clustering cohort. A bin can be small; the chart omits counts from 1 to 10.", ""]  # noqa: E501
+    lines = [
+        (
+            "Pre-clustering frequencies inside the clustering cohort. "
+            "A bin can be small; the chart omits counts from 1 to 10."
+        ),
+        "",
+    ]
     lines.append("| Feature | Bin | Counties |")
     lines.append("| --- | --- | ---: |")
     for frequency in (

@@ -179,8 +179,7 @@ def _run(connection: object) -> int:
             random_seed=SEED,
             status="succeeded",
             notes=(
-                "Cluster membership is a descriptive partition, "
-                "not disease risk and not a score."
+                "Cluster membership is a descriptive partition, not disease risk and not a score."
             ),
         ),
         lab_metrics(fitted),

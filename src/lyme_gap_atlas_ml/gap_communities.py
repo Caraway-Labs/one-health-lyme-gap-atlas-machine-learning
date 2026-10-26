@@ -473,7 +473,9 @@ def fit_cohort(
     usable, excluded = _usable(cohort)
     population_bins = _population_bins(usable)
     svi_bins = _percentile_bins("svi_percentile", [county.svi for county in usable])
-    uninsured_bins = _percentile_bins("uninsured_percentile", [county.uninsured for county in usable])  # noqa: E501
+    uninsured_bins = _percentile_bins(
+        "uninsured_percentile", [county.uninsured for county in usable]
+    )  # noqa: E501
     rucc_bins = _rucc_bins(usable)
     if len(usable) <= K_GRID[-1]:
         raise GapCommunityError("the clustering cohort is smaller than the k grid")
@@ -574,8 +576,9 @@ def lab_metrics(analysis: Analysis) -> tuple[EdaMetric, ...]:
             _metric("population_total", profile.population_total, profile.n, dimensions=dimensions)
         )
         rows.append(
-            _metric("median_population", profile.median_population, profile.n,
-                dimensions=dimensions)
+            _metric(
+                "median_population", profile.median_population, profile.n, dimensions=dimensions
+            )
         )
         rows.append(_metric("median_svi", profile.median_svi, profile.n, dimensions=dimensions))
         rows.append(
@@ -709,8 +712,9 @@ def experiment_rows(analysis: Analysis, run_id: str) -> tuple[ExperimentRow, ...
                     ExperimentMetric(
                         "bootstrap", "ari_high", candidate.bootstrap_high, analysis.cohort_n
                     ),
-                    ExperimentMetric("primary", "min_cluster_size", candidate.min_size,
-                        candidate.min_size),
+                    ExperimentMetric(
+                        "primary", "min_cluster_size", candidate.min_size, candidate.min_size
+                    ),
                 ),
             )
         )
@@ -761,8 +765,9 @@ def _assess_k(
         seed_ari = _ari(primary.labels, alternate.labels)
     labels = _relabel(primary.labels, fips)
     sizes = tuple(int(np.sum(labels == cluster_id)) for cluster_id in range(1, k + 1))
-    silhouette = _silhouette(numeric, categorical, primary.labels,
-        gamma) if primary.converged else None
+    silhouette = (
+        _silhouette(numeric, categorical, primary.labels, gamma) if primary.converged else None
+    )
     low = high = None
     estimable = False
     if run_bootstrap and primary.converged:
@@ -813,8 +818,9 @@ def _bootstrap_ari(
         fitted = fit_k_prototypes(numeric[index], categorical[index], k, SEED, gamma)
         if not fitted.converged:
             return None
-        centers_num, centers_cat = _update_centers(numeric[index], categorical[index],
-            fitted.labels, k)
+        centers_num, centers_cat = _update_centers(
+            numeric[index], categorical[index], fitted.labels, k
+        )
         predicted = _assign(numeric, categorical, centers_num, centers_cat, gamma)
     except (ValueError, FloatingPointError, GapCommunityError):
         return None
@@ -852,8 +858,9 @@ def _profiles(
             )
         )
     for cluster_id in range(1, reported.k + 1):
-        members = [county for county, label in zip(counties, labels,
-            strict=True) if label == cluster_id]
+        members = [
+            county for county, label in zip(counties, labels, strict=True) if label == cluster_id
+        ]
         member_index = np.flatnonzero(labels == cluster_id)
         if not members:
             continue
@@ -867,12 +874,8 @@ def _profiles(
                 median_population=float(statistics.median(county.population for county in members)),
                 median_svi=float(statistics.median(county.svi for county in members)),
                 median_uninsured=float(statistics.median(county.uninsured for county in members)),
-                median_rucc=(
-                    None if not rucc_numbers else float(statistics.median(rucc_numbers))
-                ),
-                rural_share=(
-                    sum(county.rucc in _RURAL_CODES for county in members) / len(members)
-                ),
+                median_rucc=(None if not rucc_numbers else float(statistics.median(rucc_numbers))),
+                rural_share=(sum(county.rucc in _RURAL_CODES for county in members) / len(members)),
                 mode_rucc=_mode(county.rucc for county in members),
                 mode_scapularis=_mode(county.scapularis_status for county in members),
                 mode_pacificus=_mode(county.pacificus_status for county in members),
@@ -896,12 +899,15 @@ def _examples(
     if len(member_index) == 0:
         return ()
     center_num = np.mean(numeric[member_index], axis=0)
-    center_cat = [_mode(categorical[index, feature] for index in member_index) for feature
-        in range(categorical.shape[1])]
+    center_cat = [
+        _mode(categorical[index, feature] for index in member_index)
+        for feature in range(categorical.shape[1])
+    ]
     ranked: list[tuple[float, str, int]] = []
     for index in member_index:
-        distance = _point_distance(numeric[index], categorical[index], center_num, center_cat,
-            gamma)
+        distance = _point_distance(
+            numeric[index], categorical[index], center_num, center_cat, gamma
+        )
         ranked.append((distance, counties[int(index)].fips, int(index)))
     ranked.sort()
     examples: list[ExampleCounty] = []
@@ -958,8 +964,9 @@ def _prototype_gaps(
             gaps.append(0.0)
             continue
         distances = [
-            _point_distance(centers_num[left], centers_cat[left], centers_num[right],
-                centers_cat[right], gamma)
+            _point_distance(
+                centers_num[left], centers_cat[left], centers_num[right], centers_cat[right], gamma
+            )
             for right in range(k)
             if right != left and present[right]
         ]
@@ -1000,12 +1007,7 @@ def _disposition(
     dominated = bool(shares) and max(shares) >= MAX_SHARE_ADVANCE
     if selected is None or not bootstrap_ran:
         product = "stop"
-    elif (
-        method == "keep"
-        and most_people is not None
-        and most_rural is not None
-        and not dominated
-    ):
+    elif method == "keep" and most_people is not None and most_rural is not None and not dominated:
         product = "advance"
     else:
         product = "investigate"
@@ -1013,8 +1015,11 @@ def _disposition(
 
 
 def _fallback(candidates: Sequence[KCandidate]) -> KCandidate | None:
-    converged = [candidate for candidate in candidates if candidate.converged and
-        candidate.seed_ari is not None]
+    converged = [
+        candidate
+        for candidate in candidates
+        if candidate.converged and candidate.seed_ari is not None
+    ]
     still_fit = [candidate for candidate in candidates if candidate.converged]
     pool = converged or still_fit or list(candidates)
     if not pool:
@@ -1046,10 +1051,7 @@ def _passes(candidate: KCandidate, minimum_size: int) -> bool:
 
 def _matrices(counties: Sequence[County]) -> tuple[Vector, Vector, float]:
     raw = np.asarray(
-        [
-            [math.log(county.population), county.svi, county.uninsured]
-            for county in counties
-        ],
+        [[math.log(county.population), county.svi, county.uninsured] for county in counties],
         dtype=np.float64,
     )
     categorical = np.asarray(
@@ -1110,8 +1112,10 @@ def _fill_empty(
             return labels
         center_num = np.mean(numeric[members], axis=0)
         center_cat = np.asarray(
-            [_mode(categorical[index, feature] for index in members) for feature in
-                range(categorical.shape[1])],
+            [
+                _mode(categorical[index, feature] for index in members)
+                for feature in range(categorical.shape[1])
+            ],
             dtype=object,
         )
         distances = [
@@ -1138,8 +1142,9 @@ def _update_centers(
             continue
         centers_num[cluster_id] = np.mean(numeric[members], axis=0)
         for feature in range(categorical.shape[1]):
-            centers_cat[cluster_id, feature] = _mode(categorical[index,
-                feature] for index in members)
+            centers_cat[cluster_id, feature] = _mode(
+                categorical[index, feature] for index in members
+            )
     return centers_num, centers_cat
 
 
@@ -1185,8 +1190,10 @@ def _relabel(labels: Vector, fips: Sequence[str]) -> Vector:
         range(k),
         key=lambda label: (
             -int(np.sum(labels == label)),
-            min((fips[index] for index in range(len(fips)) if int(labels[index]) == label),
-                default=""),
+            min(
+                (fips[index] for index in range(len(fips)) if int(labels[index]) == label),
+                default="",
+            ),
         ),
     )
     mapping = {old: new for new, old in enumerate(order, start=1)}
@@ -1211,8 +1218,9 @@ def _mode(values: Sequence[object] | Any) -> str:
 def _most_people(profiles: Sequence[ClusterProfile]) -> int | None:
     if not profiles:
         return None
-    return min(profiles, key=lambda profile: (-profile.population_total,
-        profile.cluster_id)).cluster_id
+    return min(
+        profiles, key=lambda profile: (-profile.population_total, profile.cluster_id)
+    ).cluster_id
 
 
 def _most_rural(profiles: Sequence[ClusterProfile]) -> int | None:
@@ -1304,9 +1312,7 @@ def _percentile_bins(feature: str, values: Sequence[float]) -> tuple[Frequency, 
 
 def _rucc_bins(counties: Sequence[County]) -> tuple[Frequency, ...]:
     counts = Counter(county.rucc for county in counties)
-    return tuple(
-        Frequency("rucc", label, counts[label]) for label in sorted(counts)
-    )
+    return tuple(Frequency("rucc", label, counts[label]) for label in sorted(counts))
 
 
 def _county(raw: Mapping[str, object], gate: Gate) -> County:

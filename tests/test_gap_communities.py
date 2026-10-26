@@ -319,8 +319,9 @@ class _FakeSession:
     def query(self, sql: str, params: tuple[object, ...] | None = None) -> list[tuple[object, ...]]:
         del params
         if "CURRENT_ROLE" in sql:
-            return [("OH_LYME_ML_AGENT", "OH_LYME_ML_LAB_XS_WH",
-                "ONE_HEALTH_LYME_GAP_ATLAS_ML_LAB")]
+            return [
+                ("OH_LYME_ML_AGENT", "OH_LYME_ML_LAB_XS_WH", "ONE_HEALTH_LYME_GAP_ATLAS_ML_LAB")
+            ]
         if "COUNT" in sql:
             return [(1 if self.existing else 0,)]
         return []
