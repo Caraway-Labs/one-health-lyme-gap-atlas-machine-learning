@@ -207,9 +207,7 @@ def _spread(
         incidence = base + float(offset % 5)
         if spike is not None and offset == count - 1:
             incidence = spike
-        counties.append(
-            _county(fips, state, f"County {fips}", incidence=incidence, case_floor=20)
-        )
+        counties.append(_county(fips, state, f"County {fips}", incidence=incidence, case_floor=20))
     return counties
 
 

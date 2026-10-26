@@ -319,9 +319,7 @@ def fit_within_state(
     band_counties: dict[str, int] = defaultdict(int)
     medians: list[StateMedian] = []
     for state in sorted(by_state):
-        published_in_state = tuple(
-            county for county in by_state[state] if county.published
-        )
+        published_in_state = tuple(county for county in by_state[state] if county.published)
         if not published_in_state:
             continue
         state_values = np.asarray(
@@ -366,9 +364,7 @@ def fit_within_state(
     eta_sq, eta_tail, eta_holm, eta_bh = _permute_eta(values, labels, seed=seed, draws=draws)
     chart_bins = _chart_bins(medians)
     overlap = tuple(
-        item
-        for item in high_flags
-        if _prior_match(item.county.name, item.county.state)
+        item for item in high_flags if _prior_match(item.county.name, item.county.state)
     )
     published_n = len(published)
     unpublished_n = len(counties) - published_n
@@ -491,9 +487,7 @@ def assess_spatial(
     if not normalized:
         return _spatial_empty("no_edges")
     published = {county.fips: county for county in counties if county.published}
-    kept = tuple(
-        pair for pair in normalized if pair[0] in published and pair[1] in published
-    )
+    kept = tuple(pair for pair in normalized if pair[0] in published and pair[1] in published)
     components = _components(tuple(published), kept)
     if not components:
         return _spatial_empty("no_published_component")
@@ -544,14 +538,11 @@ def assess_spatial(
     denominator = draws + 1
     moran_tail = (global_hits + 1) / denominator
     local_tails = tuple(
-        (fips, (int(local_hits[position]) + 1) / denominator)
-        for position, fips in enumerate(order)
+        (fips, (int(local_hits[position]) + 1) / denominator) for position, fips in enumerate(order)
     )
     adjusted_holm = holm(local_tails)
     adjusted_bh = bh(local_tails)
-    flagged = tuple(
-        fips for fips, _tail in local_tails if adjusted_holm[fips] <= HOLM_FLAG
-    )
+    flagged = tuple(fips for fips, _tail in local_tails if adjusted_holm[fips] <= HOLM_FLAG)
     return SpatialResult(
         estimable=True,
         reason="estimated",

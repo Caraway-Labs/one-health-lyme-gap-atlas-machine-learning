@@ -62,12 +62,16 @@ def render_eda_record(
             "",
         )
     )
-    return header + "\n" + render_comment(
-        result,
-        run_id=run_id,
-        commit=commit,
-        counts=counts,
-        drive_lines=drive_lines,
+    return (
+        header
+        + "\n"
+        + render_comment(
+            result,
+            run_id=run_id,
+            commit=commit,
+            counts=counts,
+            drive_lines=drive_lines,
+        )
     )
 
 
@@ -196,8 +200,7 @@ def _decision(result: Analysis) -> str:
         f"**Product: {result.product_disposition}.** "
         "The neighbor screen needs a governed adjacency table of undirected FIPS "
         "pairs (`FIPS_A`, `FIPS_B`, `FIPS_A < FIPS_B`, `RELEASE_ID`) and no "
-        "geometry text. This run does not create that table. "
-        + kept
+        "geometry text. This run does not create that table. " + kept
     )
 
 
@@ -272,10 +275,7 @@ def _overlap(result: Analysis) -> str:
             "right-tail counties named by #107."
         )
     names = ", ".join(f"{item.county.name}, {item.county.state}" for item in result.prior_overlap)
-    return (
-        "Within-state high flags that are also in the #107 national right-tail list: "
-        f"{names}."
-    )
+    return f"Within-state high flags that are also in the #107 national right-tail list: {names}."
 
 
 def _table(title: str, flags: Sequence[Flagged]) -> str:
