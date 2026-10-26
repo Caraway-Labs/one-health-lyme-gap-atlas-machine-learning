@@ -58,7 +58,7 @@ def render_eda_record(
     decision_word = "PROCEED" if decision.product == "advance" else "INCONCLUSIVE"
     header = "\n".join(
         (
-            "# 196: Is the peer-county list stable once the bootstrap gate can measure stability?",
+            "# 196: The fixed-embedding bootstrap does not measure list stability",
             "",
             f"- Issue: [#196]({_ISSUE}/196); program epic [#22]({_ISSUE}/22).",
             "- Data: `PRESENTATION.CURRENT_COUNTY_ATLAS_V`, `CURRENT_RELEASE_V`,",
@@ -77,7 +77,8 @@ def render_eda_record(
             "",
             f"Spec [{SPEC_ID_196}]({SPEC_LINK}), frozen before the fit.",
             "The lookup is the issue 192 embedding and exact neighbor search.",
-            "The bootstrap gate is conditional retained-neighbor Jaccard.",
+            "The conditional bootstrap score is 1 by construction on that fixed embedding.",
+            "It does not measure stability. The other issue 192 gates are unchanged.",
             "No ground truth exists. Similar means similar on those context features only.",
             "",
             "## Material findings and limits",
@@ -87,8 +88,9 @@ def render_eda_record(
             "## Decision",
             "",
             (
-                f"{decision_word}. Method {decision.method}. Product {decision.product}. "
-                f"The issue 192 method call was {PRIOR_METHOD}. "
+                f"{decision_word}. Method {decision.method} rests only on the other issue 192 "
+                "gates that already passed. The bootstrap-stability gate is retired as "
+                "uninformative. Product advance is unchanged from the issue 192 evidence. "
                 "This is not a release and not a change to the Tier 1 model."
             ),
             "",
@@ -123,7 +125,6 @@ def render_comment(
     """Return the seven sections shared by the pull request and the write-up."""
     failed = ", ".join(decision.failures) if decision.failures else "none"
     count_line = ", ".join(f"{name}={count}" for name, count in sorted(counts.items()))
-    changed = "changes" if decision.method != PRIOR_METHOD else "does not change"
     neighbor_note = (
         f"Recomputed k=5 lists match `{PRIOR_RUN_ID}` in `EDA.PEER_COUNTY_NEIGHBORS_192`. "
         "No new neighbor table was created."
@@ -141,9 +142,9 @@ def render_comment(
     parts = [
         "1. Question",
         "",
-        "Is the peer-county list stable when the county pool is redrawn, once the result "
-        "is compared with what a perfectly stable list scores under the same resampling? "
-        "Should the issue 192 method call change?",
+        "Can a bootstrap on a fixed embedding test whether the peer-county list is stable? "
+        "The conditional score cannot. Method keep, if it stands, has to rest on the "
+        "other issue 192 gates.",
         "",
         "2. Method (and why; link the spec)",
         "",
@@ -152,12 +153,16 @@ def render_comment(
         f"a fixed neighbor order has expected raw Jaccard {CEILING_EXPECTATION:.6f}, "
         f"and a {CEILING_REPLICATES}-replicate simulation (seed {CEILING_SEED}) "
         f"has median {CEILING_SIMULATION_MEDIAN:.6f}. "
-        "The new statistic is the share of in-sample Euclidean neighbors that remain "
-        "neighbors when they are still in the bootstrap pool. A fixed order scores 1. "
-        f"Keep requires an estimable interval, a median of at least {CONDITIONAL_MEDIAN_MIN:.2f}, "
-        f"and a lower endpoint of at least {CONDITIONAL_LOW_MIN:.2f}. "
-        "The two-seed gap stays at most 0.05. Every other issue 192 keep gate is unchanged. "
-        f"k = {K_PRIMARY} is the gate. k = {K_SENSITIVITY} is reported and cannot rescue a miss. "
+        "The conditional statistic is the share of in-sample Euclidean neighbors that remain "
+        "neighbors when they are still in the bootstrap pool. With a fixed embedding and "
+        "exact kNN, removing counties cannot push a retained neighbor out of the top k, "
+        "so that share is 1 whenever it is defined. The pre-specified lines were a median "
+        f"of at least {CONDITIONAL_MEDIAN_MIN:.2f} and a lower endpoint of at least "
+        f"{CONDITIONAL_LOW_MIN:.2f}. Those lines are vacuous here. "
+        "Raw Jaccard is R/(2k-R) for any features, including noise, so it sits on the "
+        "ceiling for any data. Every other issue 192 keep gate is unchanged. "
+        f"k = {K_PRIMARY} was the pre-specified bootstrap check. It is retired as uninformative. "
+        f"k = {K_SENSITIVITY} is descriptive only. "
         f"Bootstrap: {BOOTSTRAP_REPLICATES} draws, seeds {PRIMARY_SEED} and {SECOND_SEED}. "
         "The cosine type-agreement row uses the cosine estimable count. "
         "The issue 192 raw median 0.4999 was already known when this gate was written. "
@@ -166,9 +171,15 @@ def render_comment(
         "3. Key findings with numbers",
         "",
         (
+            "The conditional gate is vacuous by construction. "
+            "A bootstrap with a fixed embedding cannot test stability. "
+            "The conditional bar on the stability chart is a constant 1.0, and raw Jaccard "
+            "sits on the ceiling for any data. "
+            "The earlier #192 miss at 0.4999 was equally uninformative. "
             f"Counties {analysis.county_n}. States {analysis.state_n}. "
             f"Stored #120 types {analysis.assignment_n}. "
-            f"Conditional bootstrap median {_num(analysis.conditional_median)} "
+            "Conditional score "
+            f"{_num(analysis.conditional_median)} "
             f"(interval {_num(analysis.conditional_low)} to {_num(analysis.conditional_high)}, "
             f"estimable {analysis.conditional_estimable}, failed replicates "
             f"{analysis.conditional_failed}). "
@@ -181,7 +192,10 @@ def render_comment(
             f"(interval {_num(analysis.bootstrap_low)} to {_num(analysis.bootstrap_high)}). "
             f"Second-seed raw median {_num(analysis.bootstrap_median_b)}. "
             f"k=15 raw median {_num(analysis.k15_bootstrap_median)}. "
-            f"The issue 192 method call was {PRIOR_METHOD} and it {changed} to {decision.method}. "
+            "Those bootstrap numbers describe the resampling ceiling. "
+            "They are not evidence that the list is stable. "
+            f"Method {decision.method} rests on the other issue 192 gates below. "
+            f"The issue 192 method call was {PRIOR_METHOD} because of the uninformative raw gate. "
             f"Cosine type-agreement n={analysis.type_agreement_cosine_n}. "
             f"Euclidean type-agreement n={analysis.type_agreement_euclidean_n}. "
             f"Determinism Jaccard {_num(analysis.determinism_jaccard)}. "
@@ -194,7 +208,9 @@ def render_comment(
             f"(n={analysis.type_agreement_baseline_n}). "
             f"Leave-state-out type agreement, Euclidean {_num(analysis.type_agreement_lso)} "
             f"(n={analysis.type_agreement_lso_n}), "
-            f"cosine {_num(analysis.type_agreement_lso_cosine)}, "
+            f"cosine {_num(analysis.type_agreement_lso_cosine)} "
+            "(n=750; 747 is the Euclidean count, and the stored cosine metric row still "
+            "uses that Euclidean count), "
             f"same-RUCC outside the state {_num(analysis.type_agreement_lso_baseline)} "
             f"(n={analysis.type_agreement_lso_baseline_n}). "
             f"Leave-state-out gap {_num(analysis.lso_baseline_gap)}. "
@@ -227,8 +243,9 @@ def render_comment(
         "uninsured share are 2022. The rural-urban code is 2023. Tick and pathogen "
         "statuses are cumulative through 2025-12-31. "
         "The leave-state-out does not cover dependence that crosses a state line. "
-        "The bootstrap band is a stability band for the lists, not a disease-rate interval. "
-        f"The issue 192 raw median 0.4999 was known before the gate was redefined. "
+        "The bootstrap numbers are not a stability band and not a disease-rate interval. "
+        "The issue 192 raw median 0.4999 was known before the gate was redefined. "
+        "That knowledge does not make the conditional score informative. "
         f"#120 types exist for {analysis.assignment_n} counties, from run `{GAP_RUN_ID}`. "
         "Counties outside that cohort have no stored type, so type agreement ignores them. "
         "FINDINGS records product advance as keep, investigate as follow-up, and stop as stop. "
@@ -236,9 +253,17 @@ def render_comment(
         "",
         "5. Disposition",
         "",
-        f"Method: {decision.method}. Product: {decision.product}. "
-        f"The issue 192 method call {changed}. "
-        f"Rule failures: {failed}. "
+        f"Method: {decision.method}. "
+        "That keep rests only on the other issue 192 gates that already passed "
+        "(leave-state-out type agreement 0.9394 versus 0.5004 baseline, ablation, "
+        "determinism, and prototype recovery), not on the bootstrap. "
+        "The bootstrap-stability gate is retired as uninformative, not passed. "
+        "A real stability test, such as a scaler refit or feature noise per pool, "
+        "would need its own pre-registered spec and was not part of this story. "
+        f"Product: {decision.product}. "
+        "Product advance stays only as far as the existing evidence supports and is "
+        "unchanged from the issue 192 evidence. "
+        f"Recorded rule failures under the frozen lines: {failed}. "
         "This is not a release and not a change to the Tier 1 model.",
         "",
         "6. Artifacts",
@@ -247,6 +272,9 @@ def render_comment(
         f"Snowflake row counts: {count_line}.",
         neighbor_note,
         f"SELECT grants: {grant}.",
+        "The stability chart plots a conditional bar that is a constant 1.0 by "
+        "construction. The raw bars sit on the ceiling for any data.",
+        "The neighbor-distance chart drops 3 counties in bins under 11.",
         drive_note,
         "Doc: docs/eda/196-peer-county-rerun.md",
         f"Spec: docs/eda/{SPEC_LINK}",
