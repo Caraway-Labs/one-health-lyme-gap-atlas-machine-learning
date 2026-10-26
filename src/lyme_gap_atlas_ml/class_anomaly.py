@@ -260,8 +260,8 @@ class FitResult:
         )
 
 
-def load_class_queries(text: str) -> dict[str, str]:
-    """Split the validation file on `-- @@ name` markers and reject unsafe SQL."""
+def load_marked_queries(text: str, names: tuple[str, ...]) -> dict[str, str]:
+    """Split a validation file on `-- @@ name` markers and reject unsafe SQL."""
     found: dict[str, list[str]] = {}
     current: str | None = None
     for line in text.splitlines():
@@ -274,11 +274,16 @@ def load_class_queries(text: str) -> dict[str, str]:
         if current is not None and not line.startswith("--"):
             found[current].append(line)
     queries = {name: "\n".join(lines).strip() for name, lines in found.items()}
-    if tuple(queries) != QUERY_NAMES:
+    if tuple(queries) != names:
         raise ClassAnomalyError("query file does not match the registered names")
     for sql in queries.values():
         prepare_query(QueryRecord(sql_text=sql, rows_returned=1, elapsed_ms=0))
     return queries
+
+
+def load_class_queries(text: str) -> dict[str, str]:
+    """Split the issue 122 validation file and reject unsafe SQL."""
+    return load_marked_queries(text, QUERY_NAMES)
 
 
 def evaluate_gate(release: Mapping[str, object], gate: Mapping[str, object]) -> GateDecision:
@@ -753,13 +758,13 @@ def _robust_z_matrix(matrix: Vector) -> Vector:
     return np.asarray((matrix - medians) / scale, dtype=float)
 
 
-def _robust_distances(matrix: Vector) -> tuple[Vector, bool]:
+def _robust_distances(matrix: Vector, *, seed: int = PRIMARY_SEED) -> tuple[Vector, bool]:
     try:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             model = MinCovDet(
                 support_fraction=SUPPORT_FRACTION,
-                random_state=PRIMARY_SEED,
+                random_state=seed,
                 assume_centered=False,
             )
             model.fit(matrix)

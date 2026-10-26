@@ -199,6 +199,15 @@ Code-only slice versus protected slice, decided before the fit: log population a
 
 Follow-on story outlines are written in the results record only when the disposition is proceed. They are not opened as GitHub issues by this run. Each outline names the business question, model family, baseline, evaluation, and Snowflake persistence, and is marked code-only or protected.
 
+## Amendment v1.1 — chart suppression, before the fit
+
+The registered id for the fit is `106-state-relative-anomaly/v1.1`. The peer rules, thresholds, seeds, and disposition rule are unchanged. This amendment states how the four charts obey the small-cell composition rule already in this spec.
+
+- State sample size is the county count in each peer band. Those four county counts are a composition. The fallback band has 8 states, so a bar chart of state counts would reveal that 8 by subtraction from 51. The state-count composition is not drawn and is not stored as a lab metric. The county-count chart is drawn when every band count is 0 or at least 11.
+- Within-state spread draws a band only when that band has at least 11 states. The fallback band is omitted from the chart. A median is not recoverable from the other bands, so the other bands stay.
+- National versus state-relative agreement is one composition. If any of the four cells is a count from 1 to 10, the chart is omitted and the lab metric is suppressed. The write-up may still give the counts.
+- Seed stability is drawn as two bars: seed Jaccard below 0.90, and seed Jaccard at least 0.90. The finer edges in the effect-size section are computed for the write-up and are drawn only when every fine bin is 0 or at least 11. If either two-bar count is from 1 to 10, that chart is omitted. A skipped chart is a suppression, not a failed upload.
+
 ## Reproduction and evidence
 
 SQL in `sql/validation/106_state_anomaly.sql`. Runner `scripts/eda_106_state_anomaly.py`. Fit logic `src/lyme_gap_atlas_ml/state_anomaly.py`. Lab score writer `src/lyme_gap_atlas_ml/snowflake/state_anomaly_scores.py`, reusing `eda_writer.write_eda_results`, `eda_lab_writers.write_findings` / `write_queries`, and the robust-z, Jaccard, and distance helpers from the #122 modules. Run id pattern `106-state-relative-anomaly-<UTC yyyymmddThhmmZ>`. Charts under git-ignored `artifacts/charts/106/`, uploaded to Drive folder `issue-106` under `1b8dkHIpE8cxSi17FJP9nmTSDn1TBYvhM`. Durable narrative: `docs/eda/106-state-relative-anomaly.md`.
