@@ -394,9 +394,9 @@ def _int(value: object) -> int:
     return value
 
 
-def _git(command: str, argument: str) -> str | None:
+def _git(*arguments: str) -> str | None:
     completed = subprocess.run(
-        ["git", command, argument],
+        ["git", *arguments],
         cwd=ROOT,
         check=False,
         capture_output=True,
