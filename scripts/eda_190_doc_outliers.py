@@ -87,7 +87,11 @@ def _run(connection: object) -> int:
         cluster_rows = []
     release_id = str(release_rows[0]["RELEASE_ID"])
     counties = parse_counties(cohort_rows, release_id=release_id)
-    clusters = {str(row["FIPS"]): int(row["CLUSTER_ID"]) for row in cluster_rows}
+    clusters = {
+        str(row["FIPS"]): int(row["CLUSTER_ID"])
+        for row in cluster_rows
+        if row.get("CLUSTER_ID") is not None
+    }
     analysis = score_counties(counties, clusters=clusters)
     charts = _save_charts(analysis)
     existing = _existing_run(connection)
