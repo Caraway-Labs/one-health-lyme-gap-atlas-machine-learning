@@ -98,8 +98,8 @@ A 1–10 cell is exact in this write-up and suppressed in the lab metrics and ch
 - Code revision/run: `1b76baf9689bfacc5e12f09b888bb410344c7fcc`, run `111-cross-signal-disagreement-20261026T0238Z`, spec `111-cross-signal-disagreement/v1`.
 - Entry points: `sql/validation/111_cross_signal_disagreement.sql`, `scripts/eda_111_cross_signal.py`, `src/lyme_gap_atlas_ml/cross_signal_disagreement.py`.
 - Commands: `uv run python scripts/check_ml_agent_context.py`, then `MPLBACKEND=Agg uv run --with matplotlib --with seaborn python scripts/eda_111_cross_signal.py`, then `uv run python scripts/verify.py`.
-- Lab row counts: `REGISTRY.RUNS` 1, `EDA.METRICS_LONG` 1040, `EDA.FINDINGS` 3, `REGISTRY.QUERIES` 4, `EDA.CROSS_SIGNAL_CANDIDATES_111` 1294, `REGISTRY.ARTIFACTS` 1.
-- Drive: folder https://drive.google.com/drive/folders/191hhct-v-vch7tHVmcTO1iPO1WTDXs4_ ; state-review-counts.png https://drive.google.com/file/d/1HmzHz-NpIFQzbJlzzqfInWRExG_92ah1/view (13093 bytes; Drive metadata size matches the local PNG). disagreement-type-matrix.png was not kept. Two uploads changed the byte size (32115 against local 27243, then 27521 against local 27434). Both files were trashed.
+- Lab row counts: `REGISTRY.RUNS` 1, `EDA.METRICS_LONG` 1040, `EDA.FINDINGS` 3, `REGISTRY.QUERIES` 4, `EDA.CROSS_SIGNAL_CANDIDATES_111` 1294, `REGISTRY.ARTIFACTS` 2.
+- Drive: folder https://drive.google.com/drive/folders/191hhct-v-vch7tHVmcTO1iPO1WTDXs4_ ; state-review-counts.png https://drive.google.com/file/d/1HmzHz-NpIFQzbJlzzqfInWRExG_92ah1/view (13093 bytes; Drive metadata size matches the local PNG). disagreement-type-matrix.png https://drive.google.com/file/d/1Jpw5rGYfsVSKiVZ14QNx0CJab2mlbgbU/view (28831 bytes; in the issue-111 Drive folder and registered in REGISTRY.ARTIFACTS).
 - Transient artifacts intentionally not committed: PNG files under `artifacts/charts/111/` and any in-memory county rows. Candidate rows stay in `EDA.CROSS_SIGNAL_CANDIDATES_111`. No county extract was committed.
 
 ## 1. Question
@@ -192,10 +192,10 @@ Human surveillance is calendar 2023. Tick and pathogen statuses are cumulative t
 - `EDA.FINDINGS` 3
 - `REGISTRY.QUERIES` 4
 - `EDA.CROSS_SIGNAL_CANDIDATES_111` 1294
-- `REGISTRY.ARTIFACTS` 1
+- `REGISTRY.ARTIFACTS` 2
 - Drive folder https://drive.google.com/drive/folders/191hhct-v-vch7tHVmcTO1iPO1WTDXs4_
 - state-review-counts.png https://drive.google.com/file/d/1HmzHz-NpIFQzbJlzzqfInWRExG_92ah1/view (13093 bytes; Drive metadata size matches the local PNG)
-- disagreement-type-matrix.png was not kept. Two uploads changed the byte size (32115 against local 27243, then 27521 against local 27434). Both files were trashed.
+- disagreement-type-matrix.png https://drive.google.com/file/d/1Jpw5rGYfsVSKiVZ14QNx0CJab2mlbgbU/view (28831 bytes; in the issue-111 Drive folder and registered in REGISTRY.ARTIFACTS)
 - Doc: `docs/eda/111-cross-signal-disagreement.md`
 - `OH_LYME_PROD_READ` cannot count `EDA.CROSS_SIGNAL_CANDIDATES_111` until an owner grants SELECT. This run does not grant it.
 

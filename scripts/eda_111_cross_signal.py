@@ -42,7 +42,11 @@ from lyme_gap_atlas_ml.cross_signal_disagreement import (
     require_live_cohort,
     state_review_bars,
 )
-from lyme_gap_atlas_ml.cross_signal_report import render_comment, render_eda_record
+from lyme_gap_atlas_ml.cross_signal_report import (
+    _drive_lines,
+    render_comment,
+    render_eda_record,
+)
 from lyme_gap_atlas_ml.registry.artifacts import save_chart
 from lyme_gap_atlas_ml.snowflake.anomaly_scores import RunAlreadyWritten
 from lyme_gap_atlas_ml.snowflake.cross_signal_candidates import CANDIDATE_TABLE, write_candidates
@@ -400,17 +404,6 @@ def _row_counts(connection: object, run_id: str) -> dict[str, int]:
             row = cursor.fetchone()
             counts[name] = int(row[0]) if row and row[0] is not None else 0
     return counts
-
-
-def _drive_lines() -> tuple[str, ...]:
-    return (
-        "Drive folder https://drive.google.com/drive/folders/191hhct-v-vch7tHVmcTO1iPO1WTDXs4_",
-        "state-review-counts.png "
-        "https://drive.google.com/file/d/1HmzHz-NpIFQzbJlzzqfInWRExG_92ah1/view "
-        "(13093 bytes; Drive metadata size matches the local PNG)",
-        "disagreement-type-matrix.png was not kept. Two uploads changed the byte size "
-        "(32115 against local 27243, then 27521 against local 27434). Both files were trashed.",
-    )
 
 
 def _stored_run_id() -> str | None:

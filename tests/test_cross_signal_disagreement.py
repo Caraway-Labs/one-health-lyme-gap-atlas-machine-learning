@@ -32,7 +32,7 @@ from lyme_gap_atlas_ml.cross_signal_disagreement import (
     require_live_cohort,
     state_review_bars,
 )
-from lyme_gap_atlas_ml.cross_signal_report import render_comment
+from lyme_gap_atlas_ml.cross_signal_report import _drive_lines, render_comment
 from lyme_gap_atlas_ml.snowflake.anomaly_scores import RunAlreadyWritten
 from lyme_gap_atlas_ml.snowflake.cross_signal_candidates import (
     candidate_table_sql,
@@ -188,6 +188,9 @@ def test_publishing_state_double_gap_is_the_follow_up_reading() -> None:
         drive_lines=("Drive upload pending",),
     )
     assert "## 1. Question" in comment
+    drive = _drive_lines()
+    assert any("1Jpw5rGYfsVSKiVZ14QNx0CJab2mlbgbU" in line for line in drive)
+    assert all("was not kept" not in line for line in drive)
     assert "not incidence, risk, or causation" in comment
     assert display_count(2) == "<11"
     assert all(height is None for _state, _label, height in state_review_bars(result))

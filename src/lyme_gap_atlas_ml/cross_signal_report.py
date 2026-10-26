@@ -26,6 +26,24 @@ _EXAMPLE_LABELS = (
     ("source_coverage", "Human floor with neither tick nor pathogen record"),
     ("follow_up", "Double gap in a state that publishes a county floor"),
 )
+_DRIVE_FOLDER = (
+    "Drive folder https://drive.google.com/drive/folders/191hhct-v-vch7tHVmcTO1iPO1WTDXs4_"
+)
+_STATE_REVIEW_CHART = (
+    "state-review-counts.png "
+    "https://drive.google.com/file/d/1HmzHz-NpIFQzbJlzzqfInWRExG_92ah1/view "
+    "(13093 bytes; Drive metadata size matches the local PNG)"
+)
+_DISAGREEMENT_MATRIX_CHART = (
+    "disagreement-type-matrix.png "
+    "https://drive.google.com/file/d/1Jpw5rGYfsVSKiVZ14QNx0CJab2mlbgbU/view "
+    "(28831 bytes; in the issue-111 Drive folder and registered in REGISTRY.ARTIFACTS)"
+)
+
+
+def _drive_lines() -> tuple[str, ...]:
+    """Drive links for the two registered issue-111 charts."""
+    return (_DRIVE_FOLDER, _STATE_REVIEW_CHART, _DISAGREEMENT_MATRIX_CHART)
 
 
 def render_comment(
