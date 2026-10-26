@@ -86,13 +86,16 @@ def _run(connection: object) -> int:
         print(f"cluster read failed: {error}")
         cluster_rows = []
     release_id = str(release_rows[0]["RELEASE_ID"])
+    print(f"counties={len(cohort_rows)} clusters={len(cluster_rows)}", flush=True)
     counties = parse_counties(cohort_rows, release_id=release_id)
     clusters = {
         str(row["FIPS"]): int(row["CLUSTER_ID"])
         for row in cluster_rows
         if row.get("CLUSTER_ID") is not None
     }
+    print("scoring", flush=True)
     analysis = score_counties(counties, clusters=clusters)
+    print("scored", flush=True)
     charts = _save_charts(analysis)
     existing = _existing_run(connection)
     stamp = datetime.now(UTC).strftime("%Y%m%dT%H%MZ")
