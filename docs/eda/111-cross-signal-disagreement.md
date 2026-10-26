@@ -95,7 +95,7 @@ A 1–10 cell is exact in this write-up and suppressed in the lab metrics and ch
 
 ## Reproduction and retained evidence
 
-- Code revision/run: `c9884add3aaf7c7daaa626015c74c4951cfb555f`, run `111-cross-signal-disagreement-20261026T0238Z`, spec `111-cross-signal-disagreement/v1`.
+- Code revision/run: `1b76baf9689bfacc5e12f09b888bb410344c7fcc`, run `111-cross-signal-disagreement-20261026T0238Z`, spec `111-cross-signal-disagreement/v1`.
 - Entry points: `sql/validation/111_cross_signal_disagreement.sql`, `scripts/eda_111_cross_signal.py`, `src/lyme_gap_atlas_ml/cross_signal_disagreement.py`.
 - Commands: `uv run python scripts/check_ml_agent_context.py`, then `MPLBACKEND=Agg uv run --with matplotlib --with seaborn python scripts/eda_111_cross_signal.py`, then `uv run python scripts/verify.py`.
 - Lab row counts: `REGISTRY.RUNS` 1, `EDA.METRICS_LONG` 1040, `EDA.FINDINGS` 3, `REGISTRY.QUERIES` 4, `EDA.CROSS_SIGNAL_CANDIDATES_111` 1294, `REGISTRY.ARTIFACTS` 1.
@@ -201,7 +201,7 @@ Human surveillance is calendar 2023. Tick and pathogen statuses are cumulative t
 
 ## 7. Reproducibility
 
-- Commit: `c9884add3aaf7c7daaa626015c74c4951cfb555f`
+- Commit: `1b76baf9689bfacc5e12f09b888bb410344c7fcc`
 - Release: `governed-2026-10-15-january-climate-prod`
 - Seeds: cluster `1112026`, county resample `1112027`
 - Commands:
